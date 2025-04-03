@@ -90,7 +90,7 @@ const Payment = () => {
   const { shippingInfo, cartItems, subtotal, shippingCost, tax, total } = orderData;
   
   return (
-    <div className="bg-gradient-to-br from-gray-50 to-gray-100 py-12 min-h-screen">
+    <div className="bg-gradient-to-br from-gray-50 to-gray-100 py-6 sm:py-12 min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-5xl mx-auto">
           <motion.div
@@ -98,38 +98,38 @@ const Payment = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            {/* Checkout Steps */}
-            <div className="mb-8">
-              <div className="flex items-center justify-center">
+            {/* Checkout Steps - Make more compact on mobile */}
+            <div className="mb-6 sm:mb-8">
+              <div className="flex items-center justify-center text-xs sm:text-sm">
                 <div className="flex items-center text-gray-900">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-900 text-white">
+                  <div className="flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gray-900 text-white">
                     1
                   </div>
-                  <span className="ml-2 text-sm font-medium">Shipping</span>
+                  <span className="ml-1 sm:ml-2 font-medium">Shipping</span>
                 </div>
-                <div className="w-12 h-1 mx-2 bg-gray-900"></div>
+                <div className="w-8 sm:w-12 h-1 mx-1 sm:mx-2 bg-gray-900"></div>
                 <div className="flex items-center text-gray-900">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-900 text-white">
+                  <div className="flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gray-900 text-white">
                     2
                   </div>
-                  <span className="ml-2 text-sm font-medium">Payment</span>
+                  <span className="ml-1 sm:ml-2 font-medium">Payment</span>
                 </div>
-                <div className="w-12 h-1 mx-2 bg-gray-200"></div>
+                <div className="w-8 sm:w-12 h-1 mx-1 sm:mx-2 bg-gray-200"></div>
                 <div className="flex items-center text-gray-400">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 text-gray-600">
+                  <div className="flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gray-200 text-gray-600">
                     3
                   </div>
-                  <span className="ml-2 text-sm font-medium">Confirmation</span>
+                  <span className="ml-1 sm:ml-2 font-medium">Confirmation</span>
                 </div>
               </div>
             </div>
             
-            <div className="bg-white shadow-sm rounded-lg overflow-hidden p-6 mb-8">
-              <h1 className="text-2xl font-bold text-gray-900 mb-6">Payment</h1>
+            <div className="bg-white shadow-sm rounded-lg overflow-hidden p-4 sm:p-6 mb-6 sm:mb-8">
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Payment</h1>
               
-              <div className="flex flex-col lg:flex-row gap-8">
+              <div className="flex flex-col lg:flex-row gap-4 sm:gap-8">
                 {/* Left Column - Form */}
-                <div className="lg:w-2/3">
+                <div className="w-full lg:w-2/3">
                   <div>
                     <div className="flex items-center mb-4">
                       <FaCreditCard className="text-gray-900 mr-2" size={20} />
@@ -250,47 +250,29 @@ const Payment = () => {
                         </div>
                       </div>
                     )}
-                    
-                    <div className="mt-8 flex justify-between">
-                      <Link
-                        to="/checkout"
-                        className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                      >
-                        <FaArrowLeft className="mr-2" />
-                        Back to Shipping
-                      </Link>
-                      
-                      <button
-                        onClick={handlePlaceOrder}
-                        className="inline-flex items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-gradient-to-br from-gray-900 via-gray-800 to-black hover:from-gray-800 hover:to-gray-700"
-                      >
-                        <FaLock className="mr-2" />
-                        Place Order
-                      </button>
-                    </div>
                   </div>
                 </div>
                 
                 {/* Right Column - Order Summary */}
-                <div className="lg:w-1/3">
-                  <div className="bg-white shadow-sm rounded-lg overflow-hidden p-6 sticky top-24">
-                    <h2 className="text-lg font-medium text-gray-900 mb-4">Order Summary</h2>
+                <div className="w-full lg:w-1/3">
+                  <div className="bg-white shadow-sm rounded-lg overflow-hidden p-4 sm:p-6 lg:sticky lg:top-24">
+                    <h2 className="text-base sm:text-lg font-medium text-gray-900 mb-4">Order Summary</h2>
                     
-                    <div className="max-h-64 overflow-y-auto mb-4">
+                    <div className="max-h-48 sm:max-h-64 overflow-y-auto mb-4">
                       {cartItems.map((item) => (
                         <div key={item.product._id} className="flex items-center py-2 border-b border-gray-200">
-                          <div className="flex-shrink-0 w-16 h-16 bg-gray-100 rounded-md overflow-hidden">
+                          <div className="flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 rounded-md overflow-hidden">
                             <img 
                               src={item.product.imageCover} 
                               alt={item.product.title} 
                               className="w-full h-full object-center object-cover"
                             />
                           </div>
-                          <div className="ml-3 flex-1">
-                            <p className="text-sm font-medium text-gray-900 truncate">{item.product.title}</p>
-                            <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+                          <div className="ml-2 sm:ml-3 flex-1">
+                            <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">{item.product.title}</p>
+                            <p className="text-xs sm:text-sm text-gray-500">Qty: {item.quantity}</p>
                           </div>
-                          <p className="text-sm font-medium text-gray-900">
+                          <p className="text-xs sm:text-sm font-medium text-gray-900">
                             {currency}{(item.product.price * item.quantity).toFixed(2)}
                           </p>
                         </div>
@@ -322,6 +304,25 @@ const Payment = () => {
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Make buttons more responsive */}
+            <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row justify-between gap-4">
+              <Link
+                to="/checkout"
+                className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+              >
+                <FaArrowLeft className="mr-2" />
+                Back to Shipping
+              </Link>
+              
+              <button
+                onClick={handlePlaceOrder}
+                className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-gradient-to-br from-gray-900 via-gray-800 to-black hover:from-gray-800 hover:to-gray-700"
+              >
+                <FaLock className="mr-2" />
+                Place Order
+              </button>
             </div>
           </motion.div>
         </div>

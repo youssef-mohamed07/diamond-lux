@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaUser, FaHeart, FaSearch, FaTimes, FaBars } from "react-icons/fa";
 import { ShopContext } from "../context/ShopContext";
 import Logo from "./Logo";
+import WishlistButton from './ui/WishlistButton';
 
 const Navbar = () => {
   const [visible, setVisible] = useState(false);
@@ -269,12 +270,7 @@ const Navbar = () => {
                 } transition-colors`}
                 aria-label="Wishlist"
               >
-                <FaHeart className="h-5 w-5" />
-                {favorites.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                    {favorites.length}
-                  </span>
-                )}
+                <WishlistButton isHomePage={isHomePage} scrolled={scrolled} />
               </Link>
             </div>
             

@@ -110,6 +110,7 @@ const Wishlist = () => {
 
   const handleRemoveItem = (productId) => {
     removeFromFavorites(productId);
+    toast.success("Item removed from wishlist");
   };
 
   // Increase quantity
@@ -226,97 +227,165 @@ const Wishlist = () => {
   };
 
   return (
-    <div className="bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">My Wishlist</h1>
-          <Link to="/products" className="text-gray-600 hover:text-gray-900 flex items-center">
+    <div className="bg-white min-h-screen pt-24 md:pt-32">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 md:mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4 sm:mb-0">My Wishlist</h1>
+          <Link to="/products" className="text-gray-600 hover:text-gray-900 flex items-center self-start sm:self-auto">
             <FaArrowLeft className="mr-2" />
             Continue Shopping
           </Link>
         </div>
         
         {wishlistItems.length === 0 ? (
-          <div className="text-center py-16">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Your wishlist is empty</h2>
+          <div className="text-center py-12 md:py-16">
+            <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-4">Your wishlist is empty</h2>
             <p className="text-gray-600 mb-8">Browse our collection and add items to your wishlist.</p>
             <Link to="/products" className="inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-gradient-to-br from-gray-900 via-gray-800 to-black hover:from-gray-800 hover:to-gray-700">
               Start Shopping
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12">
             <div className="lg:col-span-2">
-              <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Product
-                      </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Price
-                      </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Quantity
-                      </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Total
-                      </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {wishlistItems.map((product) => (
-                      <tr key={product._id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="flex-shrink-0 h-10 w-10">
-                              <img className="h-10 w-10 rounded-full" src={product.image} alt={product.name} />
-                            </div>
-                            <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900">{product.name}</div>
-                              <div className="text-sm text-gray-500">{product.category}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{currency}{product.price.toFixed(2)}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <button onClick={() => decreaseQuantity(product._id)} className="text-gray-500 hover:text-gray-700">
-                              <FaMinus />
-                            </button>
-                            <input
-                              type="number"
-                              value={product.quantity}
-                              onChange={(e) => updateQuantity(product._id, e.target.value)}
-                              className="mx-2 w-12 text-center border border-gray-300 rounded-md"
-                            />
-                            <button onClick={() => increaseQuantity(product._id)} className="text-gray-500 hover:text-gray-700">
-                              <FaPlus />
-                            </button>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{currency}{(product.price * product.quantity).toFixed(2)}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <button onClick={() => handleRemoveItem(product._id)} className="text-red-600 hover:text-red-900">
-                            <FaTrash />
-                          </button>
-                        </td>
+              {/* Desktop View - Table */}
+              <div className="hidden md:block overflow-x-auto">
+                <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Product
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Price
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Quantity
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Total
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Actions
+                        </th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {wishlistItems.map((product) => (
+                        <tr key={product._id} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="flex-shrink-0 h-12 w-12">
+                                <img className="h-12 w-12 rounded-md object-cover" src={product.image} alt={product.name} />
+                              </div>
+                              <div className="ml-4">
+                                <div className="text-sm font-medium text-gray-900">{product.name}</div>
+                                <div className="text-sm text-gray-500">{product.category}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">{currency}{product.price.toFixed(2)}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <button 
+                                onClick={() => decreaseQuantity(product._id)} 
+                                className="text-gray-500 hover:text-gray-700 p-1"
+                              >
+                                <FaMinus />
+                              </button>
+                              <input
+                                type="number"
+                                value={product.quantity}
+                                onChange={(e) => updateQuantity(product._id, e.target.value)}
+                                className="mx-2 w-12 text-center border border-gray-300 rounded-md"
+                                min="1"
+                              />
+                              <button 
+                                onClick={() => increaseQuantity(product._id)} 
+                                className="text-gray-500 hover:text-gray-700 p-1"
+                              >
+                                <FaPlus />
+                              </button>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">{currency}{(product.price * product.quantity).toFixed(2)}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button 
+                              onClick={() => handleRemoveItem(product._id)} 
+                              className="text-red-600 hover:text-red-900 p-1"
+                              aria-label="Remove item"
+                            >
+                              <FaTrash />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              
+              {/* Mobile View - Cards */}
+              <div className="md:hidden space-y-4">
+                {wishlistItems.map((product) => (
+                  <div key={product._id} className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+                    <div className="p-4">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-16 w-16">
+                          <img className="h-16 w-16 rounded-md object-cover" src={product.image} alt={product.name} />
+                        </div>
+                        <div className="ml-4 flex-1">
+                          <div className="text-sm font-medium text-gray-900">{product.name}</div>
+                          <div className="text-sm text-gray-500">{product.category}</div>
+                          <div className="text-sm font-medium text-gray-900 mt-1">{currency}{product.price.toFixed(2)}</div>
+                        </div>
+                        <button 
+                          onClick={() => handleRemoveItem(product._id)} 
+                          className="text-red-600 hover:text-red-900 p-2"
+                          aria-label="Remove item"
+                        >
+                          <FaTrash />
+                        </button>
+                      </div>
+                      
+                      <div className="mt-4 flex justify-between items-center">
+                        <div className="flex items-center border border-gray-300 rounded-md">
+                          <button 
+                            onClick={() => decreaseQuantity(product._id)} 
+                            className="px-2 py-1 text-gray-500 hover:text-gray-700"
+                          >
+                            <FaMinus />
+                          </button>
+                          <input
+                            type="number"
+                            value={product.quantity}
+                            onChange={(e) => updateQuantity(product._id, e.target.value)}
+                            className="w-12 text-center border-x border-gray-300 py-1"
+                            min="1"
+                          />
+                          <button 
+                            onClick={() => increaseQuantity(product._id)} 
+                            className="px-2 py-1 text-gray-500 hover:text-gray-700"
+                          >
+                            <FaPlus />
+                          </button>
+                        </div>
+                        <div className="text-sm font-medium">
+                          Total: <span className="text-gray-900">{currency}{(product.price * product.quantity).toFixed(2)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
             
-            <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+            <div className="bg-gray-50 rounded-lg p-6 border border-gray-200 h-fit">
               <h2 className="text-lg font-medium text-gray-900 mb-4">Order Summary</h2>
               <div className="space-y-3">
                 <div className="flex justify-between">
@@ -337,7 +406,7 @@ const Wishlist = () => {
               
               <div className="mt-6 flex flex-col space-y-4">
                 <div className="flex items-center text-sm text-gray-600">
-                  <FaGem className="text-gray-400 mr-2" />
+                  <FaGem className="text-gray-400 mr-2 flex-shrink-0" />
                   <span>All items are certified authentic and come with a certificate of authenticity.</span>
                 </div>
                 
@@ -353,9 +422,10 @@ const Wishlist = () => {
         )}
       </div>
       
+      {/* Checkout Modal */}
       <AnimatePresence>
         {showCheckout && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-auto">
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -363,21 +433,22 @@ const Wishlist = () => {
               transition={{ duration: 0.3 }}
               className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
             >
+              <div className="sticky top-0 bg-white z-10 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                <h2 className="text-xl font-bold text-gray-900">Checkout</h2>
+                <button
+                  onClick={() => setShowCheckout(false)}
+                  className="text-gray-400 hover:text-gray-500 transition-colors p-1"
+                  aria-label="Close"
+                >
+                  <FaTimes className="h-5 w-5" />
+                </button>
+              </div>
+              
               <div className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-gray-900">Checkout</h2>
-                  <button
-                    onClick={() => setShowCheckout(false)}
-                    className="text-gray-400 hover:text-gray-500 transition-colors"
-                  >
-                    <FaTimes className="h-5 w-5" />
-                  </button>
-                </div>
-                
                 <form onSubmit={handleSubmit}>
                   <div className="mb-8">
                     <h3 className="text-lg font-medium text-gray-900 mb-4">Shipping Information</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                       <div>
                         <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
                           First Name *
@@ -448,33 +519,36 @@ const Wishlist = () => {
                           required
                         />
                       </div>
-                      <div>
-                        <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
-                          City *
-                        </label>
-                        <input
-                          type="text"
-                          id="city"
-                          name="city"
-                          value={formData.city}
-                          onChange={handleChange}
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label htmlFor="state" className="block text-sm font-medium text-gray-700 mb-1">
-                          State/Province *
-                        </label>
-                        <input
-                          type="text"
-                          id="state"
-                          name="state"
-                          value={formData.state}
-                          onChange={handleChange}
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                          required
-                        />
+                      {/* Other address fields (city, state, etc.) */}
+                      <div className="grid grid-cols-2 gap-4 md:col-span-2">
+                        <div>
+                          <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
+                            City *
+                          </label>
+                          <input
+                            type="text"
+                            id="city"
+                            name="city"
+                            value={formData.city}
+                            onChange={handleChange}
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="state" className="block text-sm font-medium text-gray-700 mb-1">
+                            State/Province *
+                          </label>
+                          <input
+                            type="text"
+                            id="state"
+                            name="state"
+                            value={formData.state}
+                            onChange={handleChange}
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                            required
+                          />
+                        </div>
                       </div>
                       <div>
                         <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700 mb-1">
@@ -514,9 +588,10 @@ const Wishlist = () => {
                     </div>
                   </div>
                   
+                  {/* Payment Information */}
                   <div className="mb-8">
                     <h3 className="text-lg font-medium text-gray-900 mb-4">Payment Information</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                       <div className="md:col-span-2">
                         <label htmlFor="cardName" className="block text-sm font-medium text-gray-700 mb-1">
                           Name on Card *
@@ -582,18 +657,18 @@ const Wishlist = () => {
                     </div>
                   </div>
                   
-                  <div className="flex justify-end">
+                  <div className="flex flex-col md:flex-row md:justify-end gap-3">
                     <button
                       type="button"
                       onClick={() => setShowCheckout(false)}
-                      className="mr-4 px-6 py-3 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+                      className="px-6 py-3 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors order-2 md:order-1"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={isProcessing}
-                      className="px-6 py-3 border border-transparent rounded-md shadow-sm text-white bg-gradient-to-br from-gray-900 via-gray-800 to-black hover:from-gray-800 hover:to-gray-700 transition-all flex items-center"
+                      className="px-6 py-3 border border-transparent rounded-md shadow-sm text-white bg-gradient-to-br from-gray-900 via-gray-800 to-black hover:from-gray-800 hover:to-gray-700 transition-all flex items-center justify-center order-1 md:order-2"
                     >
                       {isProcessing ? (
                         <>

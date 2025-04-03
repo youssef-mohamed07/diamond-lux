@@ -9,7 +9,7 @@ const Hero = () => {
   const [currentImage, setCurrentImage] = useState(0);
   const [heroData, setHeroData] = useState({
     images: [
-      "https://images.unsplash.com/photo-1600003014755-ba31aa59c4b6?q=80&w=1470&auto=format&fit=crop",
+      
       "https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=1470&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?q=80&w=1469&auto=format&fit=crop",
     ],
@@ -248,7 +248,7 @@ const Hero = () => {
                       <div className="w-20 h-20 bg-white/30 rounded-full blur-md"></div>
                     </motion.div>
                   ))}
-                </div>
+            </div>
               </motion.div>
               
               {/* Light rays */}
