@@ -1,0 +1,129 @@
+name: Deploy MERN Application
+
+on:
+  push:
+    branches: [ Seif-Ashraf ]
+  pull_request:
+    branches: [ Seif-Ashraf ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Checkout the repository
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # Step 2: Test SSH Connection
+    - name: Test SSH Connection
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SERVER_IP }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        script: |
+          echo "✅ SSH connection test successful!"
+          whoami
+          pwd
+
+    # Step 3: Deploy MERN application to the server
+    - name: Deploy MERN Application
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SERVER_IP }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        script: |
+          echo "🚀 Starting deployment..."
+
+          # Set up project directory
+
+          PROJECT_DIR="/home/${{ secrets.USERNAME }}/ecommerce"
+          echo "Creating or navigating to project directory: $PROJECT_DIR"
+          mkdir -p $PROJECT_DIR
+          cd $PROJECT_DIR || exit 1
+
+          # Clone repository if it doesn't exist, otherwise pull updates
+
+          echo "Cloning or updating repository..."
+          if [ ! -d ".git" ]; then
+            git clone -b Seif-Ashraf https://${{ secrets.GIT_TOKEN }}@github.com/elwork1212/ecommerce.git .
+          else
+            git reset --hard
+            git pull origin Seif-Ashraf
+          fi
+
+          # Frontend Deployment
+
+          echo "🔧 Deploying Frontend..."
+          cd frontend || exit 1
+          npm i
+          npm run build
+
+          if ! command -v pm2 &> /dev/null; then
+            echo "PM2 is not installed. Installing PM2..."
+            sudo npm install -g pm2
+          fi
+
+          # Start or restart frontend with PM2
+          echo "Starting Frontend with PM2..."
+          pm2 delete frontend || true
+          pm2 start npx --name "frontend" -- serve -s dist -l 5000
+
+          cd ..
+
+          # Backend Deployment
+          echo "🔧 Deploying Backend..."
+          cd back-end || exit 1
+          npm i
+
+          if ! command -v pm2 &> /dev/null; then
+            echo "PM2 is not installed. Installing PM2..."
+            sudo npm install -g pm2
+          fi
+
+          # Start or restart backend with PM2
+          echo "Starting Backend with PM2..."
+          pm2 delete backend || true
+          pm2 start app.js --name "backend"
+          cd ..
+
+          # Admin Deployment
+          echo "🔧 Deploying Admin..."
+          cd admin || exit 1
+          npm i
+          npm run build
+          
+
+          if ! command -v pm2 &> /dev/null; then
+            echo "PM2 is not installed. Installing PM2..."
+            sudo npm install -g pm2
+          fi
+
+          # Start or restart admin with PM2
+          echo "Starting Admin with PM2..."
+          pm2 delete admin-panel || true
+          pm2 start npx --name "admin-panel" -- serve -s dist -l 5001
+          cd ..
+
+          # Reload Caddy (if installed)
+          if command -v caddy &> /dev/null; then
+            echo "Reloading Caddy server..."
+            sudo systemctl reload caddy
+          fi
+
+    # Step 4: Deployment Status
+    - name: Notify Deployment Status
+      if: always()
+      run: |
+        if [ "${{ job.status }}" == "success" ]; then
+          echo "✅ Deployment successful!"
+        else
+          echo "❌ Deployment failed!"
+          exit 1
+        fi
+
+env:
+  CI: true
+  NODE_ENV: production
