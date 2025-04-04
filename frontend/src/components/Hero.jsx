@@ -122,29 +122,29 @@ const Hero = () => {
         style={{ opacity, scale, y }}
         className="absolute inset-0 z-30 flex items-center justify-center"
       >
-        <div className="container mx-auto px-6 flex flex-col lg:flex-row items-center">
+        <div className="container mx-auto px-4 sm:px-6 flex flex-col lg:flex-row items-center">
           {/* Left Content */}
-          <div className="w-full lg:w-1/2 text-white space-y-8">
+          <div className="w-full lg:w-1/2 text-white space-y-6 sm:space-y-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
               className="flex items-center gap-3"
             >
-              <div className="h-[1px] w-12 bg-white/70"></div>
-              <span className="uppercase tracking-[0.2em] text-sm font-light">Luxury Collection</span>
+              <div className="h-[1px] w-8 sm:w-12 bg-white/70"></div>
+              <span className="uppercase tracking-[0.15em] sm:tracking-[0.2em] text-xs sm:text-sm font-light">Luxury Collection</span>
             </motion.div>
             
             <motion.h1
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight"
             >
               {heroData.title.split(' ').map((word, i) => (
                 <span key={i} className="inline-block">
                   {word}{' '}
-                  {i === 1 && <br />}
+                  {i === 1 && <br className="hidden sm:block" />}
                 </span>
               ))}
             </motion.h1>
@@ -153,7 +153,7 @@ const Hero = () => {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.6 }}
-              className="text-lg md:text-xl text-gray-300 max-w-xl leading-relaxed"
+              className="text-base sm:text-lg md:text-xl text-gray-300 max-w-xl leading-relaxed"
             >
               {heroData.description}
             </motion.p>
@@ -162,13 +162,13 @@ const Hero = () => {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.8 }}
-              className="flex flex-col sm:flex-row gap-6 pt-4"
+              className="flex flex-col sm:flex-row gap-4 sm:gap-6 pt-2 sm:pt-4"
             >
               <Link 
                 to="/products"
-                className="group relative overflow-hidden rounded-full bg-white px-8 py-4 text-black transition-all duration-300 ease-out hover:bg-opacity-90 hover:shadow-lg"
+                className="group relative overflow-hidden rounded-full bg-white px-6 sm:px-8 py-3 sm:py-4 text-black transition-all duration-300 ease-out hover:bg-opacity-90 hover:shadow-lg text-center sm:text-left"
               >
-                <span className="relative z-10 flex items-center justify-center font-medium">
+                <span className="relative z-10 flex items-center justify-center font-medium text-sm sm:text-base">
                   Explore Collection
                   <FaArrowRight className="ml-2 transition-transform duration-300 group-hover:translate-x-1" />
                 </span>
@@ -177,9 +177,9 @@ const Hero = () => {
               
               <Link 
                 to="/contact"
-                className="group relative overflow-hidden rounded-full border border-white px-8 py-4 text-white transition-all duration-300 ease-out hover:bg-white/10"
+                className="group relative overflow-hidden rounded-full border border-white px-6 sm:px-8 py-3 sm:py-4 text-white transition-all duration-300 ease-out hover:bg-white/10 text-center sm:text-left"
               >
-                <span className="relative z-10 flex items-center justify-center font-medium">
+                <span className="relative z-10 flex items-center justify-center font-medium text-sm sm:text-base">
                   Book Consultation
                 </span>
                 <span className="absolute bottom-0 left-0 h-1 w-0 bg-white transition-all duration-300 group-hover:w-full"></span>
@@ -283,7 +283,7 @@ const Hero = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.5, duration: 1 }}
-        className="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-40 flex flex-col items-center"
+        className="absolute bottom-6 sm:bottom-10 left-1/2 transform -translate-x-1/2 z-40 flex flex-col items-center hidden xs:flex"
       >
         <span className="text-white/80 text-sm mb-2 tracking-widest uppercase">Scroll</span>
         <motion.div

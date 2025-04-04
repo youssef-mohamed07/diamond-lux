@@ -41,17 +41,36 @@ const Contact = () => {
   
     return (
     <div className="bg-white">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Hero Section with Background Image */}
+      <div className="relative bg-black text-white">
+        {/* Background Image */}
+        <div className="absolute inset-0 z-0 overflow-hidden">
+          <img 
+            src="/images/contact-hero-background.jpg" 
+            alt="Luxury jewelry showroom" 
+            className="w-full h-full object-cover opacity-50"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = "https://images.unsplash.com/photo-1600880292089-90a7e086ee0c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80";
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-black/50"></div>
+        </div>
+        
+        {/* Content */}
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="text-center"
+            className="md:max-w-2xl lg:max-w-3xl"
           >
-            <h1 className="text-4xl font-extrabold sm:text-5xl lg:text-6xl">Contact Us</h1>
-            <p className="mt-6 text-xl max-w-3xl mx-auto">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="h-[1px] w-12 bg-white/70"></div>
+              <span className="uppercase tracking-[0.2em] text-sm font-light">Get In Touch</span>
+            </div>
+            <h1 className="text-4xl font-extrabold sm:text-5xl lg:text-6xl mb-6">Contact Us</h1>
+            <p className="text-xl text-gray-200 max-w-3xl">
               We'd love to hear from you. Reach out to us with any questions about our luxury jewelry collection.
             </p>
           </motion.div>

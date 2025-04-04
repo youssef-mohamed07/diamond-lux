@@ -1,6 +1,7 @@
 import { assets } from "../assets/assets";
 import { getUIElement } from "../../api/UIApi";
 import { useState, useEffect } from "react";
+import { FaFacebook, FaInstagram, FaTwitter, FaPinterest, FaPhone, FaEnvelope, FaMapMarkerAlt } from 'react-icons/fa';
 
 const Footer = () => {
   const [logo, setLogo] = useState(null);
@@ -12,43 +13,126 @@ const Footer = () => {
       setDescription(data.footer.description);
     });
   }, []);
+
   return (
     <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
-      <div className="flex py-[3rem] flex-col sm:grid grid-cols-[3fr_1fr_1fr] gap-14 my-10 mt-[7rem] text-sm max-w-[90%] mx-auto">
-        <div>
-          <img src={logo} className="mb-5 w-48" alt="" />
-          <div className="w-full md:w-2/3 text-lg text-gray-300" 
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Main Footer Content */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 py-16">
+          {/* Brand Section */}
+          <div className="space-y-6">
+            <img src={logo} className="h-12 w-auto" alt="Company Logo" />
+            <p className="text-gray-300 text-sm leading-relaxed" 
                dangerouslySetInnerHTML={{ __html: description }} />
+            <div className="flex space-x-4">
+              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                <FaFacebook className="h-5 w-5" />
+              </a>
+              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                <FaInstagram className="h-5 w-5" />
+              </a>
+              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                <FaTwitter className="h-5 w-5" />
+              </a>
+              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                <FaPinterest className="h-5 w-5" />
+              </a>
+            </div>
+          </div>
+
+          {/* Quick Links */}
+          <div>
+            <h3 className="text-lg font-semibold mb-6 relative pb-2 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-12 after:h-0.5 after:bg-white">
+              Quick Links
+            </h3>
+            <ul className="space-y-3">
+              <li>
+                <a href="/" className="text-gray-300 hover:text-white transition-colors text-sm">
+                  Home
+                </a>
+              </li>
+              <li>
+                <a href="/about" className="text-gray-300 hover:text-white transition-colors text-sm">
+                  About Us
+                </a>
+              </li>
+              <li>
+                <a href="/services" className="text-gray-300 hover:text-white transition-colors text-sm">
+                  Services
+                </a>
+              </li>
+              <li>
+                <a href="/contact" className="text-gray-300 hover:text-white transition-colors text-sm">
+                  Contact Us
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Contact Info */}
+          <div>
+            <h3 className="text-lg font-semibold mb-6 relative pb-2 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-12 after:h-0.5 after:bg-white">
+              Contact Us
+            </h3>
+            <ul className="space-y-4">
+              <li className="flex items-center space-x-3">
+                <FaPhone className="text-gray-400 h-4 w-4" />
+                <span className="text-gray-300 text-sm">951-807-4047</span>
+              </li>
+              <li className="flex items-center space-x-3">
+                <FaEnvelope className="text-gray-400 h-4 w-4" />
+                <span className="text-gray-300 text-sm">elitefiestarentals@gmail.com</span>
+              </li>
+              <li className="flex items-center space-x-3">
+                <FaMapMarkerAlt className="text-gray-400 h-4 w-4" />
+                <span className="text-gray-300 text-sm">123 Business Street, City, State</span>
+              </li>
+            </ul>
+          </div>
+
+          {/* Newsletter */}
+          <div>
+            <h3 className="text-lg font-semibold mb-6 relative pb-2 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-12 after:h-0.5 after:bg-white">
+              Newsletter
+            </h3>
+            <p className="text-gray-300 text-sm mb-4">
+              Subscribe to our newsletter for the latest updates and offers.
+            </p>
+            <form className="flex flex-col space-y-3">
+              <input
+                type="email"
+                placeholder="Your email address"
+                className="px-4 py-2 bg-gray-800 border border-gray-700 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-white"
+              />
+              <button
+                type="submit"
+                className="px-4 py-2 bg-white text-gray-900 rounded-md text-sm font-medium hover:bg-gray-100 transition-colors"
+              >
+                Subscribe
+              </button>
+            </form>
+          </div>
         </div>
 
-        <div>
-          <p className="text-2xl font-medium mb-5 border-b border-gray-600 pb-2">COMPANY</p>
-          <ul className="flex flex-col gap-1 text-lg text-gray-300">
-            <li className="hover:text-white transition-colors">
-              <a href="/">Home</a>
-            </li>
-            <li className="hover:text-white transition-colors">
-              <a href="/about">About us</a>
-            </li>
-            <li className="hover:text-white transition-colors">
-              <a href="/contact">Contact Us</a>
-            </li>
-          </ul>
+        {/* Bottom Bar */}
+        <div className="border-t border-gray-800 py-6">
+          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+            <p className="text-gray-400 text-sm">
+              © 2025 Elite Fiesta Rentals. All rights reserved.
+            </p>
+            <div className="flex space-x-6">
+              <a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">
+                Privacy Policy
+              </a>
+              <a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">
+                Terms of Service
+              </a>
+              <a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">
+                Cookie Policy
+              </a>
+            </div>
+          </div>
         </div>
-
-        <div>
-          <p className="text-xl font-medium mb-5 border-b border-gray-600 pb-2">GET IN TOUCH</p>
-          <ul className="flex flex-col gap-1 text-lg text-gray-300">
-            <li>951-807-4047</li>
-            <li>elitefiestarentals@gmail.com</li>
-          </ul>
-        </div>
-      </div>
-      <div>
-        <hr className="border-gray-700" />
-        <p className="py-5 text-md text-center text-gray-400">
-          Copyright 2025@ elitefiestarentals.com - All Right Reserved.
-        </p>
       </div>
     </div>
   );

@@ -93,30 +93,39 @@ const Products = () => {
 
   return (
     <>
-      {/* Hero Banner */}
-      <div className="relative h-64 md:h-80 bg-gradient-to-br from-gray-900 via-gray-800 to-black overflow-hidden">
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1573408301185-9146fe634ad0?q=80&w=1469&auto=format&fit=crop')] bg-cover bg-center"></div>
+      {/* Hero Section with Background Image */}
+      <div className="relative bg-black text-white">
+        {/* Background Image */}
+        <div className="absolute inset-0 z-0 overflow-hidden">
+          <img 
+            src="/images/products-hero-background.jpg" 
+            alt="Luxury jewelry collection" 
+            className="w-full h-full object-cover opacity-50"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80";
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-black/50"></div>
         </div>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center text-white px-4">
-            <motion.h1 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4"
-            >
-              Our Collection
-            </motion.h1>
-            <motion.p 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-lg md:text-xl text-gray-200 max-w-2xl mx-auto"
-            >
-              Discover our exquisite selection of premium diamond jewelry
-            </motion.p>
-          </div>
+        
+        {/* Content */}
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="md:max-w-2xl lg:max-w-3xl"
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="h-[1px] w-12 bg-white/70"></div>
+              <span className="uppercase tracking-[0.2em] text-sm font-light">Luxury Selection</span>
+            </div>
+            <h1 className="text-4xl font-extrabold sm:text-5xl lg:text-6xl mb-6">Our Collection</h1>
+            <p className="text-xl text-gray-200 max-w-3xl">
+              Discover our exquisite selection of premium diamond jewelry, each piece crafted with exceptional artistry and precision.
+            </p>
+          </motion.div>
         </div>
       </div>
 
