@@ -1,19 +1,15 @@
 import React, { useState, useEffect, useContext, useRef } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaUser, FaHeart, FaSearch, FaTimes, FaBars } from "react-icons/fa";
+import { FaSearch, FaTimes, FaBars } from "react-icons/fa";
 import { ShopContext } from "../context/ShopContext";
 import Logo from "./Logo";
 import WishlistButton from './ui/WishlistButton';
 
 const Navbar = () => {
   const [visible, setVisible] = useState(false);
-  const [showAuthDropdown, setShowAuthDropdown] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { 
-    token, 
-    user, 
-    logout, 
     favorites,
     search,
     setSearch,
@@ -24,7 +20,6 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const searchInputRef = useRef(null);
-  const authDropdownRef = useRef(null);
   
   // Check if we're on the home page
   const isHomePage = location.pathname === "/";
@@ -45,20 +40,6 @@ const Navbar = () => {
       window.removeEventListener('scroll', handleScroll);
     };
   }, []);
-
-  // Handle clicks outside of auth dropdown
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (showAuthDropdown && authDropdownRef.current && !authDropdownRef.current.contains(event.target)) {
-        setShowAuthDropdown(false);
-      }
-    };
-    
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showAuthDropdown]);
 
   // Focus search input when search is shown
   useEffect(() => {
@@ -119,28 +100,6 @@ const Navbar = () => {
     hidden: { opacity: 0, y: -20 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
     exit: { opacity: 0, y: -20, transition: { duration: 0.2 } }
-  };
-
-  const dropdownVariants = {
-    hidden: { opacity: 0, y: -5, scale: 0.95 },
-    visible: { 
-      opacity: 1, 
-      y: 0, 
-      scale: 1,
-      transition: { 
-        duration: 0.2,
-        ease: "easeOut"
-      } 
-    },
-    exit: { 
-      opacity: 0, 
-      y: -5, 
-      scale: 0.95,
-      transition: { 
-        duration: 0.15,
-        ease: "easeIn"
-      }
-    }
   };
 
   return (
@@ -274,81 +233,6 @@ const Navbar = () => {
               </Link>
             </div>
             
-            {/* User account */}
-            <div className="relative" ref={authDropdownRef}>
-              <button
-                onClick={() => setShowAuthDropdown(!showAuthDropdown)}
-                className={`p-2 rounded-full ${
-                  isHomePage && !scrolled 
-                    ? "text-white hover:bg-white/10" 
-                    : "text-gray-700 hover:bg-gray-100"
-                } transition-colors`}
-                aria-label="Account"
-              >
-                <FaUser className="h-5 w-5" />
-              </button>
-              
-              <AnimatePresence>
-                {showAuthDropdown && (
-                  <motion.div
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
-                    variants={dropdownVariants}
-                    className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 ring-1 ring-black ring-opacity-5 origin-top-right"
-                  >
-                    {token ? (
-                      <>
-                        <div className="px-4 py-2 text-sm text-gray-700 border-b border-gray-100">
-                          Hello, <span className="font-medium">{user?.name || 'User'}</span>
-                        </div>
-                        <Link 
-                          to="/profile" 
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={() => setShowAuthDropdown(false)}
-                        >
-                          My Profile
-                        </Link>
-                        <Link 
-                          to="/wishlist" 
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={() => setShowAuthDropdown(false)}
-                        >
-                          My Wishlist
-                        </Link>
-                        <button 
-                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={() => {
-                            logout();
-                            setShowAuthDropdown(false);
-                          }}
-                        >
-                          Sign Out
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <Link 
-                          to="/login" 
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={() => setShowAuthDropdown(false)}
-                        >
-                          Sign In
-                        </Link>
-                        <Link 
-                          to="/register" 
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={() => setShowAuthDropdown(false)}
-                        >
-                          Create Account
-                        </Link>
-                      </>
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-            
             {/* Mobile menu button */}
             <div className="md:hidden">
               <button
@@ -410,59 +294,13 @@ const Navbar = () => {
               >
                 Contact
               </Link>
-              
-              <div className="pt-4 mt-4 border-t border-gray-700">
-                <div className="px-4 py-2 text-sm text-gray-300 uppercase tracking-wider">Account</div>
-                <div className="mt-2 space-y-2">
-                  {token ? (
-                    <>
-                      <div className="px-4 py-2 text-sm text-gray-300 bg-white/5 rounded-lg">
-                        Hello, {user?.name || 'User'}
-                      </div>
-                      <Link 
-                        to="/profile" 
-                        className="block py-3 px-4 rounded-lg hover:bg-white/10 transition-colors"
-                        onClick={() => setVisible(false)}
-                      >
-                        My Profile
-                      </Link>
-                      <Link 
-                        to="/wishlist" 
-                        className="block py-3 px-4 rounded-lg hover:bg-white/10 transition-colors"
-                        onClick={() => setVisible(false)}
-                      >
-                        Wishlist
-                      </Link>
-                      <button 
-                        className="block w-full text-left py-3 px-4 rounded-lg hover:bg-white/10 transition-colors"
-                        onClick={() => {
-                          logout();
-                          setVisible(false);
-                        }}
-                      >
-                        Sign Out
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <Link 
-                        to="/login" 
-                        className="block py-3 px-4 rounded-lg hover:bg-white/10 transition-colors"
-                        onClick={() => setVisible(false)}
-                      >
-                        Sign In
-                      </Link>
-                      <Link 
-                        to="/register" 
-                        className="block py-3 px-4 rounded-lg hover:bg-white/10 transition-colors"
-                        onClick={() => setVisible(false)}
-                      >
-                        Create Account
-                      </Link>
-                    </>
-                  )}
-                </div>
-              </div>
+              <Link 
+                to="/wishlist" 
+                className="block py-3 px-4 rounded-lg hover:bg-white/10 transition-colors"
+                onClick={() => setVisible(false)}
+              >
+                Wishlist
+              </Link>
             </div>
           </motion.div>
         )}
