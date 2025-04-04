@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { FaGem, FaRing, FaNotesMedical, FaFileInvoiceDollar } from "react-icons/fa";
-import { sendWishlistEmail } from "../../api/wishlistApi";
+import { submitQuoteRequest } from "../services/formService";
 import { toast } from "react-toastify";
+import { Link } from "react-router-dom";
 
 const Quote = () => {
   const [formData, setFormData] = useState({
@@ -11,11 +12,38 @@ const Quote = () => {
     phone: "",
     jewelryType: "",
     budget: "",
-    description: "",
-    attachments: null,
+    description: ""
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  const validateForm = () => {
+    const newErrors = {};
+    
+    if (!formData.name.trim()) {
+      newErrors.name = "Name is required";
+    }
+    
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "Please enter a valid email address";
+    }
+    
+    if (!formData.jewelryType) {
+      newErrors.jewelryType = "Please select a jewelry type";
+    }
+    
+    if (!formData.description.trim()) {
+      newErrors.description = "Description is required";
+    } else if (formData.description.trim().length < 10) {
+      newErrors.description = "Description must be at least 10 characters";
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -23,37 +51,42 @@ const Quote = () => {
       ...prev,
       [name]: value,
     }));
-  };
-
-  const handleFileChange = (e) => {
-    setFormData((prev) => ({
-      ...prev,
-      attachments: e.target.files,
-    }));
+    
+    // Clear error for this field when user types
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: undefined
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      toast.error("Please fix the errors in the form");
+      return;
+    }
+    
     setIsSubmitting(true);
     
     try {
-      await sendWishlistEmail(formData);
+      await submitQuoteRequest(formData);
       setIsSubmitting(false);
       setSubmitSuccess(true);
-      toast.success("Request submitted successfully!");
+      toast.success("Quote request submitted successfully!");
       setFormData({
         name: "",
         email: "",
         phone: "",
         jewelryType: "",
         budget: "",
-        description: "",
-        attachments: null,
+        description: ""
       });
     } catch (error) {
-      console.error("Failed to send request:", error);
-      toast.error("Failed to submit request");
       setIsSubmitting(false);
+      toast.error(error.response?.data?.message || "Failed to submit request. Please try again.");
     }
   };
 
@@ -206,9 +239,10 @@ const Quote = () => {
                           name="name"
                           value={formData.name}
                           onChange={handleChange}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                          className={`w-full px-4 py-2 border ${errors.name ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent`}
                           required
                         />
+                        {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
                       </div>
                       
                       <div>
@@ -221,9 +255,10 @@ const Quote = () => {
                           name="email"
                           value={formData.email}
                           onChange={handleChange}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                          className={`w-full px-4 py-2 border ${errors.email ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent`}
                           required
                         />
+                        {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
                       </div>
                       
                       <div>
@@ -249,7 +284,7 @@ const Quote = () => {
                           name="jewelryType"
                           value={formData.jewelryType}
                           onChange={handleChange}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                          className={`w-full px-4 py-2 border ${errors.jewelryType ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent`}
                           required
                         >
                           <option value="">Select Type</option>
@@ -260,6 +295,7 @@ const Quote = () => {
                           <option value="pendant">Pendant</option>
                           <option value="other">Other</option>
                         </select>
+                        {errors.jewelryType && <p className="mt-1 text-sm text-red-600">{errors.jewelryType}</p>}
                       </div>
                     </div>
                     
@@ -283,7 +319,7 @@ const Quote = () => {
                       </select>
                     </div>
                     
-                    <div className="mb-6">
+                    <div className="mb-8">
                       <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
                         Description of Your Request *
                       </label>
@@ -293,27 +329,11 @@ const Quote = () => {
                         value={formData.description}
                         onChange={handleChange}
                         rows="5"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                        className={`w-full px-4 py-2 border ${errors.description ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent`}
                         placeholder="Please describe your vision, including materials, gemstones, design elements, and any special requirements."
                         required
                       ></textarea>
-                    </div>
-                    
-                    <div className="mb-8">
-                      <label htmlFor="attachments" className="block text-sm font-medium text-gray-700 mb-1">
-                        Attachments (Optional)
-                      </label>
-                      <input
-                        type="file"
-                        id="attachments"
-                        name="attachments"
-                        onChange={handleFileChange}
-                        multiple
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                      />
-                      <p className="mt-1 text-xs text-gray-500">
-                        You can upload images, sketches, or inspiration photos (Max 5MB each)
-                      </p>
+                      {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description}</p>}
                     </div>
                     
                     <button
@@ -323,7 +343,15 @@ const Quote = () => {
                         isSubmitting ? "opacity-70 cursor-not-allowed" : ""
                       }`}
                     >
-                      {isSubmitting ? "Submitting..." : "Submit Request"}
+                      {isSubmitting ? (
+                        <span className="flex items-center justify-center">
+                          <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Submitting...
+                        </span>
+                      ) : "Submit Request"}
                     </button>
                   </form>
                 )}
@@ -402,16 +430,15 @@ const Quote = () => {
             <p className="text-xl max-w-3xl mx-auto mb-8">
               From initial concept to final creation, we'll guide you through every step of the custom jewelry process.
             </p>
-            <a 
-              href="/products" 
+            <Link 
+              to="/products" 
               className="inline-flex items-center justify-center px-6 py-3 border border-white rounded-md shadow-sm text-base font-medium text-white hover:bg-white hover:text-gray-900 transition-colors"
             >
               Explore Our Collection
-            </a>
+            </Link>
           </motion.div>
         </div>
       </div>
-
     </div>
   );
 };

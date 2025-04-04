@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { FaMapMarkerAlt, FaPhone, FaEnvelope, FaClock, FaGem, FaRing } from "react-icons/fa";
 import NewsletterBox from "../components/NewsletterBox";
+import { submitContactForm } from "../services/formService";
+import { toast } from "react-toastify";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -12,7 +14,34 @@ const Contact = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
-  const [submitError, setSubmitError] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  const validateForm = () => {
+    const newErrors = {};
+    
+    if (!formData.name.trim()) {
+      newErrors.name = "Name is required";
+    }
+    
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "Please enter a valid email address";
+    }
+    
+    if (!formData.subject.trim()) {
+      newErrors.subject = "Subject is required";
+    }
+    
+    if (!formData.message.trim()) {
+      newErrors.message = "Message is required";
+    } else if (formData.message.trim().length < 10) {
+      newErrors.message = "Message must be at least 10 characters";
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -20,23 +49,41 @@ const Contact = () => {
       ...prev,
       [name]: value,
     }));
+    
+    // Clear error for this field when user types
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: undefined
+      }));
+    }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      toast.error("Please fix the errors in the form");
+      return;
+    }
+    
     setIsSubmitting(true);
     
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      await submitContactForm(formData);
       setIsSubmitting(false);
       setSubmitSuccess(true);
+      toast.success("Message sent successfully!");
       setFormData({
         name: "",
         email: "",
         subject: "",
         message: "",
       });
-    }, 1500);
+    } catch (error) {
+      setIsSubmitting(false);
+      toast.error(error.response?.data?.message || "Failed to send message. Please try again.");
+    }
   };
   
     return (
@@ -56,7 +103,7 @@ const Contact = () => {
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-black/50"></div>
         </div>
-        
+
         {/* Content */}
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
           <motion.div
@@ -101,14 +148,14 @@ const Contact = () => {
               <div className="text-center p-6 border border-gray-200 rounded-lg">
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full mb-4">
                   <FaPhone className="h-6 w-6 text-gray-900" />
-                </div>
+          </div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">Phone</h3>
                 <p className="text-gray-600">
                   +1 (212) 555-7890<br />
                   +1 (800) DIAMOND
                 </p>
         </div>
-
+        
               <div className="text-center p-6 border border-gray-200 rounded-lg">
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full mb-4">
                   <FaEnvelope className="h-6 w-6 text-gray-900" />
@@ -188,9 +235,10 @@ const Contact = () => {
                         name="name"
                         value={formData.name}
                         onChange={handleChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                        className={`w-full px-4 py-2 border ${errors.name ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent`}
                         required
                       />
+                      {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
                     </div>
                     
                     <div className="mb-6">
@@ -203,9 +251,10 @@ const Contact = () => {
                         name="email"
                         value={formData.email}
                         onChange={handleChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                        className={`w-full px-4 py-2 border ${errors.email ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent`}
                         required
                       />
+                      {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
                     </div>
                     
                     <div className="mb-6">
@@ -218,9 +267,10 @@ const Contact = () => {
                         name="subject"
                         value={formData.subject}
                         onChange={handleChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                        className={`w-full px-4 py-2 border ${errors.subject ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent`}
                         required
                       />
+                      {errors.subject && <p className="mt-1 text-sm text-red-600">{errors.subject}</p>}
                     </div>
                     
                     <div className="mb-6">
@@ -233,9 +283,10 @@ const Contact = () => {
                         value={formData.message}
                         onChange={handleChange}
                         rows="5"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                        className={`w-full px-4 py-2 border ${errors.message ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent`}
                         required
                       ></textarea>
+                      {errors.message && <p className="mt-1 text-sm text-red-600">{errors.message}</p>}
                     </div>
                     
                     <button
@@ -245,7 +296,15 @@ const Contact = () => {
                         isSubmitting ? "opacity-70 cursor-not-allowed" : ""
                       }`}
                     >
-                      {isSubmitting ? "Sending..." : "Send Message"}
+                      {isSubmitting ? (
+                        <span className="flex items-center justify-center">
+                          <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Sending...
+                        </span>
+                      ) : "Send Message"}
                     </button>
                   </form>
                 )}
