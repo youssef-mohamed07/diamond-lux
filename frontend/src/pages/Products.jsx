@@ -7,6 +7,7 @@ import { useCategories } from "../../hooks/useCategories";
 import NewsletterBox from "../components/NewsletterBox";
 import { motion } from "framer-motion";
 import { FaFilter, FaSort, FaChevronDown, FaTimes } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 const Products = () => {
   const { products, search, showSearch } = useContext(ShopContext);
@@ -386,9 +387,9 @@ const Products = () => {
             Each piece in our collection is meticulously crafted by master artisans, 
             ensuring exceptional quality and timeless elegance.
           </p>
-          <button className="px-8 py-3 border-2 border-white rounded-full hover:bg-white hover:text-gray-900 transition-colors">
+          <Link to="/about" className="inline-block px-8 py-3 border-2 border-white rounded-full hover:bg-white hover:text-gray-900 transition-colors">
             Learn About Our Process
-          </button>
+          </Link>
         </div>
       </div>
       
