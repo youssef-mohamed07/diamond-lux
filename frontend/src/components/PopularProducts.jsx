@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { ShopContext } from "../context/ShopContext";
 import Title from "./Title";
 import ProductItem from "./ProductItem";
+import GalleryItem from "./Home/GalleryItem";
 
 const PopularProducts = () => {
   const { products } = useContext(ShopContext);
@@ -24,13 +25,7 @@ const PopularProducts = () => {
 
       <div className=" mx-auto grid grid-cols-2 align-center sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 gap-y-6">
         {popularProducts.map((item, index) => (
-          <ProductItem
-            key={index}
-            _id={item._id}
-            title={item.title}
-            price={item.price}
-            imageCover={item.imageCover}
-          />
+          <GalleryItem index={index} item={popularProducts[index]} />
         ))}
       </div>
     </div>

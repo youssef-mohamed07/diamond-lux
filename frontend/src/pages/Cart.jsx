@@ -2,24 +2,32 @@ import React, { useContext, useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ShopContext } from "../context/ShopContext";
 import { motion } from "framer-motion";
-import { FaTrash, FaMinus, FaPlus, FaArrowLeft, FaArrowRight, FaShoppingCart, FaLock } from "react-icons/fa";
+import {
+  FaTrash,
+  FaMinus,
+  FaPlus,
+  FaArrowLeft,
+  FaArrowRight,
+  FaShoppingCart,
+  FaLock,
+} from "react-icons/fa";
 import { toast } from "react-toastify";
 import NewsletterBox from "../components/NewsletterBox";
 
 const Cart = () => {
-  const { 
-    products, 
-    wishlist, 
-    token, 
-    currency, 
+  const {
+    products,
+    wishlist,
+    token,
+    currency,
     addItemToWishlist,
     removeItemFromWishlist,
     updateWishlistItemQuantity,
     guestWishlist,
     updateGuestWishlistItemQuantity,
-    removeGuestWishlistItem
+    removeGuestWishlistItem,
   } = useContext(ShopContext);
-  
+
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [subtotal, setSubtotal] = useState(0);
@@ -30,39 +38,43 @@ const Cart = () => {
     if (products.length > 0) {
       let items = [];
       let total = 0;
-      
+
       if (token && wishlist) {
         // For logged in users
-        items = wishlist.map(item => {
-          const product = products.find(p => p._id === item.productId);
-          if (product) {
-            const itemTotal = product.price * item.quantity;
-            total += itemTotal;
-            return {
-              ...item,
-              product,
-              total: itemTotal
-            };
-          }
-          return null;
-        }).filter(Boolean);
+        items = wishlist
+          .map((item) => {
+            const product = products.find((p) => p._id === item.productId);
+            if (product) {
+              const itemTotal = product.price * item.quantity;
+              total += itemTotal;
+              return {
+                ...item,
+                product,
+                total: itemTotal,
+              };
+            }
+            return null;
+          })
+          .filter(Boolean);
       } else {
         // For guest users
-        items = guestWishlist.map(item => {
-          const product = products.find(p => p._id === item.productId);
-          if (product) {
-            const itemTotal = product.price * item.quantity;
-            total += itemTotal;
-            return {
-              ...item,
-              product,
-              total: itemTotal
-            };
-          }
-          return null;
-        }).filter(Boolean);
+        items = guestWishlist
+          .map((item) => {
+            const product = products.find((p) => p._id === item.productId);
+            if (product) {
+              const itemTotal = product.price * item.quantity;
+              total += itemTotal;
+              return {
+                ...item,
+                product,
+                total: itemTotal,
+              };
+            }
+            return null;
+          })
+          .filter(Boolean);
       }
-      
+
       setCartItems(items);
       setSubtotal(total);
       setLoading(false);
@@ -71,7 +83,7 @@ const Cart = () => {
 
   const handleQuantityChange = async (itemId, productId, newQuantity) => {
     if (newQuantity < 1) return;
-    
+
     try {
       if (token) {
         // For logged in users
@@ -108,8 +120,8 @@ const Cart = () => {
       toast.error("Your cart is empty");
       return;
     }
-    
-    navigate('/checkout');
+
+    navigate("/checkout");
   };
 
   if (loading) {
@@ -131,7 +143,9 @@ const Cart = () => {
             transition={{ duration: 0.5 }}
             className="text-center"
           >
-            <h1 className="text-4xl font-extrabold sm:text-5xl lg:text-6xl">Your Shopping Cart</h1>
+            <h1 className="text-4xl font-extrabold sm:text-5xl lg:text-6xl">
+              Your Shopping Cart
+            </h1>
             <p className="mt-6 text-xl max-w-3xl mx-auto">
               Review your selections and proceed to checkout when you're ready.
             </p>
@@ -151,7 +165,7 @@ const Cart = () => {
         </div>
 
         {cartItems.length === 0 ? (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
@@ -160,7 +174,9 @@ const Cart = () => {
             <div className="mx-auto w-24 h-24 mb-6 text-gray-300">
               <FaShoppingCart className="w-full h-full" />
             </div>
-            <h3 className="text-2xl font-medium text-gray-900 mb-4">Your cart is empty</h3>
+            <h3 className="text-2xl font-medium text-gray-900 mb-4">
+              Your cart is empty
+            </h3>
             <p className="text-gray-600 mb-8 max-w-md mx-auto">
               Explore our collection and add your favorite pieces to your cart.
             </p>
@@ -182,11 +198,13 @@ const Cart = () => {
               <div className="lg:w-2/3">
                 <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
                   <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-                    <h2 className="text-lg font-medium text-gray-900">Cart Items ({cartItems.length})</h2>
+                    <h2 className="text-lg font-medium text-gray-900">
+                      Cart Items ({cartItems.length})
+                    </h2>
                   </div>
                   <ul className="divide-y divide-gray-200">
                     {cartItems.map((item, index) => (
-                      <motion.li 
+                      <motion.li
                         key={item.productId}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -196,7 +214,12 @@ const Cart = () => {
                         <div className="flex flex-col sm:flex-row">
                           <div className="sm:w-24 sm:h-24 flex-shrink-0 overflow-hidden rounded-md mb-4 sm:mb-0">
                             <img
-                              src={item.product.images && item.product.images.length > 0 ? item.product.images[0] : item.product.imageCover}
+                              src={
+                                item.product.images &&
+                                item.product.images.length > 0
+                                  ? item.product.images[0]
+                                  : item.product.imageCover
+                              }
                               alt={item.product.title}
                               className="w-full h-full object-cover object-center"
                             />
@@ -206,35 +229,57 @@ const Cart = () => {
                             <div className="flex justify-between">
                               <div>
                                 <h3 className="text-base font-medium text-gray-900">
-                                  <Link to={`/product/${item.productId}`} className="hover:underline">
+                                  <Link
+                                    to={`/product/${item.productId}`}
+                                    className="hover:underline"
+                                  >
                                     {item.product.title}
                                   </Link>
                                 </h3>
-                                <p className="mt-1 text-sm text-gray-500">{item.product.category}</p>
+                                <p className="mt-1 text-sm text-gray-500">
+                                  {item.product.category}
+                                </p>
                               </div>
                               <p className="text-base font-medium text-gray-900">
-                                {currency}{item.total.toFixed(2)}
+                                {currency}
+                                {item.total.toFixed(2)}
                               </p>
                             </div>
 
                             <div className="flex items-center justify-between mt-4">
                               <div className="flex items-center border border-gray-300 rounded-md">
                                 <button
-                                  onClick={() => handleQuantityChange(item._id, item.productId, item.quantity - 1)}
+                                  onClick={() =>
+                                    handleQuantityChange(
+                                      item._id,
+                                      item.productId,
+                                      item.quantity - 1
+                                    )
+                                  }
                                   className="px-3 py-1 text-gray-600 hover:text-gray-900"
                                 >
                                   -
                                 </button>
-                                <span className="w-8 text-center">{item.quantity}</span>
+                                <span className="w-8 text-center">
+                                  {item.quantity}
+                                </span>
                                 <button
-                                  onClick={() => handleQuantityChange(item._id, item.productId, item.quantity + 1)}
+                                  onClick={() =>
+                                    handleQuantityChange(
+                                      item._id,
+                                      item.productId,
+                                      item.quantity + 1
+                                    )
+                                  }
                                   className="px-3 py-1 text-gray-600 hover:text-gray-900"
                                 >
                                   +
                                 </button>
                               </div>
                               <button
-                                onClick={() => handleRemoveItem(item._id, item.productId)}
+                                onClick={() =>
+                                  handleRemoveItem(item._id, item.productId)
+                                }
                                 className="text-gray-500 hover:text-gray-700"
                               >
                                 <FaTrash className="h-4 w-4" />
@@ -252,12 +297,17 @@ const Cart = () => {
               <div className="lg:w-1/3">
                 <div className="bg-white border border-gray-200 rounded-lg overflow-hidden sticky top-24">
                   <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-                    <h2 className="text-lg font-medium text-gray-900">Order Summary</h2>
+                    <h2 className="text-lg font-medium text-gray-900">
+                      Order Summary
+                    </h2>
                   </div>
                   <div className="p-6">
                     <div className="flex justify-between mb-4">
                       <p className="text-gray-600">Subtotal</p>
-                      <p className="text-gray-900 font-medium">{currency}{subtotal.toFixed(2)}</p>
+                      <p className="text-gray-900 font-medium">
+                        {currency}
+                        {subtotal.toFixed(2)}
+                      </p>
                     </div>
                     <div className="flex justify-between mb-4">
                       <p className="text-gray-600">Shipping</p>
@@ -265,13 +315,19 @@ const Cart = () => {
                     </div>
                     <div className="flex justify-between mb-4">
                       <p className="text-gray-600">Tax</p>
-                      <p className="text-gray-900 font-medium">{currency}{(subtotal * 0.07).toFixed(2)}</p>
+                      <p className="text-gray-900 font-medium">
+                        {currency}
+                        {(subtotal * 0.07).toFixed(2)}
+                      </p>
                     </div>
                     <div className="border-t border-gray-200 pt-4 mt-4">
                       <div className="flex justify-between mb-6">
-                        <p className="text-lg font-medium text-gray-900">Total</p>
+                        <p className="text-lg font-medium text-gray-900">
+                          Total
+                        </p>
                         <p className="text-lg font-bold text-gray-900">
-                          {currency}{(subtotal + (subtotal * 0.07)).toFixed(2)}
+                          {currency}
+                          {(subtotal + subtotal * 0.07).toFixed(2)}
                         </p>
                       </div>
                       <button
@@ -292,7 +348,7 @@ const Cart = () => {
           </motion.div>
         )}
       </div>
-      
+
       <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white py-16 mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div
@@ -300,11 +356,14 @@ const Cart = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
           >
-            <h2 className="text-3xl font-bold mb-6">Complimentary Gift Wrapping</h2>
+            <h2 className="text-3xl font-bold mb-6">
+              Complimentary Gift Wrapping
+            </h2>
             <p className="text-xl max-w-2xl mx-auto mb-8">
-              Every DiamondLux purchase comes with elegant gift packaging, perfect for presenting your exquisite jewelry.
+              Every Diamond Cartel purchase comes with elegant gift packaging,
+              perfect for presenting your exquisite jewelry.
             </p>
-            <Link 
+            <Link
               to="/about"
               className="inline-flex items-center justify-center px-8 py-3 border-2 border-white rounded-full hover:bg-white hover:text-gray-900 transition-colors"
             >
@@ -313,7 +372,7 @@ const Cart = () => {
           </motion.div>
         </div>
       </div>
-      
+
       <NewsletterBox />
     </div>
   );

@@ -1,6 +1,13 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { FaMapMarkerAlt, FaPhone, FaEnvelope, FaClock, FaGem, FaRing } from "react-icons/fa";
+import {
+  FaMapMarkerAlt,
+  FaPhone,
+  FaEnvelope,
+  FaClock,
+  FaGem,
+  FaRing,
+} from "react-icons/fa";
 import NewsletterBox from "../components/NewsletterBox";
 import { submitContactForm } from "../services/formService";
 import { toast } from "react-toastify";
@@ -18,27 +25,27 @@ const Contact = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.name.trim()) {
       newErrors.name = "Name is required";
     }
-    
+
     if (!formData.email.trim()) {
       newErrors.email = "Email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = "Please enter a valid email address";
     }
-    
+
     if (!formData.subject.trim()) {
       newErrors.subject = "Subject is required";
     }
-    
+
     if (!formData.message.trim()) {
       newErrors.message = "Message is required";
     } else if (formData.message.trim().length < 10) {
       newErrors.message = "Message must be at least 10 characters";
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -49,26 +56,26 @@ const Contact = () => {
       ...prev,
       [name]: value,
     }));
-    
+
     // Clear error for this field when user types
     if (errors[name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: undefined
+        [name]: undefined,
       }));
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       toast.error("Please fix the errors in the form");
       return;
     }
-    
+
     setIsSubmitting(true);
-    
+
     try {
       await submitContactForm(formData);
       setIsSubmitting(false);
@@ -82,23 +89,27 @@ const Contact = () => {
       });
     } catch (error) {
       setIsSubmitting(false);
-      toast.error(error.response?.data?.message || "Failed to send message. Please try again.");
+      toast.error(
+        error.response?.data?.message ||
+          "Failed to send message. Please try again."
+      );
     }
   };
-  
-    return (
+
+  return (
     <div className="bg-white">
       {/* Hero Section with Background Image */}
       <div className="relative bg-black text-white">
         {/* Background Image */}
         <div className="absolute inset-0 z-0 overflow-hidden">
-          <img 
-            src="/images/contact-hero-background.jpg" 
-            alt="Luxury jewelry showroom" 
+          <img
+            src="/images/contact-hero-background.jpg"
+            alt="Luxury jewelry showroom"
             className="w-full h-full object-cover opacity-50"
             onError={(e) => {
               e.target.onerror = null;
-              e.target.src = "https://images.unsplash.com/photo-1600880292089-90a7e086ee0c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80";
+              e.target.src =
+                "https://images.unsplash.com/photo-1600880292089-90a7e086ee0c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80";
             }}
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-black/50"></div>
@@ -114,11 +125,16 @@ const Contact = () => {
           >
             <div className="flex items-center gap-3 mb-4">
               <div className="h-[1px] w-12 bg-white/70"></div>
-              <span className="uppercase tracking-[0.2em] text-sm font-light">Get In Touch</span>
+              <span className="uppercase tracking-[0.2em] text-sm font-light">
+                Get In Touch
+              </span>
             </div>
-            <h1 className="text-4xl font-extrabold sm:text-5xl lg:text-6xl mb-6">Contact Us</h1>
+            <h1 className="text-4xl font-extrabold sm:text-5xl lg:text-6xl mb-6">
+              Contact Us
+            </h1>
             <p className="text-xl text-gray-200 max-w-3xl">
-              We'd love to hear from you. Reach out to us with any questions about our luxury jewelry collection.
+              We'd love to hear from you. Reach out to us with any questions
+              about our luxury jewelry collection.
             </p>
           </motion.div>
         </div>
@@ -137,44 +153,58 @@ const Contact = () => {
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full mb-4">
                   <FaMapMarkerAlt className="h-6 w-6 text-gray-900" />
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Our Location</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  Our Location
+                </h3>
                 <p className="text-gray-600">
-                  123 Luxury Lane<br />
-                  New York, NY 10001<br />
+                  123 Luxury Lane
+                  <br />
+                  New York, NY 10001
+                  <br />
                   United States
                 </p>
               </div>
-              
+
               <div className="text-center p-6 border border-gray-200 rounded-lg">
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full mb-4">
                   <FaPhone className="h-6 w-6 text-gray-900" />
-          </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Phone</h3>
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  Phone
+                </h3>
                 <p className="text-gray-600">
-                  +1 (212) 555-7890<br />
+                  +1 (212) 555-7890
+                  <br />
                   +1 (800) DIAMOND
                 </p>
-        </div>
-        
+              </div>
+
               <div className="text-center p-6 border border-gray-200 rounded-lg">
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full mb-4">
                   <FaEnvelope className="h-6 w-6 text-gray-900" />
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Email</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  Email
+                </h3>
                 <p className="text-gray-600">
-                  info@diamondlux.com<br />
-                  support@diamondlux.com
+                  info@Diamond Cartel.com
+                  <br />
+                  support@Diamond Cartel.com
                 </p>
               </div>
-              
+
               <div className="text-center p-6 border border-gray-200 rounded-lg">
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full mb-4">
                   <FaClock className="h-6 w-6 text-gray-900" />
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Hours</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  Hours
+                </h3>
                 <p className="text-gray-600">
-                  Monday - Friday: 9am - 7pm<br />
-                  Saturday: 10am - 6pm<br />
+                  Monday - Friday: 9am - 7pm
+                  <br />
+                  Saturday: 10am - 6pm
+                  <br />
                   Sunday: Closed
                 </p>
               </div>
@@ -195,10 +225,12 @@ const Contact = () => {
               <h2 className="text-3xl font-bold text-gray-900">Get In Touch</h2>
               <div className="w-16 h-1 bg-gradient-to-r from-gray-900 to-gray-700 mx-auto mt-4"></div>
               <p className="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">
-                Have a question about our diamond collection or need assistance with a custom piece? Fill out the form below and our jewelry experts will get back to you as soon as possible.
+                Have a question about our diamond collection or need assistance
+                with a custom piece? Fill out the form below and our jewelry
+                experts will get back to you as soon as possible.
               </p>
             </div>
-            
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
               <div className="bg-white p-8 rounded-lg shadow-sm">
                 {submitSuccess ? (
@@ -208,13 +240,26 @@ const Contact = () => {
                     className="text-center py-12"
                   >
                     <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-6">
-                      <svg className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      <svg
+                        className="h-8 w-8 text-green-600"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 13l4 4L19 7"
+                        />
                       </svg>
                     </div>
-                    <h3 className="text-2xl font-semibold text-gray-900 mb-2">Thank You!</h3>
+                    <h3 className="text-2xl font-semibold text-gray-900 mb-2">
+                      Thank You!
+                    </h3>
                     <p className="text-gray-600 mb-6">
-                      Your message has been sent successfully. We'll get back to you shortly.
+                      Your message has been sent successfully. We'll get back to
+                      you shortly.
                     </p>
                     <button
                       onClick={() => setSubmitSuccess(false)}
@@ -226,7 +271,10 @@ const Contact = () => {
                 ) : (
                   <form onSubmit={handleSubmit}>
                     <div className="mb-6">
-                      <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                      <label
+                        htmlFor="name"
+                        className="block text-sm font-medium text-gray-700 mb-1"
+                      >
                         Your Name *
                       </label>
                       <input
@@ -235,14 +283,23 @@ const Contact = () => {
                         name="name"
                         value={formData.name}
                         onChange={handleChange}
-                        className={`w-full px-4 py-2 border ${errors.name ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent`}
+                        className={`w-full px-4 py-2 border ${
+                          errors.name ? "border-red-500" : "border-gray-300"
+                        } rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent`}
                         required
                       />
-                      {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
+                      {errors.name && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {errors.name}
+                        </p>
+                      )}
                     </div>
-                    
+
                     <div className="mb-6">
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                      <label
+                        htmlFor="email"
+                        className="block text-sm font-medium text-gray-700 mb-1"
+                      >
                         Your Email *
                       </label>
                       <input
@@ -251,14 +308,23 @@ const Contact = () => {
                         name="email"
                         value={formData.email}
                         onChange={handleChange}
-                        className={`w-full px-4 py-2 border ${errors.email ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent`}
+                        className={`w-full px-4 py-2 border ${
+                          errors.email ? "border-red-500" : "border-gray-300"
+                        } rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent`}
                         required
                       />
-                      {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
+                      {errors.email && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {errors.email}
+                        </p>
+                      )}
                     </div>
-                    
+
                     <div className="mb-6">
-                      <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1">
+                      <label
+                        htmlFor="subject"
+                        className="block text-sm font-medium text-gray-700 mb-1"
+                      >
                         Subject *
                       </label>
                       <input
@@ -267,14 +333,23 @@ const Contact = () => {
                         name="subject"
                         value={formData.subject}
                         onChange={handleChange}
-                        className={`w-full px-4 py-2 border ${errors.subject ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent`}
+                        className={`w-full px-4 py-2 border ${
+                          errors.subject ? "border-red-500" : "border-gray-300"
+                        } rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent`}
                         required
                       />
-                      {errors.subject && <p className="mt-1 text-sm text-red-600">{errors.subject}</p>}
+                      {errors.subject && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {errors.subject}
+                        </p>
+                      )}
                     </div>
-                    
+
                     <div className="mb-6">
-                      <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
+                      <label
+                        htmlFor="message"
+                        className="block text-sm font-medium text-gray-700 mb-1"
+                      >
                         Your Message *
                       </label>
                       <textarea
@@ -283,12 +358,18 @@ const Contact = () => {
                         value={formData.message}
                         onChange={handleChange}
                         rows="5"
-                        className={`w-full px-4 py-2 border ${errors.message ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent`}
+                        className={`w-full px-4 py-2 border ${
+                          errors.message ? "border-red-500" : "border-gray-300"
+                        } rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent`}
                         required
                       ></textarea>
-                      {errors.message && <p className="mt-1 text-sm text-red-600">{errors.message}</p>}
+                      {errors.message && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {errors.message}
+                        </p>
+                      )}
                     </div>
-                    
+
                     <button
                       type="submit"
                       disabled={isSubmitting}
@@ -298,21 +379,41 @@ const Contact = () => {
                     >
                       {isSubmitting ? (
                         <span className="flex items-center justify-center">
-                          <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          <svg
+                            className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            ></path>
                           </svg>
                           Sending...
                         </span>
-                      ) : "Send Message"}
+                      ) : (
+                        "Send Message"
+                      )}
                     </button>
                   </form>
                 )}
               </div>
-              
+
               <div className="bg-white p-8 rounded-lg shadow-sm">
-                <h3 className="text-xl font-semibold text-gray-900 mb-6">Our Services</h3>
-                
+                <h3 className="text-xl font-semibold text-gray-900 mb-6">
+                  Our Services
+                </h3>
+
                 <div className="space-y-6">
                   <div className="flex items-start">
                     <div className="flex-shrink-0">
@@ -321,13 +422,16 @@ const Contact = () => {
                       </div>
                     </div>
                     <div className="ml-4">
-                      <h4 className="text-lg font-medium text-gray-900">Custom Jewelry Design</h4>
+                      <h4 className="text-lg font-medium text-gray-900">
+                        Custom Jewelry Design
+                      </h4>
                       <p className="mt-2 text-gray-600">
-                        Work with our expert designers to create a unique piece that perfectly captures your vision and style.
+                        Work with our expert designers to create a unique piece
+                        that perfectly captures your vision and style.
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-start">
                     <div className="flex-shrink-0">
                       <div className="flex items-center justify-center h-12 w-12 rounded-md bg-gray-100 text-gray-900">
@@ -335,41 +439,71 @@ const Contact = () => {
                       </div>
                     </div>
                     <div className="ml-4">
-                      <h4 className="text-lg font-medium text-gray-900">Engagement & Wedding</h4>
+                      <h4 className="text-lg font-medium text-gray-900">
+                        Engagement & Wedding
+                      </h4>
                       <p className="mt-2 text-gray-600">
-                        Find the perfect symbol of your love with our exquisite collection of engagement rings and wedding bands.
+                        Find the perfect symbol of your love with our exquisite
+                        collection of engagement rings and wedding bands.
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-start">
                     <div className="flex-shrink-0">
                       <div className="flex items-center justify-center h-12 w-12 rounded-md bg-gray-100 text-gray-900">
-                        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
+                        <svg
+                          className="h-6 w-6"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"
+                          />
                         </svg>
                       </div>
                     </div>
                     <div className="ml-4">
-                      <h4 className="text-lg font-medium text-gray-900">Jewelry Repair & Restoration</h4>
+                      <h4 className="text-lg font-medium text-gray-900">
+                        Jewelry Repair & Restoration
+                      </h4>
                       <p className="mt-2 text-gray-600">
-                        Restore your treasured pieces to their original beauty with our expert repair and restoration services.
+                        Restore your treasured pieces to their original beauty
+                        with our expert repair and restoration services.
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-start">
                     <div className="flex-shrink-0">
                       <div className="flex items-center justify-center h-12 w-12 rounded-md bg-gray-100 text-gray-900">
-                        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        <svg
+                          className="h-6 w-6"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                          />
                         </svg>
                       </div>
                     </div>
                     <div className="ml-4">
-                      <h4 className="text-lg font-medium text-gray-900">Appraisal Services</h4>
+                      <h4 className="text-lg font-medium text-gray-900">
+                        Appraisal Services
+                      </h4>
                       <p className="mt-2 text-gray-600">
-                        Get professional appraisals for insurance, estate planning, or resale purposes from our certified gemologists.
+                        Get professional appraisals for insurance, estate
+                        planning, or resale purposes from our certified
+                        gemologists.
                       </p>
                     </div>
                   </div>
@@ -390,10 +524,11 @@ const Contact = () => {
           >
             <h2 className="text-3xl font-bold mb-6">Visit Our Showroom</h2>
             <p className="text-xl max-w-3xl mx-auto mb-8">
-              Experience our exquisite collection in person. Our jewelry experts are ready to assist you in finding the perfect piece.
+              Experience our exquisite collection in person. Our jewelry experts
+              are ready to assist you in finding the perfect piece.
             </p>
-            <a 
-              href="/request-quote" 
+            <a
+              href="/request-quote"
               className="inline-flex items-center justify-center px-6 py-3 border border-white rounded-md shadow-sm text-base font-medium text-white hover:bg-white hover:text-gray-900 transition-colors"
             >
               Request a Custom Quote

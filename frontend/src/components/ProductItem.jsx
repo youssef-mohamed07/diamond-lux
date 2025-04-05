@@ -4,7 +4,14 @@ import { ShopContext } from "../context/ShopContext";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 
-const ProductItem = ({ _id, imageCover, images, title, price, loading = false }) => {
+const ProductItem = ({
+  _id,
+  imageCover,
+  images,
+  title,
+  price,
+  loading = false,
+}) => {
   const { currency } = useContext(ShopContext);
 
   const productImage = imageCover || (images && images[0]);
@@ -24,44 +31,27 @@ const ProductItem = ({ _id, imageCover, images, title, price, loading = false })
   }
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="group"
-    >
+    <div className="text-gray-700">
       <Link
         onClick={() => scrollTo(0, 0)}
         to={`/product/${_id}`}
-        className="cursor-pointer block"
+        className="cursor-pointer"
       >
-        <div className="overflow-hidden rounded-lg bg-gradient-to-br from-gray-100 to-white shadow-md transition-all duration-300 group-hover:shadow-xl">
-          <div className="relative overflow-hidden">
-            <motion.img
-              whileHover={{ scale: 1.1 }}
-              transition={{ duration: 0.6 }}
-              className="w-[300px] h-[300px] object-scale-down p-4"
-              src={productImage}
-              alt={title}
-              draggable={false}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-gray-900/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          </div>
-          
-          <div className="p-4 border-t border-gray-100">
-            <p className="text-sm font-medium text-gray-800 truncate">{title}</p>
-            <div className="mt-2 flex justify-between items-center">
-              <p className="text-sm font-bold text-gray-900">
-                {currency}{price}
-              </p>
-              <span className="text-xs px-2 py-1 bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                View Details
-              </span>
-            </div>
-          </div>
+        <div className="overflow-hidden max-w-[500px] max-h-[500px]">
+          <img
+            className="w-full h-full object-cover"
+            src={productImage}
+            alt={title}
+            draggable={false}
+          />
         </div>
+        <p className="pt-3 pb-1 text-sm">{title}</p>
+        <p className="text-sm font-medium">
+          {currency}
+          {price}
+        </p>
       </Link>
-    </motion.div>
+    </div>
   );
 };
 

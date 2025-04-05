@@ -1,13 +1,13 @@
 import Hero from "../components/Hero";
 import NewsletterBox from "../components/NewsletterBox";
 import PopularProducts from "../components/PopularProducts";
-import HomeGallery from '../components/HomeGallery';
+import HomeGallery from "../components/HomeGallery";
 
 const Home = () => {
   return (
     <div>
       <Hero />
-      <HomeGallery/>
+      {/* <HomeGallery/> */}
       <PopularProducts />
       <NewsletterBox />
     </div>

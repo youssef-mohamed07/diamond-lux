@@ -68,7 +68,7 @@ const Products = () => {
       // Fetch categories logic here if not already handled in useCategories
     }
     applyFilter();
-    
+
     // Set loading to false when data is available
     if (products.length > 0) {
       setLoading(false);
@@ -87,7 +87,9 @@ const Products = () => {
           <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-black rounded-full animate-ping opacity-75"></div>
           <div className="absolute inset-2 bg-gradient-to-br from-gray-900 via-gray-800 to-black rounded-full animate-pulse"></div>
         </div>
-        <p className="text-lg mt-6 font-medium text-gray-800">Loading exquisite products...</p>
+        <p className="text-lg mt-6 font-medium text-gray-800">
+          Loading exquisite products...
+        </p>
       </div>
     );
   }
@@ -98,18 +100,19 @@ const Products = () => {
       <div className="relative bg-black text-white">
         {/* Background Image */}
         <div className="absolute inset-0 z-0 overflow-hidden">
-          <img 
-            src="/images/products-hero-background.jpg" 
-            alt="Luxury jewelry collection" 
+          <img
+            src="/images/products-hero-background.jpg"
+            alt="Luxury jewelry collection"
             className="w-full h-full object-cover opacity-50"
             onError={(e) => {
               e.target.onerror = null;
-              e.target.src = "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80";
+              e.target.src =
+                "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80";
             }}
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-black/50"></div>
         </div>
-        
+
         {/* Content */}
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
           <motion.div
@@ -120,11 +123,16 @@ const Products = () => {
           >
             <div className="flex items-center gap-3 mb-4">
               <div className="h-[1px] w-12 bg-white/70"></div>
-              <span className="uppercase tracking-[0.2em] text-sm font-light">Luxury Selection</span>
+              <span className="uppercase tracking-[0.2em] text-sm font-light">
+                Luxury Selection
+              </span>
             </div>
-            <h1 className="text-4xl font-extrabold sm:text-5xl lg:text-6xl mb-6">Our Collection</h1>
+            <h1 className="text-4xl font-extrabold sm:text-5xl lg:text-6xl mb-6">
+              Our Collection
+            </h1>
             <p className="text-xl text-gray-200 max-w-3xl">
-              Discover our exquisite selection of premium diamond jewelry, each piece crafted with exceptional artistry and precision.
+              Discover our exquisite selection of premium diamond jewelry, each
+              piece crafted with exceptional artistry and precision.
             </p>
           </motion.div>
         </div>
@@ -134,7 +142,7 @@ const Products = () => {
         <div className="max-w-[90%] mx-auto">
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Sidebar Filters */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5 }}
@@ -146,7 +154,7 @@ const Products = () => {
                     <FaFilter className="mr-2" /> Filters
                   </h2>
                   {category.length > 0 && (
-                    <button 
+                    <button
                       onClick={clearFilters}
                       className="text-sm text-gray-500 hover:text-gray-700 flex items-center"
                     >
@@ -154,7 +162,7 @@ const Products = () => {
                     </button>
                   )}
                 </div>
-                
+
                 <div className="mb-8">
                   <h3 className="font-medium text-gray-900 mb-4">Categories</h3>
                   <div className="space-y-3">
@@ -168,17 +176,22 @@ const Products = () => {
                             onChange={toggleCategory}
                             className="h-4 w-4 text-gray-900 focus:ring-gray-500 border-gray-300 rounded"
                           />
-                          <label htmlFor={`category-${category._id}`} className="ml-3 text-sm text-gray-700">
+                          <label
+                            htmlFor={`category-${category._id}`}
+                            className="ml-3 text-sm text-gray-700"
+                          >
                             {category.name}
                           </label>
                         </div>
                       ))
                     ) : (
-                      <p className="text-sm text-gray-500">No categories available</p>
+                      <p className="text-sm text-gray-500">
+                        No categories available
+                      </p>
                     )}
                   </div>
                 </div>
-                
+
                 <div>
                   <h3 className="font-medium text-gray-900 mb-4">Sort By</h3>
                   <div className="space-y-3">
@@ -191,7 +204,10 @@ const Products = () => {
                         onChange={() => setSortType("relevant")}
                         className="h-4 w-4 text-gray-900 focus:ring-gray-500 border-gray-300"
                       />
-                      <label htmlFor="sort-relevant" className="ml-3 text-sm text-gray-700">
+                      <label
+                        htmlFor="sort-relevant"
+                        className="ml-3 text-sm text-gray-700"
+                      >
                         Relevance
                       </label>
                     </div>
@@ -204,7 +220,10 @@ const Products = () => {
                         onChange={() => setSortType("low-high")}
                         className="h-4 w-4 text-gray-900 focus:ring-gray-500 border-gray-300"
                       />
-                      <label htmlFor="sort-low-high" className="ml-3 text-sm text-gray-700">
+                      <label
+                        htmlFor="sort-low-high"
+                        className="ml-3 text-sm text-gray-700"
+                      >
                         Price: Low to High
                       </label>
                     </div>
@@ -217,7 +236,10 @@ const Products = () => {
                         onChange={() => setSortType("high-low")}
                         className="h-4 w-4 text-gray-900 focus:ring-gray-500 border-gray-300"
                       />
-                      <label htmlFor="sort-high-low" className="ml-3 text-sm text-gray-700">
+                      <label
+                        htmlFor="sort-high-low"
+                        className="ml-3 text-sm text-gray-700"
+                      >
                         Price: High to Low
                       </label>
                     </div>
@@ -225,9 +247,9 @@ const Products = () => {
                 </div>
               </div>
             </motion.div>
-            
+
             {/* Products Grid */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.2 }}
@@ -236,45 +258,57 @@ const Products = () => {
               <div className="bg-white rounded-lg shadow-md p-6 mb-6">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
                   <h2 className="text-xl font-semibold text-gray-900 mb-2 sm:mb-0">
-                    {filterProducts.length} {filterProducts.length === 1 ? 'Product' : 'Products'}
+                    {filterProducts.length}{" "}
+                    {filterProducts.length === 1 ? "Product" : "Products"}
                   </h2>
-                  
+
                   {/* Mobile Filters Button */}
-                  <button 
+                  <button
                     className="flex items-center text-sm font-medium text-gray-700 lg:hidden"
                     onClick={() => setShowFilter(!showFilter)}
                   >
                     <FaFilter className="mr-2" />
-                    {showFilter ? 'Hide Filters' : 'Show Filters'}
+                    {showFilter ? "Hide Filters" : "Show Filters"}
                   </button>
                 </div>
-                
+
                 {/* Mobile Filters */}
-                <div className={`lg:hidden ${showFilter ? 'block' : 'hidden'} mb-6 border-t border-b border-gray-200 py-4`}>
+                <div
+                  className={`lg:hidden ${
+                    showFilter ? "block" : "hidden"
+                  } mb-6 border-t border-b border-gray-200 py-4`}
+                >
                   <div className="mb-4">
-                    <h3 className="font-medium text-gray-900 mb-2">Categories</h3>
+                    <h3 className="font-medium text-gray-900 mb-2">
+                      Categories
+                    </h3>
                     <div className="grid grid-cols-2 gap-2">
-              {categories?.length > 0 ? (
-                categories.map((category) => (
+                      {categories?.length > 0 ? (
+                        categories.map((category) => (
                           <div key={category._id} className="flex items-center">
-                    <input
+                            <input
                               id={`mobile-category-${category._id}`}
-                      type="checkbox"
-                      value={category._id}
-                      onChange={toggleCategory}
+                              type="checkbox"
+                              value={category._id}
+                              onChange={toggleCategory}
                               className="h-4 w-4 text-gray-900 focus:ring-gray-500 border-gray-300 rounded"
-                    />
-                            <label htmlFor={`mobile-category-${category._id}`} className="ml-2 text-sm text-gray-700">
-                    {category.name}
+                            />
+                            <label
+                              htmlFor={`mobile-category-${category._id}`}
+                              className="ml-2 text-sm text-gray-700"
+                            >
+                              {category.name}
                             </label>
                           </div>
-                ))
-              ) : (
-                        <p className="text-sm text-gray-500">No categories available</p>
-              )}
-            </div>
-          </div>
-                  
+                        ))
+                      ) : (
+                        <p className="text-sm text-gray-500">
+                          No categories available
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
                   <div>
                     <h3 className="font-medium text-gray-900 mb-2">Sort By</h3>
                     <div className="grid grid-cols-1 gap-2">
@@ -287,7 +321,10 @@ const Products = () => {
                           onChange={() => setSortType("relevant")}
                           className="h-4 w-4 text-gray-900 focus:ring-gray-500 border-gray-300"
                         />
-                        <label htmlFor="mobile-sort-relevant" className="ml-2 text-sm text-gray-700">
+                        <label
+                          htmlFor="mobile-sort-relevant"
+                          className="ml-2 text-sm text-gray-700"
+                        >
                           Relevance
                         </label>
                       </div>
@@ -300,7 +337,10 @@ const Products = () => {
                           onChange={() => setSortType("low-high")}
                           className="h-4 w-4 text-gray-900 focus:ring-gray-500 border-gray-300"
                         />
-                        <label htmlFor="mobile-sort-low-high" className="ml-2 text-sm text-gray-700">
+                        <label
+                          htmlFor="mobile-sort-low-high"
+                          className="ml-2 text-sm text-gray-700"
+                        >
                           Price: Low to High
                         </label>
                       </div>
@@ -313,27 +353,35 @@ const Products = () => {
                           onChange={() => setSortType("high-low")}
                           className="h-4 w-4 text-gray-900 focus:ring-gray-500 border-gray-300"
                         />
-                        <label htmlFor="mobile-sort-high-low" className="ml-2 text-sm text-gray-700">
+                        <label
+                          htmlFor="mobile-sort-high-low"
+                          className="ml-2 text-sm text-gray-700"
+                        >
                           Price: High to Low
                         </label>
                       </div>
-            </div>
-          </div>
-        </div>
+                    </div>
+                  </div>
+                </div>
 
                 {/* Active Filters */}
                 {category.length > 0 && (
                   <div className="flex flex-wrap gap-2 mb-6">
                     {category.map((catId) => {
-                      const catName = categories.find(c => c._id === catId)?.name || catId;
+                      const catName =
+                        categories.find((c) => c._id === catId)?.name || catId;
                       return (
-                        <div 
+                        <div
                           key={catId}
                           className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-800"
                         >
                           {catName}
-                          <button 
-                            onClick={() => setCategory(prev => prev.filter(c => c !== catId))}
+                          <button
+                            onClick={() =>
+                              setCategory((prev) =>
+                                prev.filter((c) => c !== catId)
+                              )
+                            }
                             className="ml-2 text-gray-500 hover:text-gray-700"
                           >
                             <FaTimes size={12} />
@@ -341,7 +389,7 @@ const Products = () => {
                         </div>
                       );
                     })}
-                    <button 
+                    <button
                       onClick={clearFilters}
                       className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-800 text-white hover:bg-gray-700"
                     >
@@ -349,23 +397,36 @@ const Products = () => {
                     </button>
                   </div>
                 )}
-                
+
                 {/* Products Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 place-items-center">
                   {filterProducts.length > 0 ? (
                     filterProducts.map((product) => (
-              <ProductItem key={product._id} {...product} />
+                      <ProductItem key={product._id} {...product} />
                     ))
                   ) : (
                     <div className="col-span-full py-12 text-center">
                       <div className="mx-auto w-24 h-24 mb-6 text-gray-300">
-                        <svg className="w-full h-full" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd"></path>
+                        <svg
+                          className="w-full h-full"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                            clipRule="evenodd"
+                          ></path>
                         </svg>
                       </div>
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">No products found</h3>
-                      <p className="text-gray-500 mb-6">Try adjusting your filters or search criteria</p>
-                      <button 
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">
+                        No products found
+                      </h3>
+                      <p className="text-gray-500 mb-6">
+                        Try adjusting your filters or search criteria
+                      </p>
+                      <button
                         onClick={clearFilters}
                         className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-br from-gray-900 via-gray-800 to-black hover:from-gray-800 hover:to-gray-700"
                       >
@@ -379,20 +440,25 @@ const Products = () => {
           </div>
         </div>
       </div>
-      
+
       <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white py-16">
         <div className="max-w-[90%] mx-auto text-center">
-          <h2 className="text-2xl font-semibold mb-4">Exquisite Craftsmanship</h2>
+          <h2 className="text-2xl font-semibold mb-4">
+            Exquisite Craftsmanship
+          </h2>
           <p className="max-w-2xl mx-auto mb-8">
-            Each piece in our collection is meticulously crafted by master artisans, 
-            ensuring exceptional quality and timeless elegance.
+            Each piece in our collection is meticulously crafted by master
+            artisans, ensuring exceptional quality and timeless elegance.
           </p>
-          <Link to="/about" className="inline-block px-8 py-3 border-2 border-white rounded-full hover:bg-white hover:text-gray-900 transition-colors">
+          <Link
+            to="/about"
+            className="inline-block px-8 py-3 border-2 border-white rounded-full hover:bg-white hover:text-gray-900 transition-colors"
+          >
             Learn About Our Process
           </Link>
         </div>
       </div>
-      
+
       <NewsletterBox />
     </>
   );

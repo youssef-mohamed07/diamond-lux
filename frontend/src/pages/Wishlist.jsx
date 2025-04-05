@@ -1,43 +1,42 @@
-import React, { useContext, useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { ShopContext } from '../context/ShopContext';
-import { FaArrowLeft, FaTrash, FaPlus, FaMinus } from 'react-icons/fa';
-import NewsletterBox from '../components/NewsletterBox';
-import { toast } from 'react-toastify';
+import React, { useContext, useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { ShopContext } from "../context/ShopContext";
+import { FaArrowLeft, FaTrash, FaPlus, FaMinus } from "react-icons/fa";
+import NewsletterBox from "../components/NewsletterBox";
+import { toast } from "react-toastify";
 
 const Wishlist = () => {
-  const { 
-    products, 
-    favorites, 
-    removeFromFavorites, 
-    currency
-  } = useContext(ShopContext);
-  
+  const { products, favorites, removeFromFavorites, currency } =
+    useContext(ShopContext);
+
   const location = useLocation();
-  
+
   // State to track wishlist items with quantities
   const [wishlistItems, setWishlistItems] = useState([]);
-  
+
   // Scroll to top when page loads
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-  
+
   // Update wishlist items when favorites or products change
   useEffect(() => {
     if (products.length > 0) {
       const items = products
-        .filter(product => favorites.includes(product._id))
-        .map(product => ({
+        .filter((product) => favorites.includes(product._id))
+        .map((product) => ({
           ...product,
-          quantity: 1 // Default quantity
+          quantity: 1, // Default quantity
         }));
       setWishlistItems(items);
     }
   }, [products, favorites]);
-  
+
   // Calculate total price based on quantities
-  const subtotal = wishlistItems.reduce((total, product) => total + (product.price * product.quantity), 0);
+  const subtotal = wishlistItems.reduce(
+    (total, product) => total + product.price * product.quantity,
+    0
+  );
 
   const handleRemoveItem = (productId) => {
     removeFromFavorites(productId);
@@ -46,21 +45,19 @@ const Wishlist = () => {
 
   // Increase quantity
   const increaseQuantity = (productId) => {
-    setWishlistItems(prev => 
-      prev.map(item => 
-        item._id === productId 
-          ? { ...item, quantity: item.quantity + 1 } 
-          : item
+    setWishlistItems((prev) =>
+      prev.map((item) =>
+        item._id === productId ? { ...item, quantity: item.quantity + 1 } : item
       )
     );
   };
 
   // Decrease quantity
   const decreaseQuantity = (productId) => {
-    setWishlistItems(prev => 
-      prev.map(item => 
+    setWishlistItems((prev) =>
+      prev.map((item) =>
         item._id === productId && item.quantity > 1
-          ? { ...item, quantity: item.quantity - 1 } 
+          ? { ...item, quantity: item.quantity - 1 }
           : item
       )
     );
@@ -70,12 +67,10 @@ const Wishlist = () => {
   const updateQuantity = (productId, newQuantity) => {
     // Ensure quantity is a valid number and at least 1
     const quantity = Math.max(1, parseInt(newQuantity) || 1);
-    
-    setWishlistItems(prev => 
-      prev.map(item => 
-        item._id === productId 
-          ? { ...item, quantity } 
-          : item
+
+    setWishlistItems((prev) =>
+      prev.map((item) =>
+        item._id === productId ? { ...item, quantity } : item
       )
     );
   };
@@ -84,18 +79,30 @@ const Wishlist = () => {
     <div className="bg-white min-h-screen pt-24 md:pt-32">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 md:mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4 sm:mb-0">My Wishlist</h1>
-          <Link to="/products" className="text-gray-600 hover:text-gray-900 flex items-center self-start sm:self-auto">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4 sm:mb-0">
+            My Wishlist
+          </h1>
+          <Link
+            to="/products"
+            className="text-gray-600 hover:text-gray-900 flex items-center self-start sm:self-auto"
+          >
             <FaArrowLeft className="mr-2" />
             Continue Shopping
           </Link>
         </div>
-        
+
         {wishlistItems.length === 0 ? (
           <div className="text-center py-12 md:py-16">
-            <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-4">Your wishlist is empty</h2>
-            <p className="text-gray-600 mb-8">Browse our collection and add items to your wishlist.</p>
-            <Link to="/products" className="inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-gradient-to-br from-gray-900 via-gray-800 to-black hover:from-gray-800 hover:to-gray-700">
+            <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-4">
+              Your wishlist is empty
+            </h2>
+            <p className="text-gray-600 mb-8">
+              Browse our collection and add items to your wishlist.
+            </p>
+            <Link
+              to="/products"
+              className="inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-gradient-to-br from-gray-900 via-gray-800 to-black hover:from-gray-800 hover:to-gray-700"
+            >
               Start Shopping
             </Link>
           </div>
@@ -127,25 +134,36 @@ const Wishlist = () => {
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {wishlistItems.map((product) => (
-                        <tr key={product._id} className="hover:bg-gray-50 transition-colors">
+                        <tr
+                          key={product._id}
+                          className="hover:bg-gray-50 transition-colors"
+                        >
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
                               <div className="flex-shrink-0 h-12 w-12">
-                                <img className="h-12 w-12 rounded-md object-cover" src={product.image} alt={product.name} />
+                                <img
+                                  className="h-12 w-12 rounded-md object-cover"
+                                  src={product.imageCover}
+                                  alt={product.name}
+                                />
                               </div>
                               <div className="ml-4">
-                                <div className="text-sm font-medium text-gray-900">{product.name}</div>
-                                <div className="text-sm text-gray-500">{product.category}</div>
+                                <div className="text-sm font-medium text-gray-900">
+                                  {product.name}
+                                </div>
                               </div>
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-900">{currency}{product.price.toFixed(2)}</div>
+                            <div className="text-sm text-gray-900">
+                              {currency}
+                              {product.price.toFixed(2)}
+                            </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
-                              <button 
-                                onClick={() => decreaseQuantity(product._id)} 
+                              <button
+                                onClick={() => decreaseQuantity(product._id)}
                                 className="text-gray-500 hover:text-gray-700 p-1"
                               >
                                 <FaMinus />
@@ -153,12 +171,14 @@ const Wishlist = () => {
                               <input
                                 type="number"
                                 value={product.quantity}
-                                onChange={(e) => updateQuantity(product._id, e.target.value)}
+                                onChange={(e) =>
+                                  updateQuantity(product._id, e.target.value)
+                                }
                                 className="mx-2 w-12 text-center border border-gray-300 rounded-md"
                                 min="1"
                               />
-                              <button 
-                                onClick={() => increaseQuantity(product._id)} 
+                              <button
+                                onClick={() => increaseQuantity(product._id)}
                                 className="text-gray-500 hover:text-gray-700 p-1"
                               >
                                 <FaPlus />
@@ -166,11 +186,14 @@ const Wishlist = () => {
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-900">{currency}{(product.price * product.quantity).toFixed(2)}</div>
+                            <div className="text-sm text-gray-900">
+                              {currency}
+                              {(product.price * product.quantity).toFixed(2)}
+                            </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <button 
-                              onClick={() => handleRemoveItem(product._id)} 
+                            <button
+                              onClick={() => handleRemoveItem(product._id)}
                               className="text-red-600 hover:text-red-900 p-1"
                               aria-label="Remove item"
                             >
@@ -183,34 +206,45 @@ const Wishlist = () => {
                   </table>
                 </div>
               </div>
-              
+
               {/* Mobile View - Cards */}
               <div className="md:hidden space-y-4">
                 {wishlistItems.map((product) => (
-                  <div key={product._id} className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+                  <div
+                    key={product._id}
+                    className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden"
+                  >
                     <div className="p-4">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-16 w-16">
-                          <img className="h-16 w-16 rounded-md object-cover" src={product.image} alt={product.name} />
+                          <img
+                            className="h-16 w-16 rounded-md object-cover"
+                            src={product.image}
+                            alt={product.name}
+                          />
                         </div>
                         <div className="ml-4 flex-1">
-                          <div className="text-sm font-medium text-gray-900">{product.name}</div>
-                          <div className="text-sm text-gray-500">{product.category}</div>
-                          <div className="text-sm font-medium text-gray-900 mt-1">{currency}{product.price.toFixed(2)}</div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {product.name}
+                          </div>
+                          <div className="text-sm font-medium text-gray-900 mt-1">
+                            {currency}
+                            {product.price.toFixed(2)}
+                          </div>
                         </div>
-                        <button 
-                          onClick={() => handleRemoveItem(product._id)} 
+                        <button
+                          onClick={() => handleRemoveItem(product._id)}
                           className="text-red-600 hover:text-red-900 p-2"
                           aria-label="Remove item"
                         >
                           <FaTrash />
                         </button>
                       </div>
-                      
+
                       <div className="mt-4 flex justify-between items-center">
                         <div className="flex items-center border border-gray-300 rounded-md">
-                          <button 
-                            onClick={() => decreaseQuantity(product._id)} 
+                          <button
+                            onClick={() => decreaseQuantity(product._id)}
                             className="px-2 py-1 text-gray-500 hover:text-gray-700"
                           >
                             <FaMinus />
@@ -218,19 +252,25 @@ const Wishlist = () => {
                           <input
                             type="number"
                             value={product.quantity}
-                            onChange={(e) => updateQuantity(product._id, e.target.value)}
+                            onChange={(e) =>
+                              updateQuantity(product._id, e.target.value)
+                            }
                             className="w-12 text-center border-x border-gray-300 py-1"
                             min="1"
                           />
-                          <button 
-                            onClick={() => increaseQuantity(product._id)} 
+                          <button
+                            onClick={() => increaseQuantity(product._id)}
                             className="px-2 py-1 text-gray-500 hover:text-gray-700"
                           >
                             <FaPlus />
                           </button>
                         </div>
                         <div className="text-sm font-medium">
-                          Total: <span className="text-gray-900">{currency}{(product.price * product.quantity).toFixed(2)}</span>
+                          Total:{" "}
+                          <span className="text-gray-900">
+                            {currency}
+                            {(product.price * product.quantity).toFixed(2)}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -238,23 +278,33 @@ const Wishlist = () => {
                 ))}
               </div>
             </div>
-            
+
             <div className="bg-gray-50 rounded-lg p-6 border border-gray-200 h-fit">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Wishlist Summary</h2>
+              <h2 className="text-lg font-medium text-gray-900 mb-4">
+                Wishlist Summary
+              </h2>
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Total Items</span>
-                  <span className="font-medium">{wishlistItems.reduce((total, item) => total + item.quantity, 0)}</span>
+                  <span className="font-medium">
+                    {wishlistItems.reduce(
+                      (total, item) => total + item.quantity,
+                      0
+                    )}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Total Value</span>
-                  <span className="font-medium">{currency}{subtotal.toFixed(2)}</span>
+                  <span className="font-medium">
+                    {currency}
+                    {subtotal.toFixed(2)}
+                  </span>
                 </div>
               </div>
-              
+
               <div className="mt-6">
-                <Link 
-                  to="/products" 
+                <Link
+                  to="/products"
                   className="w-full inline-block text-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-gradient-to-br from-gray-900 via-gray-800 to-black hover:from-gray-800 hover:to-gray-700"
                 >
                   Continue Shopping
@@ -264,7 +314,7 @@ const Wishlist = () => {
           </div>
         )}
       </div>
-      
+
       <NewsletterBox />
     </div>
   );
