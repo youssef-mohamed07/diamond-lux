@@ -84,8 +84,8 @@ const Products = () => {
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-br from-gray-50 to-gray-100">
         <div className="w-20 h-20 relative">
-          <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-black rounded-full animate-ping opacity-75"></div>
-          <div className="absolute inset-2 bg-gradient-to-br from-gray-900 via-gray-800 to-black rounded-full animate-pulse"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-black  animate-ping opacity-75"></div>
+          <div className="absolute inset-2 bg-gradient-to-br from-gray-900 via-gray-800 to-black  animate-pulse"></div>
         </div>
         <p className="text-lg mt-6 font-medium text-gray-800">
           Loading exquisite products...
@@ -132,18 +132,25 @@ const Products = () => {
             </h1>
             <p className="text-xl text-gray-100 max-w-3xl leading-relaxed">
               Discover our exquisite selection of premium diamond jewelry, each
-              piece crafted with exceptional artistry and precision for those who
-              appreciate true luxury.
+              piece crafted with exceptional artistry and precision for those
+              who appreciate true luxury.
             </p>
 
             {/* Decorative element */}
             <div className="absolute -bottom-6 right-0 hidden lg:block">
-              <svg width="160" height="160" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg" className="opacity-20">
-                <circle cx="80" cy="80" r="79.5" stroke="white"/>
-                <circle cx="80" cy="80" r="55.5" stroke="white"/>
-                <circle cx="80" cy="80" r="31.5" stroke="white"/>
-                <path d="M80 0V160" stroke="white" strokeWidth="0.5"/>
-                <path d="M160 80L0 80" stroke="white" strokeWidth="0.5"/>
+              <svg
+                width="160"
+                height="160"
+                viewBox="0 0 160 160"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="opacity-20"
+              >
+                <circle cx="80" cy="80" r="79.5" stroke="white" />
+                <circle cx="80" cy="80" r="55.5" stroke="white" />
+                <circle cx="80" cy="80" r="31.5" stroke="white" />
+                <path d="M80 0V160" stroke="white" strokeWidth="0.5" />
+                <path d="M160 80L0 80" stroke="white" strokeWidth="0.5" />
               </svg>
             </div>
           </motion.div>
@@ -160,7 +167,7 @@ const Products = () => {
               transition={{ duration: 0.5 }}
               className="lg:w-1/4 xl:w-1/5"
             >
-              <div className="bg-white rounded-xl shadow-lg p-8 sticky top-24">
+              <div className="bg-white  shadow-lg p-8 sticky top-24">
                 <div className="flex justify-between items-center mb-8">
                   <h2 className="text-xl font-semibold text-gray-900 flex items-center">
                     <FaFilter className="mr-3" /> Filters
@@ -176,7 +183,9 @@ const Products = () => {
                 </div>
 
                 <div className="mb-10">
-                  <h3 className="font-medium text-gray-900 mb-5 text-lg">Categories</h3>
+                  <h3 className="font-medium text-gray-900 mb-5 text-lg">
+                    Categories
+                  </h3>
                   <div className="space-y-4">
                     {categories?.length > 0 ? (
                       categories.map((category) => (
@@ -205,7 +214,9 @@ const Products = () => {
                 </div>
 
                 <div>
-                  <h3 className="font-medium text-gray-900 mb-5 text-lg">Sort By</h3>
+                  <h3 className="font-medium text-gray-900 mb-5 text-lg">
+                    Sort By
+                  </h3>
                   <div className="space-y-4">
                     <div className="flex items-center">
                       <input
@@ -267,16 +278,22 @@ const Products = () => {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="lg:w-3/4 xl:w-4/5"
             >
-              <div className="bg-white rounded-xl shadow-lg p-8 mb-6">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
-                  <h2 className="text-2xl font-semibold text-gray-900 mb-2 sm:mb-0">
-                    {filterProducts.length}{" "}
-                    {filterProducts.length === 1 ? "Product" : "Products"}
-                  </h2>
+              <div className="bg-white  shadow-lg p-8 mb-6">
+                <div className="flex flex-col sm:flex-row justify-start items-start sm:items-center mb-8">
+                  <div className="flex items-center mb-4 sm:mb-0 gap-4 opacity-70">
+                    <h2 className="text-2xl font-semibold text-gray-900 mb-2 sm:mb-0">
+                      Collections
+                    </h2>
+                    <span className="w-[7px] h-[7px] bg-black rounded-full"></span>
+                    <h2 className="text-2xl font-semibold text-gray-900 mb-2 sm:mb-0">
+                      {filterProducts.length}{" "}
+                      {filterProducts.length === 1 ? "Product" : "Products"}
+                    </h2>
+                  </div>
 
                   {/* Mobile Filters Button */}
                   <button
-                    className="flex items-center text-base font-medium text-gray-700 bg-gray-100 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors lg:hidden"
+                    className="flex items-center text-base font-medium text-gray-700 bg-gray-100 px-4 py-2 hover:bg-gray-200 transition-colors lg:hidden"
                     onClick={() => setShowFilter(!showFilter)}
                   >
                     <FaFilter className="mr-2" />
@@ -288,7 +305,7 @@ const Products = () => {
                 <div
                   className={`lg:hidden ${
                     showFilter ? "block" : "hidden"
-                  } mb-8 border border-gray-200 rounded-lg p-6`}
+                  } mb-8 border border-gray-200 p-6`}
                 >
                   <div className="mb-6">
                     <h3 className="font-medium text-gray-900 mb-4 text-lg">
@@ -322,7 +339,9 @@ const Products = () => {
                   </div>
 
                   <div>
-                    <h3 className="font-medium text-gray-900 mb-4 text-lg">Sort By</h3>
+                    <h3 className="font-medium text-gray-900 mb-4 text-lg">
+                      Sort By
+                    </h3>
                     <div className="grid grid-cols-1 gap-3">
                       <div className="flex items-center">
                         <input
@@ -385,7 +404,7 @@ const Products = () => {
                       return (
                         <div
                           key={catId}
-                          className="inline-flex items-center px-4 py-2 rounded-full text-sm bg-gray-100 text-gray-800 shadow-sm"
+                          className="inline-flex items-center px-4 py-2  text-sm bg-gray-100 text-gray-800 shadow-sm"
                         >
                           {catName}
                           <button
@@ -403,7 +422,7 @@ const Products = () => {
                     })}
                     <button
                       onClick={clearFilters}
-                      className="inline-flex items-center px-4 py-2 rounded-full text-sm bg-gray-800 text-white hover:bg-gray-700 transition-colors shadow-sm"
+                      className="inline-flex items-center px-4 py-2  text-sm bg-gray-800 text-white hover:bg-gray-700 transition-colors shadow-sm"
                     >
                       Clear All
                     </button>
@@ -414,7 +433,12 @@ const Products = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                   {filterProducts.length > 0 ? (
                     filterProducts.map((product, index) => (
-                      <GalleryItem key={product._id} item={product} index={index} />
+                      <GalleryItem
+                        key={product._id}
+                        item={product}
+                        index={index}
+                        price={true}
+                      />
                     ))
                   ) : (
                     <div className="col-span-full py-16 text-center">
@@ -436,11 +460,12 @@ const Products = () => {
                         No products found
                       </h3>
                       <p className="text-gray-500 mb-8 max-w-md mx-auto">
-                        Try adjusting your filters or search criteria to find what you're looking for
+                        Try adjusting your filters or search criteria to find
+                        what you're looking for
                       </p>
                       <button
                         onClick={clearFilters}
-                        className="inline-flex items-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-gradient-to-br from-gray-900 via-gray-800 to-black hover:from-gray-800 hover:to-gray-700 transition-colors"
+                        className="inline-flex items-center px-6 py-3 border border-transparent shadow-sm text-base font-medium text-white bg-gradient-to-br from-gray-900 via-gray-800 to-black hover:from-gray-800 hover:to-gray-700 transition-colors"
                       >
                         Clear Filters
                       </button>
@@ -456,7 +481,7 @@ const Products = () => {
       {/* Decorative divider */}
       <div className="relative bg-white py-16">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7 }}
@@ -465,80 +490,80 @@ const Products = () => {
           >
             <div className="w-24 h-0.5 bg-gray-300 mb-8"></div>
             <div className="flex items-center justify-center space-x-4 mb-8">
-              <motion.div 
-                animate={{ 
+              <motion.div
+                animate={{
                   scale: [1, 1.2, 1],
                 }}
-                transition={{ 
-                  repeat: Infinity, 
+                transition={{
+                  repeat: Infinity,
                   repeatType: "reverse",
                   duration: 2,
-                  delay: 0.5
+                  delay: 0.5,
                 }}
-                className="w-2 h-2 rounded-full bg-gray-900"
+                className="w-2 h-2  bg-gray-900"
               ></motion.div>
-              <motion.div 
-                animate={{ 
+              <motion.div
+                animate={{
                   scale: [1, 1.2, 1],
                 }}
-                transition={{ 
-                  repeat: Infinity, 
+                transition={{
+                  repeat: Infinity,
                   repeatType: "reverse",
                   duration: 2,
-                  delay: 1
+                  delay: 1,
                 }}
-                className="w-3 h-3 rounded-full bg-gray-700"
+                className="w-3 h-3  bg-gray-700"
               ></motion.div>
-              <motion.div 
-                animate={{ 
+              <motion.div
+                animate={{
                   scale: [1, 1.2, 1],
                 }}
-                transition={{ 
-                  repeat: Infinity, 
+                transition={{
+                  repeat: Infinity,
                   repeatType: "reverse",
                   duration: 2,
-                  delay: 1.5
+                  delay: 1.5,
                 }}
-                className="w-4 h-4 rounded-full bg-gray-500"
+                className="w-4 h-4  bg-gray-500"
               ></motion.div>
-              <motion.div 
-                animate={{ 
+              <motion.div
+                animate={{
                   scale: [1, 1.2, 1],
                 }}
-                transition={{ 
-                  repeat: Infinity, 
+                transition={{
+                  repeat: Infinity,
                   repeatType: "reverse",
                   duration: 2,
-                  delay: 1
+                  delay: 1,
                 }}
-                className="w-3 h-3 rounded-full bg-gray-700"
+                className="w-3 h-3  bg-gray-700"
               ></motion.div>
-              <motion.div 
-                animate={{ 
+              <motion.div
+                animate={{
                   scale: [1, 1.2, 1],
                 }}
-                transition={{ 
-                  repeat: Infinity, 
+                transition={{
+                  repeat: Infinity,
                   repeatType: "reverse",
                   duration: 2,
-                  delay: 0.5
+                  delay: 0.5,
                 }}
-                className="w-2 h-2 rounded-full bg-gray-900"
+                className="w-2 h-2  bg-gray-900"
               ></motion.div>
             </div>
             <div className="flex items-center mb-10">
               <div className="w-16 h-0.5 bg-gray-300"></div>
-              <motion.svg 
-                animate={{ 
-                  rotate: [0, 360], 
+              <motion.svg
+                animate={{
+                  rotate: [0, 360],
                 }}
-                transition={{ 
-                  repeat: Infinity, 
+                transition={{
+                  repeat: Infinity,
                   duration: 20,
-                  ease: "linear" 
+                  ease: "linear",
                 }}
-                viewBox="0 0 24 24" 
-                fill="none" 
+                viewBox="0 0 24 24"
+                fill="none"
                 className="w-8 h-8 mx-4 text-gray-800"
               >
                 <path
@@ -559,7 +584,9 @@ const Products = () => {
               <div className="w-16 h-0.5 bg-gray-300"></div>
             </div>
             <p className="text-gray-600 italic text-center max-w-xl text-lg font-light">
-              "Our diamonds are carefully selected for exceptional quality, brilliance, and ethical sourcing. We celebrate the natural beauty of each stone in our designs."
+              "Our diamonds are carefully selected for exceptional quality,
+              brilliance, and ethical sourcing. We celebrate the natural beauty
+              of each stone in our designs."
             </p>
           </motion.div>
         </div>
@@ -582,7 +609,7 @@ const Products = () => {
             </p>
             <Link
               to="/about"
-              className="relative group inline-block px-10 py-4 border-2 border-white rounded-lg hover:bg-white hover:text-gray-900 transition-colors text-lg font-medium overflow-hidden"
+              className="relative group inline-block px-10 py-4 border-2 border-white hover:bg-white hover:text-gray-900 transition-colors text-lg font-medium overflow-hidden"
             >
               <span className="relative z-10">Learn About Our Process</span>
               <span className="absolute inset-0 bg-white transform scale-x-0 group-hover:scale-x-100 transition-transform origin-right duration-500"></span>

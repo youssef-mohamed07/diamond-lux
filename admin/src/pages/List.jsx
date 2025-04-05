@@ -11,7 +11,7 @@ const List = ({ token }) => {
   const fetchList = async () => {
     try {
       const response = await axios.get(
-        import.meta.env.VITE_BACKEND_URL + "/product"
+        import.meta.env.VITE_BACKEND_URL || "http://localhost:3000" + "/product"
       );
 
       if (response.data) {
@@ -28,7 +28,8 @@ const List = ({ token }) => {
   const removeProduct = async (id) => {
     try {
       const response = await axios.delete(
-        import.meta.env.VITE_BACKEND_URL + `/product/${id}`
+        import.meta.env.VITE_BACKEND_URL ||
+          "http://localhost:3000" + `/product/${id}`
       );
 
       if (response.data) {

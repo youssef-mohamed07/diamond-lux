@@ -12,7 +12,8 @@ import Home from "./pages/Home";
 import About_us from "./pages/Aboutus";
 import UI from "./pages/UI";
 import FormSettings from "./pages/formSettings";
-export const backendUrl = import.meta.env.VITE_BACKEND_URL;
+export const backendUrl =
+  import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 export const currency = "$";
 
 const App = () => {

@@ -88,9 +88,9 @@ const About = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               <motion.div
                 whileHover={{ y: -10 }}
-                className="bg-white p-8 rounded-lg shadow-sm text-center"
+                className="bg-white p-8  shadow-sm text-center"
               >
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-6">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 mb-6">
                   <FaGem className="h-8 w-8 text-gray-900" />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-3">
@@ -104,9 +104,9 @@ const About = () => {
 
               <motion.div
                 whileHover={{ y: -10 }}
-                className="bg-white p-8 rounded-lg shadow-sm text-center"
+                className="bg-white p-8  shadow-sm text-center"
               >
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-6">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 mb-6">
                   <FaAward className="h-8 w-8 text-gray-900" />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-3">
@@ -120,9 +120,9 @@ const About = () => {
 
               <motion.div
                 whileHover={{ y: -10 }}
-                className="bg-white p-8 rounded-lg shadow-sm text-center"
+                className="bg-white p-8  shadow-sm text-center"
               >
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-6">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 mb-6">
                   <FaLeaf className="h-8 w-8 text-gray-900" />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-3">
@@ -136,9 +136,9 @@ const About = () => {
 
               <motion.div
                 whileHover={{ y: -10 }}
-                className="bg-white p-8 rounded-lg shadow-sm text-center"
+                className="bg-white p-8  shadow-sm text-center"
               >
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-6">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 mb-6">
                   <FaHandshake className="h-8 w-8 text-gray-900" />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-3">
@@ -190,7 +190,7 @@ const About = () => {
                 timeless elegance.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10">
-                <div className="bg-white/10 backdrop-blur-sm p-6 rounded-lg border border-white/20">
+                <div className="bg-white/10 backdrop-blur-sm p-6  border border-white/20">
                   <h3 className="text-xl font-semibold text-white mb-3">
                     Diamond Essentials
                   </h3>
@@ -199,7 +199,7 @@ const About = () => {
                     sophisticated jewelry collection.
                   </p>
                 </div>
-                <div className="bg-white/10 backdrop-blur-sm p-6 rounded-lg border border-white/20">
+                <div className="bg-white/10 backdrop-blur-sm p-6  border border-white/20">
                   <h3 className="text-xl font-semibold text-white mb-3">
                     Signature Series
                   </h3>
@@ -211,7 +211,7 @@ const About = () => {
               </div>
               <a
                 href="/products"
-                className="inline-flex items-center justify-center px-6 py-3 border border-white rounded-md shadow-sm text-base font-medium text-white hover:bg-white hover:text-gray-900 transition-colors"
+                className="inline-flex transition-all duration-300 items-center justify-center px-6 py-3 border border-white  shadow-sm text-base font-medium text-white hover:bg-white hover:text-gray-900 transition-colors"
               >
                 Explore Our Collection
               </a>
@@ -238,7 +238,7 @@ const About = () => {
                 <img
                   src="/images/about-workshop.jpg"
                   alt="Jewelry workshop"
-                  className="rounded-lg shadow-md w-full h-auto"
+                  className=" shadow-md w-full h-auto"
                   onError={(e) => {
                     e.target.onerror = null;
                     e.target.src =
@@ -294,13 +294,13 @@ const About = () => {
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <a
                 href="/products"
-                className="inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-gray-900 bg-white hover:bg-gray-100"
+                className="inline-flex items-center justify-center px-6 py-3 border border-transparent  shadow-sm text-base font-medium text-gray-900 bg-white hover:bg-gray-100 transition-all duration-300"
               >
                 Explore Collection
               </a>
               <a
                 href="/contact"
-                className="inline-flex items-center justify-center px-6 py-3 border border-white rounded-md shadow-sm text-base font-medium text-white hover:bg-white hover:text-gray-900"
+                className="inline-flex items-center justify-center px-6 py-3 border border-white  shadow-sm text-base font-medium text-white hover:bg-white hover:text-gray-900 transition-all duration-300"
               >
                 Contact Us
               </a>

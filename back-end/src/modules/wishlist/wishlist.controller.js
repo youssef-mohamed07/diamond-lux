@@ -23,6 +23,7 @@ const sendWishlistEmail = catchError(async (req, res, next) => {
     );
   }
 
+  // Generate HTML for the wishlist items from database if they exist
   if (wishlist && wishlist.wishlistItems.length > 0) {
     wishlistItemsHtml = wishlist.wishlistItems
       .map((item) => {
@@ -40,7 +41,13 @@ const sendWishlistEmail = catchError(async (req, res, next) => {
   const formData = req.body;
   console.log("✅ Extracted Dynamic Form Data:", formData);
 
+  // Check if we have manually formatted items from frontend
+  const hasFormattedItems =
+    formData.itemsDetails && typeof formData.itemsDetails === "string";
+
+  // Filter out itemsDetails from form fields display if it exists
   let formFieldsHtml = Object.keys(formData)
+    .filter((key) => key !== "itemsDetails")
     .map((key) => {
       return `<p><strong>${key.replace(/_/g, " ")}:</strong> ${
         formData[key] || "N/A"
@@ -48,28 +55,58 @@ const sendWishlistEmail = catchError(async (req, res, next) => {
     })
     .join("");
 
-  // ✅ Dynamically include wishlist only if it exists
-  const wishlistSection = wishlist
-    ? `<h4>Wishlist Items:</h4>
-       <ul>${wishlistItemsHtml}</ul>
-       <p><strong>Total Price:</strong> $${totalPrice.toFixed(2)}</p>`
-    : "<p><em>No wishlist items included in this submission.</em></p>";
+  // Create wishlist section HTML
+  let wishlistSection = "";
+
+  if (wishlist && wishlist.wishlistItems.length > 0) {
+    // If we have wishlist from database
+    wishlistSection = `<h4>Wishlist Items:</h4>
+      <ul>${wishlistItemsHtml}</ul>
+      <p><strong>Total Price:</strong> $${totalPrice.toFixed(2)}</p>`;
+  } else if (hasFormattedItems) {
+    // If we have formatted items from frontend
+    const itemsHtml = formData.itemsDetails
+      .split("@@")
+      .map((item) => {
+        const [imageUrl, title, quantity, price] = item.split("||");
+        return `<li style="margin-bottom: 15px; display: flex; align-items: center;">
+        ${
+          imageUrl
+            ? `<img src="${imageUrl}" alt="${title}" style="width: 50px; height: 50px; object-fit: cover; margin-right: 10px; border-radius: 4px;">`
+            : ""
+        }
+        <div>
+          <strong>${title}</strong><br>
+          ${quantity} - ${price}
+        </div>
+      </li>`;
+      })
+      .join("");
+
+    wishlistSection = `<h4>Wishlist Items:</h4>
+      <ul style="list-style-type: none; padding-left: 0;">${itemsHtml}</ul>
+      <p><strong>Total Value:</strong> ${formData.totalValue}</p>`;
+  } else {
+    // No wishlist items found
+    wishlistSection =
+      "<p><em>No wishlist items included in this submission.</em></p>";
+  }
 
   const emailHtml = `
-    ${wishlist ? "<h2>Wishlist Submission</h2>" : "New Quote Request"}
+    ${
+      wishlist || hasFormattedItems
+        ? "<h2>Wishlist Submission</h2>"
+        : "New Quote Request"
+    }
     ${formFieldsHtml}
     ${wishlistSection}
   `;
 
   console.log("📩 Email HTML Content:", emailHtml);
 
-  // <h4>Wishlist Items:</h4>
-  // <ul>${wishlistItemsHtml}</ul>
-  // <p><strong>Total Price:</strong> $${wishlist.totalWishlistprice}</p>
-
   // Get submitter's name from form data
   const submitterName = formData.first_name || formData.name;
-  
+
   try {
     const ownerEmail = process.env.OWNER_EMAIL;
     await sendEmail(
@@ -196,42 +233,41 @@ const updateWishlistItem = catchError(async (req, res, next) => {
   const { userId } = req.session;
   const { id } = req.params;
   const { quantity } = req.body;
-  
+
   if (!userId)
     return next(new AppError("User ID is missing - updateWishlistItem", 400));
-  
+
   if (!quantity || quantity < 1)
     return next(new AppError("Invalid quantity", 400));
-  
+
   const wishlist = await Wishlist.findOne({ userId });
-  
-  if (!wishlist)
-    return next(new AppError("Wishlist not found", 404));
-  
+
+  if (!wishlist) return next(new AppError("Wishlist not found", 404));
+
   const item = wishlist.wishlistItems.id(id);
-  if (!item)
-    return next(new AppError("Item not found in wishlist", 404));
-  
+  if (!item) return next(new AppError("Item not found in wishlist", 404));
+
   // Check product availability
   const product = await Product.findById(item.product);
-  if (!product)
-    return next(new AppError("Product not found", 404));
-  
+  if (!product) return next(new AppError("Product not found", 404));
+
   if (quantity > product.stock)
-    return next(new AppError("Requested quantity exceeds available stock", 400));
-  
+    return next(
+      new AppError("Requested quantity exceeds available stock", 400)
+    );
+
   // Update quantity
   item.quantity = quantity;
-  
+
   // Recalculate total price
   wishlist.totalWishlistprice = wishlist.wishlistItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   );
-  
+
   await wishlist.save();
-  
-  res.status(200).json({ 
+
+  res.status(200).json({
     message: "Item quantity updated successfully",
     wishlist,
   });
@@ -243,5 +279,5 @@ export {
   getUserWishlist,
   clearUserWishlist,
   sendWishlistEmail,
-  updateWishlistItem
+  updateWishlistItem,
 };

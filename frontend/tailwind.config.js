@@ -21,7 +21,10 @@ export default {
           },
         },
       },
+      fontFamily: {
+        cinzel: ["Cinzel", "sans-serif"],
+      },
     },
   },
   plugins: [],
-}
+};

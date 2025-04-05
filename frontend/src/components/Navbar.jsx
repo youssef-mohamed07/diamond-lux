@@ -87,7 +87,7 @@ const Navbar = () => {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-8 text-md ">
             <NavLink
               to="/"
               className={({ isActive }) =>
@@ -95,7 +95,7 @@ const Navbar = () => {
                   isHomePage && !scrolled
                     ? "text-white hover:text-gray-200"
                     : "text-gray-700 hover:text-gray-900"
-                } transition-colors duration-200 px-3 py-2 text-sm uppercase tracking-wider`
+                } transition-colors duration-200 px-3 py-2  uppercase tracking-wider`
               }
             >
               Home
@@ -107,7 +107,7 @@ const Navbar = () => {
                   isHomePage && !scrolled
                     ? "text-white hover:text-gray-200"
                     : "text-gray-700 hover:text-gray-900"
-                } transition-colors duration-200 px-3 py-2 text-sm uppercase tracking-wider`
+                } transition-colors duration-200 px-3 py-2  uppercase tracking-wider`
               }
             >
               Collections
@@ -119,7 +119,7 @@ const Navbar = () => {
                   isHomePage && !scrolled
                     ? "text-white hover:text-gray-200"
                     : "text-gray-700 hover:text-gray-900"
-                } transition-colors duration-200 px-3 py-2 text-sm uppercase tracking-wider`
+                } transition-colors duration-200 px-3 py-2  uppercase tracking-wider`
               }
             >
               About
@@ -131,7 +131,7 @@ const Navbar = () => {
                   isHomePage && !scrolled
                     ? "text-white hover:text-gray-200"
                     : "text-gray-700 hover:text-gray-900"
-                } transition-colors duration-200 px-3 py-2 text-sm uppercase tracking-wider`
+                } transition-colors duration-200 px-3 py-2  uppercase tracking-wider`
               }
             >
               Contact
@@ -185,7 +185,7 @@ const Navbar = () => {
             animate="visible"
             exit="exit"
             variants={mobileMenuVariants}
-            className="md:hidden backdrop-blur-lg text-white overflow-hidden"
+            className="md:hidden bg-black backdrop-blur-lg  text-white overflow-hidden"
           >
             <div className="px-4 pt-4 pb-6 space-y-2">
               <Link

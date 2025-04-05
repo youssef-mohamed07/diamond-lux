@@ -32,7 +32,7 @@ const Hero = () => {
     const fetchHeroData = async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_BACKEND_URL}/home`
+          `${import.meta.env.VITE_BACKEND_URL || "http://localhost:3000"}/home`
         );
 
         if (!response.data) {
@@ -183,7 +183,7 @@ const Hero = () => {
             >
               <Link
                 to="/products"
-                className="group relative overflow-hidden rounded-full bg-white px-6 sm:px-8 py-3 sm:py-4 text-black transition-all duration-300 ease-out hover:bg-opacity-90 hover:shadow-lg text-center sm:text-left"
+                className="group relative overflow-hidden bg-white px-6 sm:px-8 py-3 sm:py-4 text-black transition-all duration-300 ease-out hover:bg-opacity-90 hover:shadow-lg text-center sm:text-left"
               >
                 <span className="relative z-10 flex items-center justify-center font-medium text-sm sm:text-base">
                   {heroButtonText || "Explore Collection"}
@@ -202,7 +202,7 @@ const Hero = () => {
           >
             <div className="relative w-[500px] h-[500px] mx-auto">
               {/* Diamond glow effect */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full bg-white/20 blur-3xl"></div>
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64  bg-white/20 blur-3xl"></div>
 
               {/* Diamond container */}
               <motion.div
@@ -255,7 +255,7 @@ const Hero = () => {
                         ease: "easeInOut",
                       }}
                     >
-                      <div className="w-20 h-20 bg-white/30 rounded-full blur-md"></div>
+                      <div className="w-20 h-20 bg-white/30  blur-md"></div>
                     </motion.div>
                   ))}
                 </div>
@@ -301,12 +301,12 @@ const Hero = () => {
         <motion.div
           animate={{ y: [0, 10, 0] }}
           transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-          className="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center"
+          className="w-6 h-10 border-2 border-white/50 flex justify-center"
         >
           <motion.div
             animate={{ y: [0, 15, 0] }}
             transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-            className="w-1.5 h-3 bg-white/80 rounded-full mt-2"
+            className="w-1.5 h-3 bg-white/80 mt-2"
           />
         </motion.div>
       </motion.div>

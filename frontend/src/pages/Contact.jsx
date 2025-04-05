@@ -149,8 +149,8 @@ const Contact = () => {
             transition={{ duration: 0.5, delay: 0.2 }}
           >
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              <div className="text-center p-6 border border-gray-200 rounded-lg">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full mb-4">
+              <div className="text-center p-6 border border-gray-200 ">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100  mb-4">
                   <FaMapMarkerAlt className="h-6 w-6 text-gray-900" />
                 </div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
@@ -165,8 +165,8 @@ const Contact = () => {
                 </p>
               </div>
 
-              <div className="text-center p-6 border border-gray-200 rounded-lg">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full mb-4">
+              <div className="text-center p-6 border border-gray-200 ">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100  mb-4">
                   <FaPhone className="h-6 w-6 text-gray-900" />
                 </div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
@@ -179,8 +179,8 @@ const Contact = () => {
                 </p>
               </div>
 
-              <div className="text-center p-6 border border-gray-200 rounded-lg">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full mb-4">
+              <div className="text-center p-6 border border-gray-200 ">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100  mb-4">
                   <FaEnvelope className="h-6 w-6 text-gray-900" />
                 </div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
@@ -193,8 +193,8 @@ const Contact = () => {
                 </p>
               </div>
 
-              <div className="text-center p-6 border border-gray-200 rounded-lg">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full mb-4">
+              <div className="text-center p-6 border border-gray-200 ">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100  mb-4">
                   <FaClock className="h-6 w-6 text-gray-900" />
                 </div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
@@ -232,14 +232,14 @@ const Contact = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-              <div className="bg-white p-8 rounded-lg shadow-sm">
+              <div className="bg-white p-8  shadow-sm">
                 {submitSuccess ? (
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     className="text-center py-12"
                   >
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-6">
+                    <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100  mb-6">
                       <svg
                         className="h-8 w-8 text-green-600"
                         fill="none"
@@ -263,7 +263,7 @@ const Contact = () => {
                     </p>
                     <button
                       onClick={() => setSubmitSuccess(false)}
-                      className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-br from-gray-900 via-gray-800 to-black hover:from-gray-800 hover:to-gray-700"
+                      className="inline-flex items-center px-4 py-2 border border-transparent  shadow-sm text-sm font-medium text-white bg-gradient-to-br from-gray-900 via-gray-800 to-black hover:from-gray-800 hover:to-gray-700"
                     >
                       Send Another Message
                     </button>
@@ -285,7 +285,7 @@ const Contact = () => {
                         onChange={handleChange}
                         className={`w-full px-4 py-2 border ${
                           errors.name ? "border-red-500" : "border-gray-300"
-                        } rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent`}
+                        }  focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent`}
                         required
                       />
                       {errors.name && (
@@ -310,7 +310,7 @@ const Contact = () => {
                         onChange={handleChange}
                         className={`w-full px-4 py-2 border ${
                           errors.email ? "border-red-500" : "border-gray-300"
-                        } rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent`}
+                        }  focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent`}
                         required
                       />
                       {errors.email && (
@@ -335,7 +335,7 @@ const Contact = () => {
                         onChange={handleChange}
                         className={`w-full px-4 py-2 border ${
                           errors.subject ? "border-red-500" : "border-gray-300"
-                        } rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent`}
+                        }  focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent`}
                         required
                       />
                       {errors.subject && (
@@ -360,7 +360,7 @@ const Contact = () => {
                         rows="5"
                         className={`w-full px-4 py-2 border ${
                           errors.message ? "border-red-500" : "border-gray-300"
-                        } rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent`}
+                        }  focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent`}
                         required
                       ></textarea>
                       {errors.message && (
@@ -373,7 +373,7 @@ const Contact = () => {
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className={`w-full px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-gradient-to-br from-gray-900 via-gray-800 to-black hover:from-gray-800 hover:to-gray-700 ${
+                      className={`w-full  px-6 py-3 border border-transparent  shadow-sm text-base font-medium text-white bg-gradient-to-br from-gray-900 via-gray-800 to-black hover:from-gray-800 hover:to-gray-700 ${
                         isSubmitting ? "opacity-70 cursor-not-allowed" : ""
                       }`}
                     >
@@ -409,7 +409,7 @@ const Contact = () => {
                 )}
               </div>
 
-              <div className="bg-white p-8 rounded-lg shadow-sm">
+              <div className="bg-white p-8  shadow-sm">
                 <h3 className="text-xl font-semibold text-gray-900 mb-6">
                   Our Services
                 </h3>
@@ -417,7 +417,7 @@ const Contact = () => {
                 <div className="space-y-6">
                   <div className="flex items-start">
                     <div className="flex-shrink-0">
-                      <div className="flex items-center justify-center h-12 w-12 rounded-md bg-gray-100 text-gray-900">
+                      <div className="flex items-center justify-center h-12 w-12  bg-gray-100 text-gray-900">
                         <FaGem className="h-6 w-6" />
                       </div>
                     </div>
@@ -434,7 +434,7 @@ const Contact = () => {
 
                   <div className="flex items-start">
                     <div className="flex-shrink-0">
-                      <div className="flex items-center justify-center h-12 w-12 rounded-md bg-gray-100 text-gray-900">
+                      <div className="flex items-center justify-center h-12 w-12  bg-gray-100 text-gray-900">
                         <FaRing className="h-6 w-6" />
                       </div>
                     </div>
@@ -451,7 +451,7 @@ const Contact = () => {
 
                   <div className="flex items-start">
                     <div className="flex-shrink-0">
-                      <div className="flex items-center justify-center h-12 w-12 rounded-md bg-gray-100 text-gray-900">
+                      <div className="flex items-center justify-center h-12 w-12  bg-gray-100 text-gray-900">
                         <svg
                           className="h-6 w-6"
                           fill="none"
@@ -480,7 +480,7 @@ const Contact = () => {
 
                   <div className="flex items-start">
                     <div className="flex-shrink-0">
-                      <div className="flex items-center justify-center h-12 w-12 rounded-md bg-gray-100 text-gray-900">
+                      <div className="flex items-center justify-center h-12 w-12  bg-gray-100 text-gray-900">
                         <svg
                           className="h-6 w-6"
                           fill="none"
@@ -529,7 +529,7 @@ const Contact = () => {
             </p>
             <a
               href="/request-quote"
-              className="inline-flex items-center justify-center px-6 py-3 border border-white rounded-md shadow-sm text-base font-medium text-white hover:bg-white hover:text-gray-900 transition-colors"
+              className="inline-flex items-center justify-center px-6 py-3 border border-white  shadow-sm text-base font-medium text-white hover:bg-white hover:text-gray-900 transition-colors"
             >
               Request a Custom Quote
             </a>

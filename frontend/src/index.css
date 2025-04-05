@@ -16,7 +16,7 @@ a.active hr {
 }
 
 * {
-  font-family: Outfit;
+  font-family: "Cinzel";
 }
 
 .prata-regular {
@@ -34,4 +34,9 @@ a.active hr {
     background-color: black;
     color: white;
   }
+}
+
+@font-face {
+  font-family: "Cinzel";
+  src: local("Cinzel"), url("/fonts/Cinzel-Main.ttf");
 }

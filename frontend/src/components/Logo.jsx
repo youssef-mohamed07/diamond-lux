@@ -26,19 +26,9 @@ const Logo = ({ scrolled = false }) => {
         <img src={logo} className={`h-12 w-auto `} alt="Company Logo" />
       </div>
 
-      <span
-        className={`font-serif font-bold text-xl tracking-tight ${textColor}`}
-      >
+      <span className={`text-xl tracking-tight ${textColor}`}>
         Diamond
-        <span
-          className={
-            isHomePage && !scrolled
-              ? "text-white font-extrabold"
-              : "font-extrabold"
-          }
-        >
-          &nbsp;Cartel
-        </span>
+        <span className="text-xl tracking-tight">&nbsp;Cartel</span>
       </span>
     </Link>
   );

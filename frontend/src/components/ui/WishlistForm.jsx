@@ -3,7 +3,7 @@ import { getFormFields, getUnavailableDates } from "../../../api/formAPI";
 import { toast } from "react-toastify";
 const today = new Date();
 today.setHours(0, 0, 0, 0); // Set to midnight for accurate date comparison
-import MaterialDatePicker from './MaterialDatePicker';
+import MaterialDatePicker from "./MaterialDatePicker";
 
 const WishlistForm = ({
   onSubmit,
@@ -23,23 +23,26 @@ const WishlistForm = ({
       setFieldsLoading(true);
       try {
         const fieldsData = await getFormFields();
-        
+
         // Remove any phone fields from backend
-        const fieldsWithoutPhone = fieldsData.filter(field => 
-          !['phone', 'telephone', 'tel', 'phone_number'].includes(field.name.toLowerCase())
+        const fieldsWithoutPhone = fieldsData.filter(
+          (field) =>
+            !["phone", "telephone", "tel", "phone_number"].includes(
+              field.name.toLowerCase()
+            )
         );
-        
+
         // Add our standardized phone field
         const allFields = [
-          ...fieldsWithoutPhone, 
-          { 
-            name: "phone", 
-            label: "Phone Number", 
-            type: "tel", 
-            required: true 
-          }
+          ...fieldsWithoutPhone,
+          {
+            name: "phone",
+            label: "Phone Number",
+            type: "tel",
+            required: true,
+          },
         ];
-        
+
         setFields(allFields);
 
         // Initialize form data with empty strings
@@ -48,7 +51,7 @@ const WishlistForm = ({
           initialData[field.name] = field.defaultValue || "";
         });
         setFormData(initialData);
-        
+
         // Fetch unavailable dates
         const dates = await getUnavailableDates();
         setUnavailableDates(dates);
@@ -65,33 +68,39 @@ const WishlistForm = ({
 
   const formatPhoneNumber = (value) => {
     // If empty or just "+", return "+1"
-    if (!value || value === '+') return '+1';
-    
+    if (!value || value === "+") return "+1";
+
     // Remove the plus if it exists to handle the formatting
-    const withoutPlus = value.startsWith('+') ? value.slice(1) : value;
-    
+    const withoutPlus = value.startsWith("+") ? value.slice(1) : value;
+
     // Only keep numbers and spaces
     const cleaned = withoutPlus.replace(/[^\d\s]/g, "");
-    
+
     // Ensure it starts with "1" if it doesn't already
-    const withCountryCode = cleaned.startsWith('1') ? cleaned : '1' + cleaned;
-    
+    const withCountryCode = cleaned.startsWith("1") ? cleaned : "1" + cleaned;
+
     // Limit to 11 digits (1 + 10) plus spaces
     const digits = withCountryCode.replace(/\s/g, "").slice(0, 11);
-    
+
     // Return raw input if it's just spaces and numbers and 11 or fewer digits
-    if (cleaned.length <= 15) { // 11 digits + up to 4 spaces
-      return '+' + withCountryCode;
+    if (cleaned.length <= 15) {
+      // 11 digits + up to 4 spaces
+      return "+" + withCountryCode;
     }
-    
-    return '+' + digits.replace(/(\d{1})(\d{3})(\d{3})(\d{4})/, "$1 $2 $3 $4");
+
+    return "+" + digits.replace(/(\d{1})(\d{3})(\d{3})(\d{4})/, "$1 $2 $3 $4");
   };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "phone" ? formatPhoneNumber(value) : type === "checkbox" ? checked : value,
+      [name]:
+        name === "phone"
+          ? formatPhoneNumber(value)
+          : type === "checkbox"
+          ? checked
+          : value,
     }));
   };
 
@@ -105,27 +114,33 @@ const WishlistForm = ({
     // Check for empty required fields and date validation
     const missingFields = fields.filter((field) => {
       if (!field.required) return false;
-      
+
       const value = formData[field.name];
-      
+
       // Special check for date fields
-      if (field.type === 'date') {
+      if (field.type === "date") {
         if (!value) return true;
         // Check if date is not before today
         return value < today;
       }
-      
+
       // Check if the value is empty or undefined
-      return !value || value.trim() === '';
+      return !value || value.trim() === "";
     });
 
     if (missingFields.length > 0) {
       console.log("Missing fields:", missingFields);
-      const dateError = missingFields.find(f => f.type === 'date' && formData[f.name] < today);
+      const dateError = missingFields.find(
+        (f) => f.type === "date" && formData[f.name] < today
+      );
       if (dateError) {
         toast.error("Please select a future date");
       } else {
-        toast.error(`Please fill in all required fields: ${missingFields.map(f => f.label).join(', ')}`);
+        toast.error(
+          `Please fill in all required fields: ${missingFields
+            .map((f) => f.label)
+            .join(", ")}`
+        );
       }
       setLoading(false);
       return;
@@ -133,15 +148,13 @@ const WishlistForm = ({
 
     try {
       await onSubmit(formData);
-      
+
       // Reset form data
       const resetData = {};
       fields.forEach((field) => {
         resetData[field.name] = "";
       });
       setFormData(resetData);
-      
-      toast.success("Form submitted successfully!");
     } catch (error) {
       console.error("Form submission error:", error);
       toast.error("Something went wrong. Please try again.");
@@ -154,8 +167,8 @@ const WishlistForm = ({
     <div
       className={`${
         page
-          ? "max-w-full px-4 sm:px-6 lg:px-8 py-12"
-          : "fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
+          ? "max-w-full px-4 sm:px-6 lg:px-8 py-12 z-50"
+          : "fixed inset-0 bg-black bg-opacity-50 flex z-50 justify-center items-center"
       }`}
     >
       <form
@@ -276,20 +289,27 @@ const WishlistForm = ({
                 {field.type === "date" && (
                   <div onClick={(e) => e.preventDefault()}>
                     <MaterialDatePicker
-                      value={formData[field.name] ? new Date(formData[field.name]) : today}
+                      value={
+                        formData[field.name]
+                          ? new Date(formData[field.name])
+                          : today
+                      }
                       onChange={(date) => {
                         if (!date) return;
-                        
+
                         // Create YYYY-MM-DD format that preserves the selected date
                         // This is crucial to avoid timezone issues when storing the date
                         const year = date.getFullYear();
-                        const month = String(date.getMonth() + 1).padStart(2, '0');
-                        const day = String(date.getDate()).padStart(2, '0');
+                        const month = String(date.getMonth() + 1).padStart(
+                          2,
+                          "0"
+                        );
+                        const day = String(date.getDate()).padStart(2, "0");
                         const formattedDate = `${year}-${month}-${day}`;
-                        
-                        setFormData(prev => ({
+
+                        setFormData((prev) => ({
                           ...prev,
-                          [field.name]: formattedDate
+                          [field.name]: formattedDate,
                         }));
                       }}
                       minDate={today}
