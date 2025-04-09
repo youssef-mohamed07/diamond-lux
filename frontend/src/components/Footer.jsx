@@ -1,7 +1,15 @@
 import { assets } from "../assets/assets";
 import { getUIElement } from "../../api/UIApi";
 import { useState, useEffect } from "react";
-import { FaFacebook, FaInstagram, FaTwitter, FaPinterest, FaPhone, FaEnvelope, FaMapMarkerAlt } from 'react-icons/fa';
+import {
+  FaFacebook,
+  FaInstagram,
+  FaTwitter,
+  FaPinterest,
+  FaPhone,
+  FaEnvelope,
+  FaMapMarkerAlt,
+} from "react-icons/fa";
 
 const Footer = () => {
   const [logo, setLogo] = useState(null);
@@ -22,19 +30,33 @@ const Footer = () => {
           {/* Brand Section */}
           <div className="space-y-6">
             <img src={logo} className="h-12 w-auto" alt="Company Logo" />
-            <p className="text-gray-300 text-sm leading-relaxed" 
-               dangerouslySetInnerHTML={{ __html: description }} />
+            <p
+              className="text-gray-300 text-sm leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: description }}
+            />
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <a
+                href="#"
+                className="text-gray-400 hover:text-white transition-colors"
+              >
                 <FaFacebook className="h-5 w-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <a
+                href="#"
+                className="text-gray-400 hover:text-white transition-colors"
+              >
                 <FaInstagram className="h-5 w-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <a
+                href="#"
+                className="text-gray-400 hover:text-white transition-colors"
+              >
                 <FaTwitter className="h-5 w-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <a
+                href="#"
+                className="text-gray-400 hover:text-white transition-colors"
+              >
                 <FaPinterest className="h-5 w-5" />
               </a>
             </div>
@@ -47,22 +69,34 @@ const Footer = () => {
             </h3>
             <ul className="space-y-3">
               <li>
-                <a href="/" className="text-gray-300 hover:text-white transition-colors text-sm">
+                <a
+                  href="/"
+                  className="text-gray-300 hover:text-white transition-colors text-sm"
+                >
                   Home
                 </a>
               </li>
               <li>
-                <a href="/about" className="text-gray-300 hover:text-white transition-colors text-sm">
+                <a
+                  href="/about"
+                  className="text-gray-300 hover:text-white transition-colors text-sm"
+                >
                   About Us
                 </a>
               </li>
               <li>
-                <a href="/services" className="text-gray-300 hover:text-white transition-colors text-sm">
+                <a
+                  href="/services"
+                  className="text-gray-300 hover:text-white transition-colors text-sm"
+                >
                   Services
                 </a>
               </li>
               <li>
-                <a href="/contact" className="text-gray-300 hover:text-white transition-colors text-sm">
+                <a
+                  href="/contact"
+                  className="text-gray-300 hover:text-white transition-colors text-sm"
+                >
                   Contact Us
                 </a>
               </li>
@@ -77,15 +111,25 @@ const Footer = () => {
             <ul className="space-y-4">
               <li className="flex items-center space-x-3">
                 <FaPhone className="text-gray-400 h-4 w-4" />
-                <span className="text-gray-300 text-sm">951-807-4047</span>
+                <span className="text-gray-300 text-sm">+1 437-361-4188</span>
               </li>
               <li className="flex items-center space-x-3">
                 <FaEnvelope className="text-gray-400 h-4 w-4" />
-                <span className="text-gray-300 text-sm">elitefiestarentals@gmail.com</span>
+                <span className="text-gray-300 text-sm">
+                  Diamondcartel07@gmail.com
+                </span>
               </li>
               <li className="flex items-center space-x-3">
                 <FaMapMarkerAlt className="text-gray-400 h-4 w-4" />
-                <span className="text-gray-300 text-sm">123 Business Street, City, State</span>
+                <span className="text-gray-300 text-sm">
+                  55 Queen St, Torronto, ON, CA
+                </span>
+              </li>
+              <li className="flex items-center space-x-3">
+                <FaMapMarkerAlt className="text-gray-400 h-4 w-4" />
+                <span className="text-gray-300 text-sm">
+                  47th St, New York, NY, USA
+                </span>
               </li>
             </ul>
           </div>
@@ -121,13 +165,22 @@ const Footer = () => {
               © 2025 Elite Fiesta Rentals. All rights reserved.
             </p>
             <div className="flex space-x-6">
-              <a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">
+              <a
+                href="#"
+                className="text-gray-400 hover:text-white text-sm transition-colors"
+              >
                 Privacy Policy
               </a>
-              <a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">
+              <a
+                href="#"
+                className="text-gray-400 hover:text-white text-sm transition-colors"
+              >
                 Terms of Service
               </a>
-              <a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">
+              <a
+                href="#"
+                className="text-gray-400 hover:text-white text-sm transition-colors"
+              >
                 Cookie Policy
               </a>
             </div>

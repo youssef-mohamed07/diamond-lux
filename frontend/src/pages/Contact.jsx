@@ -141,14 +141,14 @@ const Contact = () => {
       </div>
 
       {/* Contact Information */}
-      <div className="py-16 bg-white">
+      <div className="py-16 bg-white ">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="text-center p-6 border border-gray-200 ">
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100  mb-4">
                   <FaMapMarkerAlt className="h-6 w-6 text-gray-900" />
@@ -156,13 +156,9 @@ const Contact = () => {
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
                   Our Location
                 </h3>
-                <p className="text-gray-600">
-                  123 Luxury Lane
-                  <br />
-                  New York, NY 10001
-                  <br />
-                  United States
-                </p>
+                <p className="text-gray-600">47th St, New York, NY, USA</p>
+                <hr className="my-4" />
+                <p className="text-gray-600">55 Queen St, Torronto, ON, CA</p>
               </div>
 
               <div className="text-center p-6 border border-gray-200 ">
@@ -172,11 +168,7 @@ const Contact = () => {
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
                   Phone
                 </h3>
-                <p className="text-gray-600">
-                  +1 (212) 555-7890
-                  <br />
-                  +1 (800) DIAMOND
-                </p>
+                <p className="text-gray-600">+1 437-361-4188</p>
               </div>
 
               <div className="text-center p-6 border border-gray-200 ">
@@ -186,26 +178,8 @@ const Contact = () => {
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
                   Email
                 </h3>
-                <p className="text-gray-600">
-                  info@Diamond Cartel.com
-                  <br />
-                  support@Diamond Cartel.com
-                </p>
-              </div>
-
-              <div className="text-center p-6 border border-gray-200 ">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100  mb-4">
-                  <FaClock className="h-6 w-6 text-gray-900" />
-                </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  Hours
-                </h3>
-                <p className="text-gray-600">
-                  Monday - Friday: 9am - 7pm
-                  <br />
-                  Saturday: 10am - 6pm
-                  <br />
-                  Sunday: Closed
+                <p className="text-gray-600 text-[0.9rem]">
+                  Diamondcartel07@gmail.com
                 </p>
               </div>
             </div>
