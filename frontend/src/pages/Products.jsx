@@ -6,17 +6,19 @@ import { assets } from "../assets/assets";
 import { useCategories } from "../../hooks/useCategories";
 import NewsletterBox from "../components/NewsletterBox";
 import { motion } from "framer-motion";
-import { FaFilter, FaSort, FaChevronDown, FaTimes } from "react-icons/fa";
+import { FaFilter, FaSort, FaChevronDown, FaTimes, FaSearch } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
 const Products = () => {
-  const { products, search, showSearch } = useContext(ShopContext);
+  const { products } = useContext(ShopContext);
   const [filterProducts, setFilterProducts] = useState([]);
   const [category, setCategory] = useState([]);
   const [sortType, setSortType] = useState("relevant");
   const [showFilter, setShowFilter] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showSortOptions, setShowSortOptions] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   const categories = useCategories();
 
@@ -31,61 +33,45 @@ const Products = () => {
   const clearFilters = () => {
     setCategory([]);
     setSortType("relevant");
+    setSearchQuery("");
   };
 
-  const applyFilter = () => {
-    let productsCopy = [...products];
+  // Filter and sort products
+  useEffect(() => {
+    let filteredProducts = [...products];
 
-    if (showSearch && search) {
-      productsCopy = productsCopy.filter((item) =>
-        item.name.toLowerCase().includes(search.toLowerCase())
+    // Apply search filter
+    if (searchQuery) {
+      filteredProducts = filteredProducts.filter((product) =>
+        product.title.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
+    // Apply category filter
     if (category.length > 0) {
-      productsCopy = productsCopy.filter((item) =>
-        category.includes(item.category)
+      filteredProducts = filteredProducts.filter((product) =>
+        category.includes(product.category)
       );
     }
 
-    setFilterProducts(productsCopy);
-  };
-
-  const sortProducts = () => {
-    let sortedProducts = [...filterProducts];
-
+    // Apply sorting
     if (sortType === "low-high") {
-      sortedProducts.sort((a, b) => a.price - b.price);
+      filteredProducts.sort((a, b) => a.price - b.price);
     } else if (sortType === "high-low") {
-      sortedProducts.sort((a, b) => b.price - a.price);
+      filteredProducts.sort((a, b) => b.price - a.price);
     }
 
-    setFilterProducts(sortedProducts);
-  };
-
-  useEffect(() => {
-    if (!categories || categories.length === 0) {
-      // Fetch categories logic here if not already handled in useCategories
-    }
-    applyFilter();
-
-    // Set loading to false when data is available
-    if (products.length > 0) {
-      setLoading(false);
-    }
-  }, [category, search, showSearch, products, categories]);
-
-  useEffect(() => {
-    sortProducts();
-  }, [sortType]);
+    setFilterProducts(filteredProducts);
+    setLoading(false);
+  }, [products, searchQuery, category, sortType]);
 
   // Loading screen
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-br from-gray-50 to-gray-100">
         <div className="w-20 h-20 relative">
-          <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-black  animate-ping opacity-75"></div>
-          <div className="absolute inset-2 bg-gradient-to-br from-gray-900 via-gray-800 to-black  animate-pulse"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-black animate-ping opacity-75"></div>
+          <div className="absolute inset-2 bg-gradient-to-br from-gray-900 via-gray-800 to-black animate-pulse"></div>
         </div>
         <p className="text-lg mt-6 font-medium text-gray-800">
           Loading exquisite products...
@@ -159,20 +145,161 @@ const Products = () => {
 
       <div className="bg-gradient-to-br from-gray-50 to-gray-100 py-16">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Mobile Filter Button */}
+          <div className="lg:hidden flex justify-between items-center mb-6">
+            <button
+              onClick={() => setIsMobileFilterOpen(!isMobileFilterOpen)}
+              className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow-md"
+            >
+              <FaFilter />
+              <span>Filters & Sort</span>
+            </button>
+            {filterProducts.length > 0 && (
+              <span className="text-gray-700">
+                {filterProducts.length} {filterProducts.length === 1 ? "Product" : "Products"}
+              </span>
+            )}
+          </div>
+
           <div className="flex flex-col lg:flex-row gap-10">
-            {/* Sidebar Filters */}
+            {/* Mobile Filters Section */}
+            <div className="lg:hidden space-y-4 mb-6">
+              {/* Mobile Search */}
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-base"
+                />
+                <FaSearch className="absolute left-3 top-3.5 text-gray-400" />
+              </div>
+
+              {/* Mobile Filter and Sort Controls */}
+              <div className="grid grid-cols-2 gap-4">
+                {/* Categories Dropdown */}
+                <div className="relative">
+                  <button
+                    onClick={() => setShowFilter(!showFilter)}
+                    className="w-full flex items-center justify-between px-4 py-2 bg-white rounded-lg shadow-sm border border-gray-300"
+                  >
+                    <span className="flex items-center gap-2">
+                      <FaFilter />
+                      Categories
+                    </span>
+                    <FaChevronDown className={`transition-transform ${showFilter ? 'rotate-180' : ''}`} />
+                  </button>
+                  {showFilter && (
+                    <div className="absolute w-full mt-2 bg-white rounded-lg shadow-lg p-4 max-h-60 overflow-y-auto">
+                      <div className="space-y-2">
+                        {categories?.map((cat) => (
+                          <div key={cat._id} className="flex items-center">
+                            <input
+                              type="checkbox"
+                              id={`mobile-category-${cat._id}`}
+                              value={cat._id}
+                              checked={category.includes(cat._id)}
+                              onChange={toggleCategory}
+                              className="w-4 h-4 rounded border-gray-300"
+                            />
+                            <label
+                              htmlFor={`mobile-category-${cat._id}`}
+                              className="ml-2 text-sm"
+                            >
+                              {cat.name}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Sort Dropdown */}
+                <div className="relative">
+                  <button
+                    onClick={() => setShowSortOptions(!showSortOptions)}
+                    className="w-full flex items-center justify-between px-4 py-2 bg-white rounded-lg shadow-sm border border-gray-300"
+                  >
+                    <span className="flex items-center gap-2">
+                      <FaSort />
+                      Sort
+                    </span>
+                    <FaChevronDown className={`transition-transform ${showSortOptions ? 'rotate-180' : ''}`} />
+                  </button>
+                  {showSortOptions && (
+                    <div className="absolute w-full mt-2 bg-white rounded-lg shadow-lg p-4">
+                      <div className="space-y-2">
+                        <div className="flex items-center">
+                          <input
+                            type="radio"
+                            id="mobile-sort-relevant"
+                            name="mobile-sort"
+                            checked={sortType === "relevant"}
+                            onChange={() => setSortType("relevant")}
+                            className="w-4 h-4"
+                          />
+                          <label htmlFor="mobile-sort-relevant" className="ml-2 text-sm">
+                            Relevance
+                          </label>
+                        </div>
+                        <div className="flex items-center">
+                          <input
+                            type="radio"
+                            id="mobile-sort-low-high"
+                            name="mobile-sort"
+                            checked={sortType === "low-high"}
+                            onChange={() => setSortType("low-high")}
+                            className="w-4 h-4"
+                          />
+                          <label htmlFor="mobile-sort-low-high" className="ml-2 text-sm">
+                            Price: Low to High
+                          </label>
+                        </div>
+                        <div className="flex items-center">
+                          <input
+                            type="radio"
+                            id="mobile-sort-high-low"
+                            name="mobile-sort"
+                            checked={sortType === "high-low"}
+                            onChange={() => setSortType("high-low")}
+                            className="w-4 h-4"
+                          />
+                          <label htmlFor="mobile-sort-high-low" className="ml-2 text-sm">
+                            Price: High to Low
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Clear Filters Button */}
+              {(category.length > 0 || searchQuery) && (
+                <button
+                  onClick={clearFilters}
+                  className="w-full py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium"
+                >
+                  Clear Filters
+                </button>
+              )}
+            </div>
+
+            {/* Desktop Sidebar Filters */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5 }}
-              className="lg:w-1/4 xl:w-1/5"
+              className="hidden lg:block lg:w-1/4 xl:w-1/5"
             >
-              <div className="bg-white  shadow-lg p-8 sticky top-24">
+              <div className="bg-white shadow-lg p-8 sticky top-24">
                 <div className="flex justify-between items-center mb-8">
                   <h2 className="text-xl font-semibold text-gray-900 flex items-center">
                     <FaFilter className="mr-3" /> Filters
                   </h2>
-                  {category.length > 0 && (
+                  {(category.length > 0 || searchQuery) && (
                     <button
                       onClick={clearFilters}
                       className="text-sm text-gray-500 hover:text-gray-900 flex items-center transition-colors"
@@ -180,6 +307,28 @@ const Products = () => {
                       <FaTimes className="mr-1" /> Clear
                     </button>
                   )}
+                </div>
+
+                {/* Search Input */}
+                <div className="mb-8">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="Search products by name..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
+                    />
+                    <FaSearch className="absolute left-3 top-3 text-gray-400" />
+                    {searchQuery && (
+                      <button
+                        onClick={() => setSearchQuery("")}
+                        className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                      >
+                        <FaTimes />
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <div className="mb-10">
@@ -278,7 +427,7 @@ const Products = () => {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="lg:w-3/4 xl:w-4/5"
             >
-              <div className="bg-white  shadow-lg p-8 mb-6">
+              <div className="bg-white shadow-lg p-8 mb-6">
                 <div className="flex flex-col sm:flex-row justify-start items-start sm:items-center mb-8">
                   <div className="flex items-center mb-4 sm:mb-0 gap-4 opacity-70">
                     <h2 className="text-2xl font-semibold text-gray-900 mb-2 sm:mb-0">
@@ -290,144 +439,7 @@ const Products = () => {
                       {filterProducts.length === 1 ? "Product" : "Products"}
                     </h2>
                   </div>
-
-                  {/* Mobile Filters Button */}
-                  <button
-                    className="flex items-center text-base font-medium text-gray-700 bg-gray-100 px-4 py-2 hover:bg-gray-200 transition-colors lg:hidden"
-                    onClick={() => setShowFilter(!showFilter)}
-                  >
-                    <FaFilter className="mr-2" />
-                    {showFilter ? "Hide Filters" : "Show Filters"}
-                  </button>
                 </div>
-
-                {/* Mobile Filters */}
-                <div
-                  className={`lg:hidden ${
-                    showFilter ? "block" : "hidden"
-                  } mb-8 border border-gray-200 p-6`}
-                >
-                  <div className="mb-6">
-                    <h3 className="font-medium text-gray-900 mb-4 text-lg">
-                      Categories
-                    </h3>
-                    <div className="grid grid-cols-2 gap-3">
-                      {categories?.length > 0 ? (
-                        categories.map((category) => (
-                          <div key={category._id} className="flex items-center">
-                            <input
-                              id={`mobile-category-${category._id}`}
-                              type="checkbox"
-                              value={category._id}
-                              onChange={toggleCategory}
-                              className="h-5 w-5 text-gray-900 focus:ring-gray-500 border-gray-300 rounded"
-                            />
-                            <label
-                              htmlFor={`mobile-category-${category._id}`}
-                              className="ml-2 text-base text-gray-700"
-                            >
-                              {category.name}
-                            </label>
-                          </div>
-                        ))
-                      ) : (
-                        <p className="text-base text-gray-500">
-                          No categories available
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div>
-                    <h3 className="font-medium text-gray-900 mb-4 text-lg">
-                      Sort By
-                    </h3>
-                    <div className="grid grid-cols-1 gap-3">
-                      <div className="flex items-center">
-                        <input
-                          id="mobile-sort-relevant"
-                          name="mobile-sort-type"
-                          type="radio"
-                          checked={sortType === "relevant"}
-                          onChange={() => setSortType("relevant")}
-                          className="h-5 w-5 text-gray-900 focus:ring-gray-500 border-gray-300"
-                        />
-                        <label
-                          htmlFor="mobile-sort-relevant"
-                          className="ml-2 text-base text-gray-700"
-                        >
-                          Relevance
-                        </label>
-                      </div>
-                      <div className="flex items-center">
-                        <input
-                          id="mobile-sort-low-high"
-                          name="mobile-sort-type"
-                          type="radio"
-                          checked={sortType === "low-high"}
-                          onChange={() => setSortType("low-high")}
-                          className="h-5 w-5 text-gray-900 focus:ring-gray-500 border-gray-300"
-                        />
-                        <label
-                          htmlFor="mobile-sort-low-high"
-                          className="ml-2 text-base text-gray-700"
-                        >
-                          Price: Low to High
-                        </label>
-                      </div>
-                      <div className="flex items-center">
-                        <input
-                          id="mobile-sort-high-low"
-                          name="mobile-sort-type"
-                          type="radio"
-                          checked={sortType === "high-low"}
-                          onChange={() => setSortType("high-low")}
-                          className="h-5 w-5 text-gray-900 focus:ring-gray-500 border-gray-300"
-                        />
-                        <label
-                          htmlFor="mobile-sort-high-low"
-                          className="ml-2 text-base text-gray-700"
-                        >
-                          Price: High to Low
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Active Filters */}
-                {category.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-8">
-                    {category.map((catId) => {
-                      const catName =
-                        categories.find((c) => c._id === catId)?.name || catId;
-                      return (
-                        <div
-                          key={catId}
-                          className="inline-flex items-center px-4 py-2  text-sm bg-gray-100 text-gray-800 shadow-sm"
-                        >
-                          {catName}
-                          <button
-                            onClick={() =>
-                              setCategory((prev) =>
-                                prev.filter((c) => c !== catId)
-                              )
-                            }
-                            className="ml-2 text-gray-500 hover:text-gray-700"
-                          >
-                            <FaTimes size={12} />
-                          </button>
-                        </div>
-                      );
-                    })}
-                    <button
-                      onClick={clearFilters}
-                      className="inline-flex items-center px-4 py-2  text-sm bg-gray-800 text-white hover:bg-gray-700 transition-colors shadow-sm"
-                    >
-                      Clear All
-                    </button>
-                  </div>
-                )}
 
                 {/* Products Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
