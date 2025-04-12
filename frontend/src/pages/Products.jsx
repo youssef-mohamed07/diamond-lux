@@ -1,4 +1,10 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, {
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+} from "react";
 import { ShopContext } from "../context/ShopContext";
 import Title from "../components/Title";
 import GalleryItem from "../components/Home/GalleryItem";
@@ -6,7 +12,14 @@ import { assets } from "../assets/assets";
 import { useCategories } from "../../hooks/useCategories";
 import NewsletterBox from "../components/NewsletterBox";
 import { motion } from "framer-motion";
-import { FaFilter, FaSort, FaChevronDown, FaTimes, FaSearch } from "react-icons/fa";
+import {
+  FaFilter,
+  FaSort,
+  FaChevronDown,
+  FaTimes,
+  FaSearch,
+  FaSpinner,
+} from "react-icons/fa";
 import { Link } from "react-router-dom";
 
 const Products = () => {
@@ -18,7 +31,10 @@ const Products = () => {
   const [loading, setLoading] = useState(true);
   const [showSortOptions, setShowSortOptions] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchInputValue, setSearchInputValue] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const searchTimeout = useRef(null);
 
   const categories = useCategories();
 
@@ -34,6 +50,32 @@ const Products = () => {
     setCategory([]);
     setSortType("relevant");
     setSearchQuery("");
+    setSearchInputValue("");
+  };
+
+  // Debounced search function
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchInputValue(value);
+    setIsSearching(true);
+
+    // Clear existing timeout
+    if (searchTimeout.current) {
+      clearTimeout(searchTimeout.current);
+    }
+
+    // Set new timeout for search
+    searchTimeout.current = setTimeout(() => {
+      setSearchQuery(value);
+      setIsSearching(false);
+    }, 500);
+  };
+
+  // Clear search handler
+  const clearSearch = () => {
+    setSearchInputValue("");
+    setSearchQuery("");
+    setIsSearching(false);
   };
 
   // Filter and sort products
@@ -156,7 +198,8 @@ const Products = () => {
             </button>
             {filterProducts.length > 0 && (
               <span className="text-gray-700">
-                {filterProducts.length} {filterProducts.length === 1 ? "Product" : "Products"}
+                {filterProducts.length}{" "}
+                {filterProducts.length === 1 ? "Product" : "Products"}
               </span>
             )}
           </div>
@@ -165,15 +208,29 @@ const Products = () => {
             {/* Mobile Filters Section */}
             <div className="lg:hidden space-y-4 mb-6">
               {/* Mobile Search */}
-              <div className="relative">
+              <div className="relative mb-4">
                 <input
                   type="text"
                   placeholder="Search products..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-base"
+                  value={searchInputValue}
+                  onChange={handleSearchChange}
+                  className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-gray-900 transition-shadow"
                 />
-                <FaSearch className="absolute left-3 top-3.5 text-gray-400" />
+                <div className="absolute left-3 top-3.5 text-gray-400">
+                  {isSearching ? (
+                    <FaSpinner className="animate-spin" />
+                  ) : (
+                    <FaSearch />
+                  )}
+                </div>
+                {searchInputValue && (
+                  <button
+                    onClick={clearSearch}
+                    className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600"
+                  >
+                    <FaTimes />
+                  </button>
+                )}
               </div>
 
               {/* Mobile Filter and Sort Controls */}
@@ -188,7 +245,11 @@ const Products = () => {
                       <FaFilter />
                       Categories
                     </span>
-                    <FaChevronDown className={`transition-transform ${showFilter ? 'rotate-180' : ''}`} />
+                    <FaChevronDown
+                      className={`transition-transform ${
+                        showFilter ? "rotate-180" : ""
+                      }`}
+                    />
                   </button>
                   {showFilter && (
                     <div className="absolute w-full mt-2 bg-white rounded-lg shadow-lg p-4 max-h-60 overflow-y-auto">
@@ -226,7 +287,11 @@ const Products = () => {
                       <FaSort />
                       Sort
                     </span>
-                    <FaChevronDown className={`transition-transform ${showSortOptions ? 'rotate-180' : ''}`} />
+                    <FaChevronDown
+                      className={`transition-transform ${
+                        showSortOptions ? "rotate-180" : ""
+                      }`}
+                    />
                   </button>
                   {showSortOptions && (
                     <div className="absolute w-full mt-2 bg-white rounded-lg shadow-lg p-4">
@@ -240,7 +305,10 @@ const Products = () => {
                             onChange={() => setSortType("relevant")}
                             className="w-4 h-4"
                           />
-                          <label htmlFor="mobile-sort-relevant" className="ml-2 text-sm">
+                          <label
+                            htmlFor="mobile-sort-relevant"
+                            className="ml-2 text-sm"
+                          >
                             Relevance
                           </label>
                         </div>
@@ -253,7 +321,10 @@ const Products = () => {
                             onChange={() => setSortType("low-high")}
                             className="w-4 h-4"
                           />
-                          <label htmlFor="mobile-sort-low-high" className="ml-2 text-sm">
+                          <label
+                            htmlFor="mobile-sort-low-high"
+                            className="ml-2 text-sm"
+                          >
                             Price: Low to High
                           </label>
                         </div>
@@ -266,7 +337,10 @@ const Products = () => {
                             onChange={() => setSortType("high-low")}
                             className="w-4 h-4"
                           />
-                          <label htmlFor="mobile-sort-high-low" className="ml-2 text-sm">
+                          <label
+                            htmlFor="mobile-sort-high-low"
+                            className="ml-2 text-sm"
+                          >
                             Price: High to Low
                           </label>
                         </div>
@@ -315,20 +389,38 @@ const Products = () => {
                     <input
                       type="text"
                       placeholder="Search products by name..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
+                      value={searchInputValue}
+                      onChange={handleSearchChange}
+                      className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 transition-all"
                     />
-                    <FaSearch className="absolute left-3 top-3 text-gray-400" />
-                    {searchQuery && (
+                    <div className="absolute left-3 top-3.5 text-gray-400">
+                      {isSearching ? (
+                        <FaSpinner className="animate-spin" />
+                      ) : (
+                        <FaSearch />
+                      )}
+                    </div>
+                    {searchInputValue && (
                       <button
-                        onClick={() => setSearchQuery("")}
-                        className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                        onClick={clearSearch}
+                        className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600"
                       >
                         <FaTimes />
                       </button>
                     )}
                   </div>
+                  {searchQuery && (
+                    <div className="mt-2 text-sm text-gray-600">
+                      {isSearching ? (
+                        <span>Searching...</span>
+                      ) : (
+                        <span>
+                          Found {filterProducts.length} results for "
+                          <span className="font-medium">{searchQuery}</span>"
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div className="mb-10">
@@ -427,22 +519,38 @@ const Products = () => {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="lg:w-3/4 xl:w-4/5"
             >
-              <div className="bg-white shadow-lg p-8 mb-6">
-                <div className="flex flex-col sm:flex-row justify-start items-start sm:items-center mb-8">
-                  <div className="flex items-center mb-4 sm:mb-0 gap-4 opacity-70">
-                    <h2 className="text-2xl font-semibold text-gray-900 mb-2 sm:mb-0">
+              <div className="bg-white shadow-lg p-5 sm:p-6 md:p-8 mb-6 rounded-lg">
+                {/* Products Header with Count */}
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 pb-4 border-b border-gray-100">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-4 sm:mb-0">
+                    <h2 className="text-xl sm:text-2xl font-semibold text-gray-900">
                       Collections
                     </h2>
-                    <span className="w-[7px] h-[7px] bg-black rounded-full"></span>
-                    <h2 className="text-2xl font-semibold text-gray-900 mb-2 sm:mb-0">
-                      {filterProducts.length}{" "}
-                      {filterProducts.length === 1 ? "Product" : "Products"}
-                    </h2>
+                    <span className="hidden sm:block w-[5px] h-[5px] bg-black rounded-full"></span>
+                    <div className="flex items-center">
+                      <span className="text-lg sm:text-xl font-medium text-gray-900">
+                        {filterProducts.length}
+                        <span className="ml-1 text-base sm:text-lg text-gray-700">
+                          {filterProducts.length === 1 ? "Product" : "Products"}
+                        </span>
+                      </span>
+                    </div>
+                    {(category.length > 0 || searchQuery) && (
+                      <div className="flex items-center ml-0 sm:ml-4 mt-2 sm:mt-0 bg-gray-100 px-3 py-1 rounded-full text-sm">
+                        <span className="text-gray-700">Filters applied</span>
+                        <button
+                          onClick={clearFilters}
+                          className="ml-2 text-gray-500 hover:text-gray-900"
+                        >
+                          <FaTimes size={12} />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 {/* Products Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
                   {filterProducts.length > 0 ? (
                     filterProducts.map((product, index) => (
                       <GalleryItem
@@ -469,11 +577,14 @@ const Products = () => {
                         </svg>
                       </div>
                       <h3 className="text-xl font-medium text-gray-900 mb-3">
-                        No products found
+                        {searchQuery
+                          ? `No products found matching "${searchQuery}"`
+                          : "No products found"}
                       </h3>
                       <p className="text-gray-500 mb-8 max-w-md mx-auto">
-                        Try adjusting your filters or search criteria to find
-                        what you're looking for
+                        {searchQuery
+                          ? "Try a different search term or adjust your filters"
+                          : "Try adjusting your filters or search criteria to find what you're looking for"}
                       </p>
                       <button
                         onClick={clearFilters}
