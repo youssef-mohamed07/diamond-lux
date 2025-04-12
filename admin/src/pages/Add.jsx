@@ -6,13 +6,12 @@ import { toast } from "react-toastify";
 import { getCategories } from "../api/categoryApi";
 import axiosInstance from "../utils/axios";
 import { addProduct } from "../api/productApi";
-import 'froala-editor/js/plugins.pkgd.min.js'; 
-import 'froala-editor/css/froala_editor.pkgd.min.css';
-import 'froala-editor/css/froala_style.min.css'; 
+import "froala-editor/js/plugins.pkgd.min.js";
+import "froala-editor/css/froala_editor.pkgd.min.css";
+import "froala-editor/css/froala_style.min.css";
 import { lazy, Suspense } from "react";
 
 const FroalaEditor = lazy(() => import("react-froala-wysiwyg"));
-
 
 const Add = ({ token }) => {
   const [image1, setImage1] = useState(false);
@@ -26,12 +25,10 @@ const Add = ({ token }) => {
   const [category, setCategory] = useState("");
   const [popularProduct, setPopularProduct] = useState(false);
   const [categories, setCategories] = useState([]);
-  const [quantity, setQuantity] = useState(1);
-  const [stock, setStock] = useState(0);
 
   const config = {
-    key : "AZdksUMuR2CArgS8xFhATz",
-    placeholderText: 'Edit Your Content Here!',
+    key: "AZdksUMuR2CArgS8xFhATz",
+    placeholderText: "Edit Your Content Here!",
     charCounterCount: false,
     toolbarInline: false,
     attribution: false,
@@ -204,14 +201,13 @@ const Add = ({ token }) => {
               Product description
             </p>
             <Suspense fallback={<div>Loading editor...</div>}>
-            <FroalaEditor
-              tag="textarea"
-              config={config}
-              model={description || ""}
-              onModelChange={setDescription}
-            />
-          </Suspense>
-
+              <FroalaEditor
+                tag="textarea"
+                config={config}
+                model={description || ""}
+                onModelChange={setDescription}
+              />
+            </Suspense>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

@@ -3,16 +3,14 @@ import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useCategories } from "../hooks/useCategories";
 import { updateProductIsPopular } from "../api/productApi";
+import axiosInstance from "../utils/axios";
 
 const List = ({ token }) => {
   const [list, setList] = useState([]);
   const categories = useCategories();
-
   const fetchList = async () => {
     try {
-      const response = await axios.get(
-        import.meta.env.VITE_BACKEND_URL || "http://localhost:3000" + "/product"
-      );
+      const response = await axiosInstance.get("/product");
 
       if (response.data) {
         setList(response.data.Products);
@@ -27,10 +25,7 @@ const List = ({ token }) => {
 
   const removeProduct = async (id) => {
     try {
-      const response = await axios.delete(
-        import.meta.env.VITE_BACKEND_URL ||
-          "http://localhost:3000" + `/product/${id}`
-      );
+      const response = await axiosInstance.delete(`/product/${id}`);
 
       if (response.data) {
         toast.success(response.data.message);
