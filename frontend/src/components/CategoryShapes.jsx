@@ -2,17 +2,11 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { FaChevronDown } from "react-icons/fa";
 import axios from "axios";
-
-// Default fallback categories moved outside component
-const fallbackCategories = [
-  { _id: "rings", name: "Rings" },
-  { _id: "necklaces", name: "Necklaces" },
-  { _id: "bracelets", name: "Bracelets" },
-  { _id: "earrings", name: "Earrings" },
-  { _id: "pendants", name: "Pendants" }
-];
+import { useContext } from "react";
+import { ShopContext } from "../context/ShopContext";
 
 const CategoryShapes = () => {
+  const { products } = useContext(ShopContext);
   const [categories, setCategories] = useState([]);
   const [showAllShapes, setShowAllShapes] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -52,17 +46,27 @@ const CategoryShapes = () => {
           }
         }
         
-        // Set categories from API or fallback
-        if (categoriesData) {
-          setCategories(categoriesData);
+        // Filter categories based on products (only show categories that have associated products)
+        if (categoriesData && products && products.length > 0) {
+          const usedCategoryIds = [...new Set(products.map(product => product.category))];
+          console.log('Used category IDs:', usedCategoryIds);
+          
+          const filteredCategories = categoriesData.filter(category => 
+            usedCategoryIds.includes(category._id)
+          );
+          
+          console.log(`Categories with products: ${filteredCategories.length}`);
+          
+          // Limit to maximum 8 categories from API
+          setCategories(filteredCategories.slice(0, 8));
         } else {
-          console.log('All API attempts failed, using fallback categories');
-          setCategories(fallbackCategories);
-          setError(lastError ? `API requests failed: ${lastError.message}` : 'No categories found in API responses');
+          console.log('No categories with products found');
+          setCategories([]);
+          setError(lastError ? `API requests failed: ${lastError.message}` : 'No categories with products found');
         }
       } catch (error) {
         console.error('Error in category fetching process:', error);
-        setCategories(fallbackCategories);
+        setCategories([]);
         setError(`Error fetching categories: ${error.message}`);
       } finally {
         setLoading(false);
@@ -70,7 +74,7 @@ const CategoryShapes = () => {
     };
     
     fetchCategories();
-  }, []);
+  }, [products]);
   
   // Calculate number of items to show
   const visibleCount = showAllShapes ? categories.length : Math.min(5, categories.length);
@@ -102,6 +106,19 @@ const CategoryShapes = () => {
     return name && typeof name === 'string' ? name.substring(0, 1).toUpperCase() : '?';
   };
   
+  // Show a message if no categories available
+  if (!loading && categories.length === 0) {
+    return (
+      <div className="py-12 px-4 sm:px-6 lg:px-8 bg-white">
+        <div className="max-w-7xl mx-auto text-center">
+          <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900">Categories</h2>
+          <p className="mt-4 text-gray-600">No categories available at the moment.</p>
+          {error && <p className="mt-2 text-xs text-red-500">{error}</p>}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="py-12 px-4 sm:px-6 lg:px-8 bg-white">
       <div className="max-w-7xl mx-auto">
@@ -125,11 +142,24 @@ const CategoryShapes = () => {
                 className="group"
               >
                 <div className="bg-gray-50 rounded-lg overflow-hidden h-24 w-full transition-all group-hover:shadow-md flex items-center justify-center">
-                  <div className="w-12 h-12 flex items-center justify-center bg-gray-200 rounded-full">
-                    <span className="text-gray-500 text-xl font-medium">
-                      {getCategoryInitial(category.name)}
-                    </span>
-                  </div>
+                  {category.image ? (
+                    <img 
+                      src={`http://localhost:3000/uploads/diamond-shapes/${category.image}`} 
+                      alt={category.name}
+                      className="object-contain h-20 w-20"
+                      onError={(e) => {
+                        // If image fails to load, show the initial letter
+                        e.target.style.display = 'none';
+                        e.target.parentNode.querySelector('.fallback-icon').style.display = 'flex';
+                      }}
+                    />
+                  ) : (
+                    <div className="w-12 h-12 flex items-center justify-center bg-gray-200 rounded-full fallback-icon">
+                      <span className="text-gray-500 text-xl font-medium">
+                        {getCategoryInitial(category.name)}
+                      </span>
+                    </div>
+                  )}
                 </div>
                 <p className="mt-2 text-xs sm:text-sm text-center font-medium text-gray-800">
                   {category.name}

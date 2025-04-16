@@ -584,7 +584,7 @@ const Products = () => {
                         msOverflowStyle: "none",
                       }}
                     >
-                      <div className="flex flex-row space-x-6 min-w-max">
+                      <div className="flex flex-row space-x-4 md:space-x-6 min-w-max">
                         {filteredCategories.map((category) => (
                           <div
                             key={category._id}
@@ -609,25 +609,33 @@ const Products = () => {
                             }`}
                           >
                             <div
-                              className={`w-20 h-20 md:w-16 md:h-16 rounded-full overflow-hidden mb-2 border-2 shadow-md ${
+                              className={`w-16 h-16 sm:w-18 sm:h-18 md:w-20 md:h-20 rounded-full overflow-hidden mb-2 border-2 shadow-md flex items-center justify-center ${
                                 selectedCategories.includes(category._id)
                                   ? "border-gray-900 ring-2 ring-gray-300"
                                   : "border-transparent hover:border-gray-300"
                               }`}
                             >
-                              <img
-                                // src={`/images/diamond-shapes/${category._id}.png`}
-                                src={`https://placehold.co/70x70`}
-                                alt={category.name}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  e.target.onerror = null;
-                                  e.target.src = "https://placehold.co/70x70";
-                                }}
-                              />
+                              {category.image ? (
+                                <img 
+                                  src={`http://localhost:3000/uploads/diamond-shapes/${category.image}`} 
+                                  alt={category.name}
+                                  className="w-full h-full object-contain"
+                                  onError={(e) => {
+                                    // If image fails to load, show the initial letter
+                                    e.target.style.display = 'none';
+                                    e.target.parentNode.querySelector('.fallback-icon').style.display = 'flex';
+                                  }}
+                                />
+                              ) : (
+                                <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-gray-200 rounded-full fallback-icon">
+                                  <span className="text-gray-500 text-lg sm:text-xl font-medium">
+                                    {category.name ? category.name.substring(0, 1).toUpperCase() : '?'}
+                                  </span>
+                                </div>
+                              )}
                             </div>
                             <span
-                              className={`text-sm ${
+                              className={`text-xs sm:text-sm text-center ${
                                 selectedCategories.includes(category._id)
                                   ? "font-semibold"
                                   : "font-normal"
@@ -914,7 +922,7 @@ const Products = () => {
                                 msOverflowStyle: "none",
                               }}
                             >
-                              <div className="flex flex-row space-x-5 min-w-max">
+                              <div className="flex flex-row space-x-3 sm:space-x-4 min-w-max">
                                 {filteredCategories.map((category) => (
                                   <div
                                     key={category._id}
@@ -943,7 +951,7 @@ const Products = () => {
                                     }`}
                                   >
                                     <div
-                                      className={`w-16 h-16 rounded-full overflow-hidden mb-2 border-2 shadow-md ${
+                                      className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden mb-2 border-2 shadow-md flex items-center justify-center ${
                                         selectedCategories.includes(
                                           category._id
                                         )
@@ -951,20 +959,27 @@ const Products = () => {
                                           : "border-transparent hover:border-gray-300"
                                       }`}
                                     >
-                                      <img
-                                        // src={`/images/diamond-shapes/${category._id}.png`}
-                                        src={`https://placehold.co/70x70`}
-                                        alt={category.name}
-                                        className="w-full h-full object-cover"
-                                        onError={(e) => {
-                                          e.target.onerror = null;
-                                          e.target.src =
-                                            "https://placehold.co/70x70";
-                                        }}
-                                      />
+                                      {category.image ? (
+                                        <img 
+                                          src={`http://localhost:3000/uploads/diamond-shapes/${category.image}`} 
+                                          alt={category.name}
+                                          className="w-full h-full object-contain"
+                                          onError={(e) => {
+                                            // If image fails to load, show the initial letter
+                                            e.target.style.display = 'none';
+                                            e.target.parentNode.querySelector('.fallback-icon').style.display = 'flex';
+                                          }}
+                                        />
+                                      ) : (
+                                        <div className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center bg-gray-200 rounded-full fallback-icon">
+                                          <span className="text-gray-500 text-md sm:text-lg font-medium">
+                                            {category.name ? category.name.substring(0, 1).toUpperCase() : '?'}
+                                          </span>
+                                        </div>
+                                      )}
                                     </div>
                                     <span
-                                      className={`text-xs ${
+                                      className={`text-xs text-center max-w-[60px] sm:max-w-[80px] truncate ${
                                         selectedCategories.includes(
                                           category._id
                                         )

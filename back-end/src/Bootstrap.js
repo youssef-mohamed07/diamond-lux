@@ -15,6 +15,12 @@ import UIRouter from "./modules/UI/UI.router.js";
 import { v4 as uuidv4 } from "uuid";
 import FormRouter from "./modules/form/form.router.js";
 import {} from 'dotenv/config'
+import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export const bootstrap = (app) => {
   let MongoDBStore = mongoSession(session);
@@ -26,6 +32,9 @@ export const bootstrap = (app) => {
   store.on("error", function (error) {
     console.error("Session store error:", error);
   });
+
+  // Serve static files from uploads directory
+  app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
   app.use(
     session({
@@ -63,4 +72,7 @@ export const bootstrap = (app) => {
   app.use("/api/about", aboutUsRouter);
   app.use("/api/ui", UIRouter);
   app.use("/api/form", FormRouter);
+  
+  // Add non-/api routes for backward compatibility
+  app.use("/category", CategoryRouter);
 };
