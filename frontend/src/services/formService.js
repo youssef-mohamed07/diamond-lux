@@ -25,7 +25,6 @@ export const submitContactForm = async (formData) => {
       templateParams
     );
 
-    console.log("Email sent successfully:", response);
     return response;
   } catch (error) {
     console.error("Error sending email:", error);
@@ -54,7 +53,6 @@ export const submitQuoteRequest = async (formData) => {
       templateParams
     );
 
-    console.log("Quote request email sent successfully:", response);
     return response;
   } catch (error) {
     console.error("Error sending quote request email:", error);

@@ -6,8 +6,6 @@ export const sendWishlistEmail = async (formData) => {
     ...formData,
   };
 
-  console.log("🟡 Sending Wishlist Email with Data:", transformedData); // Debugging
-
   const response = await axiosInstance.post(
     "/wishlist/send-email",
     transformedData,
@@ -15,7 +13,6 @@ export const sendWishlistEmail = async (formData) => {
   );
 
   if (response.status === 200) {
-    console.log("✅ Wishlist Email Sent Successfully");
     return response.data;
   }
   throw new Error(response.data?.message || "Failed to send email");
@@ -59,7 +56,6 @@ export const removeFromWishlist = async (itemId) => {
         withCredentials: true,
       }
     );
-    console.log("Remove item response:", response.data);
     return response.data;
   } catch (error) {
     console.error("Remove item error:", error);
@@ -74,10 +70,14 @@ export const clearWishlist = async () => {
 };
 
 export const updateWishlistItem = async (itemId, quantity) => {
-  const response = await axiosInstance.put(`/wishlist/item/${itemId}/update`, {
-    quantity
-  }, {
-    withCredentials: true
-  });
+  const response = await axiosInstance.put(
+    `/wishlist/item/${itemId}/update`,
+    {
+      quantity,
+    },
+    {
+      withCredentials: true,
+    }
+  );
   return response.data;
 };

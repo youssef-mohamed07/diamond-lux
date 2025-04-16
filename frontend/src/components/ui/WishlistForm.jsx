@@ -109,7 +109,6 @@ const WishlistForm = ({
     if (loading) return;
 
     setLoading(true);
-    console.log("🟡 Wishlist Form Data:", formData);
 
     // Check for empty required fields and date validation
     const missingFields = fields.filter((field) => {
@@ -129,7 +128,6 @@ const WishlistForm = ({
     });
 
     if (missingFields.length > 0) {
-      console.log("Missing fields:", missingFields);
       const dateError = missingFields.find(
         (f) => f.type === "date" && formData[f.name] < today
       );

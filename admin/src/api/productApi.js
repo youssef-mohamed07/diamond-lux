@@ -19,7 +19,6 @@ export const addProduct = async (formData, token) => {
 export const getCategories = async () => {
   try {
     const response = await axiosInstance.get("/category");
-    console.log("Categories response:", response.data);
     return response.data.categories || [];
   } catch (error) {
     console.error("Error fetching categories:", error);

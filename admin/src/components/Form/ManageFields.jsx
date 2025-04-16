@@ -51,8 +51,6 @@ const ManageFields = ({ fields, setFields }) => {
 
   const handleReorder = async (newOrder) => {
     try {
-      console.log("Reordering to:", newOrder); // ✅ Debugging the order before API call
-
       const updatedFields = await reorderFormFields(newOrder);
 
       setFields(updatedFields.fields); // ✅ Set fields from backend response

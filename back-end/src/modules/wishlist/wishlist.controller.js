@@ -9,8 +9,6 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const sendWishlistEmail = catchError(async (req, res, next) => {
-  console.log("🟡 Received Wishlist Email Request:", req.body); // Debugging log
-
   const userId = req.session?.userId; // Ensure session exists
   let wishlistItemsHtml = "";
   let totalPrice = 0;
@@ -39,7 +37,6 @@ const sendWishlistEmail = catchError(async (req, res, next) => {
   }
 
   const formData = req.body;
-  console.log("✅ Extracted Dynamic Form Data:", formData);
 
   // Check if we have manually formatted items from frontend
   const hasFormattedItems =
@@ -101,8 +98,6 @@ const sendWishlistEmail = catchError(async (req, res, next) => {
     ${formFieldsHtml}
     ${wishlistSection}
   `;
-
-  console.log("📩 Email HTML Content:", emailHtml);
 
   // Get submitter's name from form data
   const submitterName = formData.first_name || formData.name;
@@ -197,8 +192,6 @@ const removeItemFromWishlist = catchError(async (req, res, next) => {
     { $pull: { wishlistItems: { _id: req.params.id } } },
     { new: true }
   );
-
-  console.log("wishlist" + wishlist);
 
   if (!wishlist) {
     return next(new AppError("Wishlist not found", 404));

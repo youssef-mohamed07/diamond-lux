@@ -11,7 +11,7 @@ import GalleryItem from "../components/Home/GalleryItem";
 import { assets } from "../assets/assets";
 import { useCategories } from "../../hooks/useCategories";
 import NewsletterBox from "../components/NewsletterBox";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   FaFilter,
   FaSort,
@@ -19,61 +19,141 @@ import {
   FaTimes,
   FaSearch,
   FaSpinner,
+  FaGem,
+  FaCut,
+  FaChevronRight,
+  FaChevronLeft,
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const Products = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const query = searchParams.get("q") || "";
+  const categoryParam = searchParams.get("category") || "";
+
+  // Data store
   const { products } = useContext(ShopContext);
+
+  // Core filtering states
+  const [selectedCategories, setSelectedCategories] = useState(
+    categoryParam ? [categoryParam] : []
+  );
+  const [searchQuery, setSearchQuery] = useState(query || "");
   const [filterProducts, setFilterProducts] = useState([]);
-  const [category, setCategory] = useState([]);
+  const [showClearFilter, setShowClearFilter] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [sortType, setSortType] = useState("relevant");
+
+  // Additional UI state
   const [showFilter, setShowFilter] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [showSortOptions, setShowSortOptions] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchInputValue, setSearchInputValue] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
-  const searchTimeout = useRef(null);
+
+  // Mobile menu states
+  const [mobileFiltersModal, setMobileFiltersModal] = useState(false);
+
+  // Advanced filter states for diamonds
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [shapes, setShapes] = useState([]);
+  const [colors, setColors] = useState([]);
+  const [clarities, setClarities] = useState([]);
+  const [cuts, setCuts] = useState([]);
+  const [polishes, setPolishes] = useState([]);
+  const [symmetries, setSymmetries] = useState([]);
+  const [fluorescences, setFluorescences] = useState([]);
+  const [labs, setLabs] = useState([]);
+
+  // Range slider states
+  const [caratRange, setCaratRange] = useState([0, 20]);
+  const [priceRange, setPriceRange] = useState([0, 100000]);
+  const [maxCarat, setMaxCarat] = useState(20);
+  const [maxPrice, setMaxPrice] = useState(100000);
+
+  // Unique values for filter options
+  const [uniqueShapes, setUniqueShapes] = useState([]);
+  const [uniqueColors, setUniqueColors] = useState([]);
+  const [uniqueClarities, setUniqueClarities] = useState([]);
+  const [uniqueCuts, setUniqueCuts] = useState([]);
+  const [uniquePolishes, setUniquePolishes] = useState([]);
+  const [uniqueSymmetries, setUniqueSymmetries] = useState([]);
+  const [uniqueFluorescences, setUniqueFluorescences] = useState([]);
+  const [uniqueLabs, setUniqueLabs] = useState([]);
 
   const categories = useCategories();
+  // Filter categories to only include those with associated products
+  const [filteredCategories, setFilteredCategories] = useState([]);
+
+  // Define sort options
+  const sortOptions = [
+    { value: "relevant", label: "Relevance" },
+    { value: "low-high", label: "Price: Low to High" },
+    { value: "high-low", label: "Price: High to Low" },
+  ];
 
   const toggleCategory = (e) => {
-    if (category.includes(e.target.value)) {
-      setCategory((prev) => prev.filter((item) => item !== e.target.value));
+    const categoryId = e.target.value;
+    if (selectedCategories.includes(categoryId)) {
+      setSelectedCategories(
+        selectedCategories.filter((id) => id !== categoryId)
+      );
     } else {
-      setCategory((prev) => [...prev, e.target.value]);
+      setSelectedCategories([...selectedCategories, categoryId]);
     }
+  };
+
+  // Toggle function for diamond property filters
+  const toggleFilter = (value, currentValues, setterFunction) => {
+    if (currentValues.includes(value)) {
+      setterFunction((prev) => prev.filter((item) => item !== value));
+    } else {
+      setterFunction((prev) => [...prev, value]);
+    }
+  };
+
+  // Function to reset all advanced filters
+  const resetAdvancedFilters = () => {
+    setShapes([]);
+    setColors([]);
+    setClarities([]);
+    setCuts([]);
+    setPolishes([]);
+    setSymmetries([]);
+    setFluorescences([]);
+    setLabs([]);
+    setCaratRange([0, maxCarat]);
+    setPriceRange([0, maxPrice]);
   };
 
   const clearFilters = () => {
-    setCategory([]);
-    setSortType("relevant");
+    setSelectedCategories([]);
+    setShapes([]);
+    setColors([]);
+    setClarities([]);
+    setCuts([]);
+    setPolishes([]);
+    setSymmetries([]);
+    setFluorescences([]);
+    setLabs([]);
+    setCaratRange([0, maxCarat]);
+    setPriceRange([0, maxPrice]);
     setSearchQuery("");
-    setSearchInputValue("");
   };
 
-  // Debounced search function
+  // Search and filter handlers
   const handleSearchChange = (e) => {
-    const value = e.target.value;
-    setSearchInputValue(value);
+    setSearchQuery(e.target.value);
     setIsSearching(true);
-
-    // Clear existing timeout
-    if (searchTimeout.current) {
-      clearTimeout(searchTimeout.current);
-    }
-
-    // Set new timeout for search
-    searchTimeout.current = setTimeout(() => {
-      setSearchQuery(value);
+    // Implement debounce logic here if needed
+    setTimeout(() => {
       setIsSearching(false);
     }, 500);
   };
 
-  // Clear search handler
   const clearSearch = () => {
-    setSearchInputValue("");
     setSearchQuery("");
     setIsSearching(false);
   };
@@ -90,11 +170,81 @@ const Products = () => {
     }
 
     // Apply category filter
-    if (category.length > 0) {
+    if (selectedCategories.length > 0) {
       filteredProducts = filteredProducts.filter((product) =>
-        category.includes(product.category)
+        selectedCategories.includes(product.category)
       );
     }
+
+    // Apply advanced diamond filters
+    // Shape filter
+    if (shapes.length > 0) {
+      filteredProducts = filteredProducts.filter(
+        (product) => product.shape && shapes.includes(product.shape)
+      );
+    }
+
+    // Color filter
+    if (colors.length > 0) {
+      filteredProducts = filteredProducts.filter(
+        (product) => product.col && colors.includes(product.col)
+      );
+    }
+
+    // Clarity filter
+    if (clarities.length > 0) {
+      filteredProducts = filteredProducts.filter(
+        (product) => product.clar && clarities.includes(product.clar)
+      );
+    }
+
+    // Cut filter
+    if (cuts.length > 0) {
+      filteredProducts = filteredProducts.filter(
+        (product) => product.cut && cuts.includes(product.cut)
+      );
+    }
+
+    // Polish filter
+    if (polishes.length > 0) {
+      filteredProducts = filteredProducts.filter(
+        (product) => product.pol && polishes.includes(product.pol)
+      );
+    }
+
+    // Symmetry filter
+    if (symmetries.length > 0) {
+      filteredProducts = filteredProducts.filter(
+        (product) => product.symm && symmetries.includes(product.symm)
+      );
+    }
+
+    // Fluorescence filter
+    if (fluorescences.length > 0) {
+      filteredProducts = filteredProducts.filter(
+        (product) => product.flo && fluorescences.includes(product.flo)
+      );
+    }
+
+    // Lab filter
+    if (labs.length > 0) {
+      filteredProducts = filteredProducts.filter(
+        (product) => product.lab && labs.includes(product.lab)
+      );
+    }
+
+    // Carat range filter
+    filteredProducts = filteredProducts.filter(
+      (product) =>
+        !product.carats ||
+        (product.carats >= caratRange[0] && product.carats <= caratRange[1])
+    );
+
+    // Price range filter
+    filteredProducts = filteredProducts.filter(
+      (product) =>
+        product.price >= priceRange[0] && product.price <= priceRange[1]
+    );
 
     // Apply sorting
     if (sortType === "low-high") {
@@ -104,11 +254,165 @@ const Products = () => {
     }
 
     setFilterProducts(filteredProducts);
-    setLoading(false);
-  }, [products, searchQuery, category, sortType]);
+    setIsLoading(false);
+  }, [
+    products,
+    searchQuery,
+    selectedCategories,
+    sortType,
+    shapes,
+    colors,
+    clarities,
+    cuts,
+    polishes,
+    symmetries,
+    fluorescences,
+    labs,
+    caratRange,
+    priceRange,
+  ]);
+
+  // Extract unique values for filter options and filter categories
+  useEffect(() => {
+    if (products && products.length > 0) {
+      // Find max price and carat for ranges
+      const maxProductPrice = Math.max(...products.map((p) => p.price || 0));
+      const maxProductCarat = Math.max(...products.map((p) => p.carats || 0));
+      setMaxPrice(maxProductPrice > 0 ? maxProductPrice : 1000000);
+      setMaxCarat(maxProductCarat > 0 ? maxProductCarat : 10);
+      setPriceRange([0, maxProductPrice > 0 ? maxProductPrice : 1000000]);
+      setCaratRange([0, maxProductCarat > 0 ? maxProductCarat : 10]);
+
+      // Extract unique values
+      setUniqueShapes([
+        ...new Set(products.filter((p) => p.shape).map((p) => p.shape)),
+      ]);
+      setUniqueColors([
+        ...new Set(products.filter((p) => p.col).map((p) => p.col)),
+      ]);
+      setUniqueClarities([
+        ...new Set(products.filter((p) => p.clar).map((p) => p.clar)),
+      ]);
+      setUniqueCuts([
+        ...new Set(products.filter((p) => p.cut).map((p) => p.cut)),
+      ]);
+      setUniquePolishes([
+        ...new Set(products.filter((p) => p.pol).map((p) => p.pol)),
+      ]);
+      setUniqueSymmetries([
+        ...new Set(products.filter((p) => p.symm).map((p) => p.symm)),
+      ]);
+      setUniqueFluorescences([
+        ...new Set(products.filter((p) => p.flo).map((p) => p.flo)),
+      ]);
+      setUniqueLabs([
+        ...new Set(products.filter((p) => p.lab).map((p) => p.lab)),
+      ]);
+
+      // Filter categories to only include those with associated products
+      if (categories && categories.length > 0) {
+        const usedCategoryIds = [...new Set(products.map((p) => p.category))];
+        setFilteredCategories(
+          categories.filter((category) =>
+            usedCategoryIds.includes(category._id)
+          )
+        );
+      }
+    }
+  }, [products, categories]);
+
+  // Reset form when there are no products or categories to show
+  useEffect(() => {
+    if (products.length === 0 || filteredCategories.length === 0) {
+      setSelectedCategories([]);
+    }
+  }, [products, filteredCategories]);
+
+  // Clear selected categories if they no longer exist in filtered categories
+  useEffect(() => {
+    if (selectedCategories.length > 0 && filteredCategories.length > 0) {
+      const validCategoryIds = filteredCategories.map((cat) => cat._id);
+      const validSelectedCategories = selectedCategories.filter((id) =>
+        validCategoryIds.includes(id)
+      );
+
+      if (validSelectedCategories.length !== selectedCategories.length) {
+        setSelectedCategories(validSelectedCategories);
+      }
+    }
+  }, [filteredCategories, selectedCategories]);
+
+  // Add CSS for range sliders
+  const rangeSliderStyles = `
+    .multi-range {
+      position: relative;
+      height: 30px;
+    }
+    
+    .multi-range input[type="range"] {
+      position: absolute;
+      width: 100%;
+      height: 5px;
+      top: 10px;
+      background: none;
+      pointer-events: none;
+    }
+    
+    .multi-range input[type="range"]::-webkit-slider-thumb {
+      pointer-events: auto;
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #000;
+      cursor: pointer;
+      margin-top: -6px;
+      z-index: 50;
+      position: relative;
+    }
+    
+    .multi-range input[type="range"]::-moz-range-thumb {
+      pointer-events: auto;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #000;
+      cursor: pointer;
+      border: none;
+      z-index: 50;
+      position: relative;
+    }
+    
+    .multi-range .range-track {
+      position: absolute;
+      width: 100%;
+      height: 5px;
+      top: 12px;
+      background: #e5e7eb;
+      z-index: 1;
+    }
+    
+    .multi-range .min-slider {
+      z-index: 2;
+    }
+    
+    .multi-range .max-slider {
+      z-index: 3;
+    }
+
+    /* Hide scrollbar styles */
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .scrollbar-hide {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  `;
 
   // Loading screen
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-br from-gray-50 to-gray-100">
         <div className="w-20 h-20 relative">
@@ -123,7 +427,8 @@ const Products = () => {
   }
 
   return (
-    <>
+    <div className="bg-white min-h-screen">
+      <style dangerouslySetInnerHTML={{ __html: rangeSliderStyles }} />
       {/* Hero Section with Background Image */}
       <div className="relative bg-black text-white">
         {/* Background Image */}
@@ -185,565 +490,1330 @@ const Products = () => {
         </div>
       </div>
 
-      <div className="bg-gradient-to-br from-gray-50 to-gray-100 py-16">
-        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Mobile Filter Button */}
-          <div className="lg:hidden flex justify-between items-center mb-6">
-            <button
-              onClick={() => setIsMobileFilterOpen(!isMobileFilterOpen)}
-              className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow-md"
-            >
-              <FaFilter />
-              <span>Filters & Sort</span>
-            </button>
-            {filterProducts.length > 0 && (
-              <span className="text-gray-700">
-                {filterProducts.length}{" "}
-                {filterProducts.length === 1 ? "Product" : "Products"}
-              </span>
-            )}
-          </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="flex flex-col mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            Our Collection
+          </h1>
+          <p className="text-lg text-gray-600">
+            Explore our curated selection of exquisite diamonds and fine jewelry
+          </p>
+        </div>
 
-          <div className="flex flex-col lg:flex-row gap-10">
-            {/* Mobile Filters Section */}
-            <div className="lg:hidden space-y-4 mb-6">
-              {/* Mobile Search */}
-              <div className="relative mb-4">
-                <input
-                  type="text"
-                  placeholder="Search products..."
-                  value={searchInputValue}
-                  onChange={handleSearchChange}
-                  className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-gray-900 transition-shadow"
-                />
-                <div className="absolute left-3 top-3.5 text-gray-400">
-                  {isSearching ? (
-                    <FaSpinner className="animate-spin" />
-                  ) : (
-                    <FaSearch />
-                  )}
-                </div>
-                {searchInputValue && (
-                  <button
-                    onClick={clearSearch}
-                    className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600"
-                  >
-                    <FaTimes />
-                  </button>
-                )}
+        {/* Search Bar */}
+        <div className="w-full mb-8">
+          <div className="relative flex items-center mb-4">
+            <div className="relative flex-grow">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={handleSearchChange}
+                placeholder="Search products..."
+                className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+              />
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FaSearch className="h-5 w-5 text-gray-400" />
               </div>
+              {searchQuery && (
+                <button
+                  onClick={clearSearch}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                >
+                  <FaTimes className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
 
-              {/* Mobile Filter and Sort Controls */}
-              <div className="grid grid-cols-2 gap-4">
-                {/* Categories Dropdown */}
-                <div className="relative">
-                  <button
-                    onClick={() => setShowFilter(!showFilter)}
-                    className="w-full flex items-center justify-between px-4 py-2 bg-white rounded-lg shadow-sm border border-gray-300"
-                  >
-                    <span className="flex items-center gap-2">
-                      <FaFilter />
-                      Categories
-                    </span>
-                    <FaChevronDown
-                      className={`transition-transform ${
-                        showFilter ? "rotate-180" : ""
-                      }`}
-                    />
-                  </button>
-                  {showFilter && (
-                    <div className="absolute w-full mt-2 bg-white rounded-lg shadow-lg p-4 max-h-60 overflow-y-auto">
-                      <div className="space-y-2">
-                        {categories?.map((cat) => (
-                          <div key={cat._id} className="flex items-center">
-                            <input
-                              type="checkbox"
-                              id={`mobile-category-${cat._id}`}
-                              value={cat._id}
-                              checked={category.includes(cat._id)}
-                              onChange={toggleCategory}
-                              className="w-4 h-4 rounded border-gray-300"
-                            />
-                            <label
-                              htmlFor={`mobile-category-${cat._id}`}
-                              className="ml-2 text-sm"
+        {/* Main Layout - Three Section Design */}
+        <div className="flex flex-col w-full">
+          {/* SECTION 1: Top Filters - Full Width on All Screens (hidden on mobile) */}
+          <div className="w-full mb-8 bg-white p-6 rounded-lg shadow-sm border border-gray-100 hidden lg:block">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+              Quick Filters
+            </h2>
+
+            <div className="flex flex-col">
+              {/* Diamond Shapes Category Slider - 100% Width */}
+              <div className="w-full mb-8">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  Diamond Shapes
+                </h3>
+                {filteredCategories.length > 0 ? (
+                  <div className="relative group">
+                    {/* Left Arrow Navigation */}
+                    <button
+                      className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white/80 hover:bg-white shadow-md rounded-full p-2 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity -ml-2"
+                      onClick={() => {
+                        const container = document.getElementById(
+                          "diamond-shapes-slider"
+                        );
+                        if (container) {
+                          container.scrollBy({
+                            left: -200,
+                            behavior: "smooth",
+                          });
+                        }
+                      }}
+                    >
+                      <FaChevronLeft className="text-gray-600 w-4 h-4" />
+                    </button>
+
+                    {/* Right Arrow Navigation */}
+                    <button
+                      className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white/80 hover:bg-white shadow-md rounded-full p-2 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity -mr-2"
+                      onClick={() => {
+                        const container = document.getElementById(
+                          "diamond-shapes-slider"
+                        );
+                        if (container) {
+                          container.scrollBy({ left: 200, behavior: "smooth" });
+                        }
+                      }}
+                    >
+                      <FaChevronRight className="text-gray-600 w-4 h-4" />
+                    </button>
+
+                    {/* Slider Container */}
+                    <div
+                      id="diamond-shapes-slider"
+                      className="overflow-x-auto scrollbar-hide py-4 px-2"
+                      style={{
+                        scrollbarWidth: "none",
+                        msOverflowStyle: "none",
+                      }}
+                    >
+                      <div className="flex flex-row space-x-6 min-w-max">
+                        {filteredCategories.map((category) => (
+                          <div
+                            key={category._id}
+                            onClick={() => {
+                              if (selectedCategories.includes(category._id)) {
+                                setSelectedCategories(
+                                  selectedCategories.filter(
+                                    (id) => id !== category._id
+                                  )
+                                );
+                              } else {
+                                setSelectedCategories([
+                                  ...selectedCategories,
+                                  category._id,
+                                ]);
+                              }
+                            }}
+                            className={`cursor-pointer flex flex-col items-center transition-all transform hover:scale-105 ${
+                              selectedCategories.includes(category._id)
+                                ? "scale-105 opacity-100"
+                                : "opacity-80 hover:opacity-100"
+                            }`}
+                          >
+                            <div
+                              className={`w-20 h-20 md:w-16 md:h-16 rounded-full overflow-hidden mb-2 border-2 shadow-md ${
+                                selectedCategories.includes(category._id)
+                                  ? "border-gray-900 ring-2 ring-gray-300"
+                                  : "border-transparent hover:border-gray-300"
+                              }`}
                             >
-                              {cat.name}
-                            </label>
+                              <img
+                                // src={`/images/diamond-shapes/${category._id}.png`}
+                                src={`https://placehold.co/70x70`}
+                                alt={category.name}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  e.target.onerror = null;
+                                  e.target.src = "https://placehold.co/70x70";
+                                }}
+                              />
+                            </div>
+                            <span
+                              className={`text-sm ${
+                                selectedCategories.includes(category._id)
+                                  ? "font-semibold"
+                                  : "font-normal"
+                              }`}
+                            >
+                              {category.name}
+                            </span>
                           </div>
                         ))}
                       </div>
                     </div>
-                  )}
-                </div>
+                  </div>
+                ) : (
+                  <div className="p-6 bg-gray-50 rounded-lg text-center">
+                    <p className="text-gray-500">
+                      No diamond shapes available for the current products.
+                    </p>
+                  </div>
+                )}
+              </div>
 
-                {/* Sort Dropdown */}
-                <div className="relative">
-                  <button
-                    onClick={() => setShowSortOptions(!showSortOptions)}
-                    className="w-full flex items-center justify-between px-4 py-2 bg-white rounded-lg shadow-sm border border-gray-300"
-                  >
-                    <span className="flex items-center gap-2">
-                      <FaSort />
-                      Sort
-                    </span>
-                    <FaChevronDown
-                      className={`transition-transform ${
-                        showSortOptions ? "rotate-180" : ""
+              {/* Color Filter - 100% Width */}
+              <div className="w-full mb-8">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  Color
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {uniqueColors.map((color) => (
+                    <button
+                      key={color}
+                      onClick={() => toggleFilter(color, colors, setColors)}
+                      className={`px-3 py-1 text-xs rounded-full ${
+                        colors.includes(color)
+                          ? "bg-gray-900 text-white shadow-md"
+                          : "bg-gray-100 text-gray-800 hover:bg-gray-200"
                       }`}
-                    />
-                  </button>
-                  {showSortOptions && (
-                    <div className="absolute w-full mt-2 bg-white rounded-lg shadow-lg p-4">
-                      <div className="space-y-2">
-                        <div className="flex items-center">
-                          <input
-                            type="radio"
-                            id="mobile-sort-relevant"
-                            name="mobile-sort"
-                            checked={sortType === "relevant"}
-                            onChange={() => setSortType("relevant")}
-                            className="w-4 h-4"
-                          />
-                          <label
-                            htmlFor="mobile-sort-relevant"
-                            className="ml-2 text-sm"
-                          >
-                            Relevance
-                          </label>
-                        </div>
-                        <div className="flex items-center">
-                          <input
-                            type="radio"
-                            id="mobile-sort-low-high"
-                            name="mobile-sort"
-                            checked={sortType === "low-high"}
-                            onChange={() => setSortType("low-high")}
-                            className="w-4 h-4"
-                          />
-                          <label
-                            htmlFor="mobile-sort-low-high"
-                            className="ml-2 text-sm"
-                          >
-                            Price: Low to High
-                          </label>
-                        </div>
-                        <div className="flex items-center">
-                          <input
-                            type="radio"
-                            id="mobile-sort-high-low"
-                            name="mobile-sort"
-                            checked={sortType === "high-low"}
-                            onChange={() => setSortType("high-low")}
-                            className="w-4 h-4"
-                          />
-                          <label
-                            htmlFor="mobile-sort-high-low"
-                            className="ml-2 text-sm"
-                          >
-                            Price: High to Low
-                          </label>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                    >
+                      {color}
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              {/* Clear Filters Button */}
-              {(category.length > 0 || searchQuery) && (
-                <button
-                  onClick={clearFilters}
-                  className="w-full py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium"
-                >
-                  Clear Filters
-                </button>
-              )}
-            </div>
-
-            {/* Desktop Sidebar Filters */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5 }}
-              className="hidden lg:block lg:w-1/4 xl:w-1/5"
-            >
-              <div className="bg-white shadow-lg p-8 sticky top-24">
-                <div className="flex justify-between items-center mb-8">
-                  <h2 className="text-xl font-semibold text-gray-900 flex items-center">
-                    <FaFilter className="mr-3" /> Filters
-                  </h2>
-                  {(category.length > 0 || searchQuery) && (
-                    <button
-                      onClick={clearFilters}
-                      className="text-sm text-gray-500 hover:text-gray-900 flex items-center transition-colors"
-                    >
-                      <FaTimes className="mr-1" /> Clear
-                    </button>
-                  )}
+              {/* 2x2 Grid for Price/Carat and Cut/Clarity */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-4">
+                {/* Price Range Inputs */}
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    Price Range
+                  </h3>
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                          $
+                        </span>
+                        <input
+                          type="number"
+                          min={0}
+                          max={maxPrice}
+                          step={100}
+                          value={priceRange[0]}
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value);
+                            if (isNaN(value)) return;
+                            setPriceRange([
+                              Math.min(value, priceRange[1] - 100),
+                              priceRange[1],
+                            ]);
+                          }}
+                          className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
+                        />
+                      </div>
+                    </div>
+                    <div className="mx-4 text-gray-400 self-end mb-2">to</div>
+                    <div className="flex-1">
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                          $
+                        </span>
+                        <input
+                          type="number"
+                          min={0}
+                          max={maxPrice}
+                          step={100}
+                          value={priceRange[1]}
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value);
+                            if (isNaN(value)) return;
+                            setPriceRange([
+                              priceRange[0],
+                              Math.max(value, priceRange[0] + 100),
+                            ]);
+                          }}
+                          className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Search Input */}
-                <div className="mb-8">
-                  <div className="relative">
-                    <input
-                      type="text"
-                      placeholder="Search products by name..."
-                      value={searchInputValue}
-                      onChange={handleSearchChange}
-                      className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 transition-all"
-                    />
-                    <div className="absolute left-3 top-3.5 text-gray-400">
-                      {isSearching ? (
-                        <FaSpinner className="animate-spin" />
-                      ) : (
-                        <FaSearch />
-                      )}
+                {/* Carat Range Inputs */}
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    Carat Range
+                  </h3>
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <input
+                        type="number"
+                        min={0}
+                        max={maxCarat}
+                        step={0.01}
+                        value={caratRange[0]}
+                        onChange={(e) => {
+                          const value = parseFloat(e.target.value);
+                          if (isNaN(value)) return;
+                          setCaratRange([
+                            Math.min(value, caratRange[1] - 0.01),
+                            caratRange[1],
+                          ]);
+                        }}
+                        className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                      />
                     </div>
-                    {searchInputValue && (
+                    <div className="mx-4 text-gray-400 self-end mb-2">to</div>
+                    <div className="flex-1">
+                      <input
+                        type="number"
+                        min={0}
+                        max={maxCarat}
+                        step={0.01}
+                        value={caratRange[1]}
+                        onChange={(e) => {
+                          const value = parseFloat(e.target.value);
+                          if (isNaN(value)) return;
+                          setCaratRange([
+                            caratRange[0],
+                            Math.max(value, caratRange[0] + 0.01),
+                          ]);
+                        }}
+                        className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Cut Filter */}
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    Cut
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {uniqueCuts.map((cut) => (
                       <button
-                        onClick={clearSearch}
-                        className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600"
+                        key={cut}
+                        onClick={() => toggleFilter(cut, cuts, setCuts)}
+                        className={`px-3 py-1 text-xs rounded-full ${
+                          cuts.includes(cut)
+                            ? "bg-gray-900 text-white shadow-md"
+                            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                        }`}
+                      >
+                        {cut}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Clarity Filter */}
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    Clarity
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {uniqueClarities.map((clarity) => (
+                      <button
+                        key={clarity}
+                        onClick={() =>
+                          toggleFilter(clarity, clarities, setClarities)
+                        }
+                        className={`px-3 py-1 text-xs rounded-full ${
+                          clarities.includes(clarity)
+                            ? "bg-gray-900 text-white shadow-md"
+                            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                        }`}
+                      >
+                        {clarity}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* SECTION 2 & 3: Main Content Area with Left Sidebar and Product Grid */}
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Mobile Filter Button - Only show on mobile */}
+            <div className="lg:hidden mb-4">
+              <button
+                onClick={() => setIsMobileFilterOpen(!isMobileFilterOpen)}
+                className="w-full py-2 bg-gray-900 text-white rounded-lg flex justify-center items-center space-x-2"
+              >
+                <FaFilter />
+                <span>{isMobileFilterOpen ? "Hide Filters" : "Filters"}</span>
+              </button>
+            </div>
+
+            {/* Mobile Filter Panel */}
+            <AnimatePresence>
+              {isMobileFilterOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="lg:hidden overflow-hidden mb-6"
+                >
+                  <div className="bg-white p-5 rounded-lg shadow-md">
+                    <div className="flex justify-between items-center mb-4">
+                      <h2 className="text-lg font-semibold text-gray-900">
+                        All Filters
+                      </h2>
+                      <button
+                        onClick={() => setIsMobileFilterOpen(false)}
+                        className="text-gray-500 hover:text-gray-700"
                       >
                         <FaTimes />
                       </button>
-                    )}
-                  </div>
-                  {searchQuery && (
-                    <div className="mt-2 text-sm text-gray-600">
-                      {isSearching ? (
-                        <span>Searching...</span>
-                      ) : (
-                        <span>
-                          Found {filterProducts.length} results for "
-                          <span className="font-medium">{searchQuery}</span>"
-                        </span>
-                      )}
                     </div>
-                  )}
-                </div>
 
-                <div className="mb-10">
-                  <h3 className="font-medium text-gray-900 mb-5 text-lg">
-                    Categories
-                  </h3>
-                  <div className="space-y-4">
-                    {categories?.length > 0 ? (
-                      categories.map((category) => (
-                        <div key={category._id} className="flex items-center">
-                          <input
-                            id={`category-${category._id}`}
-                            type="checkbox"
-                            value={category._id}
-                            onChange={toggleCategory}
-                            className="h-5 w-5 text-gray-900 focus:ring-gray-500 border-gray-300 rounded"
-                          />
-                          <label
-                            htmlFor={`category-${category._id}`}
-                            className="ml-3 text-gray-700 text-base"
-                          >
-                            {category.name}
-                          </label>
+                    {/* Mobile Quick Filters Section */}
+                    <div className="mb-5">
+                      {/* Diamond Shapes */}
+                      <div className="mb-6">
+                        <h3 className="text-base font-medium text-gray-900 mb-3">
+                          Diamond Shapes
+                        </h3>
+                        {filteredCategories.length > 0 ? (
+                          <div className="relative group">
+                            {/* Left Arrow Navigation */}
+                            <button
+                              className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white/80 hover:bg-white shadow-md rounded-full p-1 flex items-center justify-center -ml-1"
+                              onClick={() => {
+                                const container = document.getElementById(
+                                  "mobile-diamond-shapes-slider"
+                                );
+                                if (container) {
+                                  container.scrollBy({
+                                    left: -150,
+                                    behavior: "smooth",
+                                  });
+                                }
+                              }}
+                            >
+                              <FaChevronLeft className="text-gray-600 w-3 h-3" />
+                            </button>
+
+                            {/* Right Arrow Navigation */}
+                            <button
+                              className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white/80 hover:bg-white shadow-md rounded-full p-1 flex items-center justify-center -mr-1"
+                              onClick={() => {
+                                const container = document.getElementById(
+                                  "mobile-diamond-shapes-slider"
+                                );
+                                if (container) {
+                                  container.scrollBy({
+                                    left: 150,
+                                    behavior: "smooth",
+                                  });
+                                }
+                              }}
+                            >
+                              <FaChevronRight className="text-gray-600 w-3 h-3" />
+                            </button>
+
+                            {/* Slider Container */}
+                            <div
+                              id="mobile-diamond-shapes-slider"
+                              className="overflow-x-auto scrollbar-hide py-3 px-2"
+                              style={{
+                                scrollbarWidth: "none",
+                                msOverflowStyle: "none",
+                              }}
+                            >
+                              <div className="flex flex-row space-x-5 min-w-max">
+                                {filteredCategories.map((category) => (
+                                  <div
+                                    key={category._id}
+                                    onClick={() => {
+                                      if (
+                                        selectedCategories.includes(
+                                          category._id
+                                        )
+                                      ) {
+                                        setSelectedCategories(
+                                          selectedCategories.filter(
+                                            (id) => id !== category._id
+                                          )
+                                        );
+                                      } else {
+                                        setSelectedCategories([
+                                          ...selectedCategories,
+                                          category._id,
+                                        ]);
+                                      }
+                                    }}
+                                    className={`cursor-pointer flex flex-col items-center transition-all transform hover:scale-105 ${
+                                      selectedCategories.includes(category._id)
+                                        ? "scale-105 opacity-100"
+                                        : "opacity-80 hover:opacity-100"
+                                    }`}
+                                  >
+                                    <div
+                                      className={`w-16 h-16 rounded-full overflow-hidden mb-2 border-2 shadow-md ${
+                                        selectedCategories.includes(
+                                          category._id
+                                        )
+                                          ? "border-gray-900 ring-1 ring-gray-300"
+                                          : "border-transparent hover:border-gray-300"
+                                      }`}
+                                    >
+                                      <img
+                                        // src={`/images/diamond-shapes/${category._id}.png`}
+                                        src={`https://placehold.co/70x70`}
+                                        alt={category.name}
+                                        className="w-full h-full object-cover"
+                                        onError={(e) => {
+                                          e.target.onerror = null;
+                                          e.target.src =
+                                            "https://placehold.co/70x70";
+                                        }}
+                                      />
+                                    </div>
+                                    <span
+                                      className={`text-xs ${
+                                        selectedCategories.includes(
+                                          category._id
+                                        )
+                                          ? "font-semibold"
+                                          : "font-normal"
+                                      }`}
+                                    >
+                                      {category.name}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="p-4 bg-gray-50 rounded-lg text-center mb-4">
+                            <p className="text-gray-500 text-sm">
+                              No diamond shapes available for the current
+                              products.
+                            </p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Color Filter */}
+                      <div className="mb-6">
+                        <h3 className="text-base font-medium text-gray-900 mb-3">
+                          Color
+                        </h3>
+                        <div className="flex flex-wrap gap-2">
+                          {uniqueColors.map((color) => (
+                            <button
+                              key={color}
+                              onClick={() =>
+                                toggleFilter(color, colors, setColors)
+                              }
+                              className={`px-3 py-1 text-xs rounded-full ${
+                                colors.includes(color)
+                                  ? "bg-gray-900 text-white"
+                                  : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                              }`}
+                            >
+                              {color}
+                            </button>
+                          ))}
                         </div>
-                      ))
-                    ) : (
-                      <p className="text-base text-gray-500">
-                        No categories available
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="font-medium text-gray-900 mb-5 text-lg">
-                    Sort By
-                  </h3>
-                  <div className="space-y-4">
-                    <div className="flex items-center">
-                      <input
-                        id="sort-relevant"
-                        name="sort-type"
-                        type="radio"
-                        checked={sortType === "relevant"}
-                        onChange={() => setSortType("relevant")}
-                        className="h-5 w-5 text-gray-900 focus:ring-gray-500 border-gray-300"
-                      />
-                      <label
-                        htmlFor="sort-relevant"
-                        className="ml-3 text-gray-700 text-base"
-                      >
-                        Relevance
-                      </label>
-                    </div>
-                    <div className="flex items-center">
-                      <input
-                        id="sort-low-high"
-                        name="sort-type"
-                        type="radio"
-                        checked={sortType === "low-high"}
-                        onChange={() => setSortType("low-high")}
-                        className="h-5 w-5 text-gray-900 focus:ring-gray-500 border-gray-300"
-                      />
-                      <label
-                        htmlFor="sort-low-high"
-                        className="ml-3 text-gray-700 text-base"
-                      >
-                        Price: Low to High
-                      </label>
-                    </div>
-                    <div className="flex items-center">
-                      <input
-                        id="sort-high-low"
-                        name="sort-type"
-                        type="radio"
-                        checked={sortType === "high-low"}
-                        onChange={() => setSortType("high-low")}
-                        className="h-5 w-5 text-gray-900 focus:ring-gray-500 border-gray-300"
-                      />
-                      <label
-                        htmlFor="sort-high-low"
-                        className="ml-3 text-gray-700 text-base"
-                      >
-                        Price: High to Low
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Products Grid */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="lg:w-3/4 xl:w-4/5"
-            >
-              <div className="bg-white shadow-lg p-5 sm:p-6 md:p-8 mb-6 rounded-lg">
-                {/* Products Header with Count */}
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 pb-4 border-b border-gray-100">
-                  <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-4 sm:mb-0">
-                    <h2 className="text-xl sm:text-2xl font-semibold text-gray-900">
-                      Collections
-                    </h2>
-                    <span className="hidden sm:block w-[5px] h-[5px] bg-black rounded-full"></span>
-                    <div className="flex items-center">
-                      <span className="text-lg sm:text-xl font-medium text-gray-900">
-                        {filterProducts.length}
-                        <span className="ml-1 text-base sm:text-lg text-gray-700">
-                          {filterProducts.length === 1 ? "Product" : "Products"}
-                        </span>
-                      </span>
-                    </div>
-                    {(category.length > 0 || searchQuery) && (
-                      <div className="flex items-center ml-0 sm:ml-4 mt-2 sm:mt-0 bg-gray-100 px-3 py-1 rounded-full text-sm">
-                        <span className="text-gray-700">Filters applied</span>
-                        <button
-                          onClick={clearFilters}
-                          className="ml-2 text-gray-500 hover:text-gray-900"
-                        >
-                          <FaTimes size={12} />
-                        </button>
                       </div>
-                    )}
-                  </div>
-                </div>
 
-                {/* Products Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
-                  {filterProducts.length > 0 ? (
-                    filterProducts.map((product, index) => (
-                      <GalleryItem
-                        key={product._id}
-                        item={product}
-                        index={index}
-                        price={true}
-                      />
-                    ))
-                  ) : (
-                    <div className="col-span-full py-16 text-center">
-                      <div className="mx-auto w-28 h-28 mb-8 text-gray-300">
-                        <svg
-                          className="w-full h-full"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                            clipRule="evenodd"
-                          ></path>
-                        </svg>
+                      {/* 2x2 Grid for Other Quick Filters */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {/* Price Range */}
+                        <div className="mb-4">
+                          <h3 className="text-base font-medium text-gray-900 mb-3">
+                            Price Range
+                          </h3>
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <div className="relative">
+                                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                                  $
+                                </span>
+                                <input
+                                  type="number"
+                                  min={0}
+                                  max={maxPrice}
+                                  step={100}
+                                  value={priceRange[0]}
+                                  onChange={(e) => {
+                                    const value = parseInt(e.target.value);
+                                    if (isNaN(value)) return;
+                                    setPriceRange([
+                                      Math.min(value, priceRange[1] - 100),
+                                      priceRange[1],
+                                    ]);
+                                  }}
+                                  className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
+                                />
+                              </div>
+                            </div>
+                            <div className="mx-2 text-gray-400 self-center">
+                              to
+                            </div>
+                            <div className="flex-1">
+                              <div className="relative">
+                                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                                  $
+                                </span>
+                                <input
+                                  type="number"
+                                  min={0}
+                                  max={maxPrice}
+                                  step={100}
+                                  value={priceRange[1]}
+                                  onChange={(e) => {
+                                    const value = parseInt(e.target.value);
+                                    if (isNaN(value)) return;
+                                    setPriceRange([
+                                      priceRange[0],
+                                      Math.max(value, priceRange[0] + 100),
+                                    ]);
+                                  }}
+                                  className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Carat Range */}
+                        <div className="mb-4">
+                          <h3 className="text-base font-medium text-gray-900 mb-3">
+                            Carat Range
+                          </h3>
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <input
+                                type="number"
+                                min={0}
+                                max={maxCarat}
+                                step={0.01}
+                                value={caratRange[0]}
+                                onChange={(e) => {
+                                  const value = parseFloat(e.target.value);
+                                  if (isNaN(value)) return;
+                                  setCaratRange([
+                                    Math.min(value, caratRange[1] - 0.01),
+                                    caratRange[1],
+                                  ]);
+                                }}
+                                className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                              />
+                            </div>
+                            <div className="mx-2 text-gray-400 self-center">
+                              to
+                            </div>
+                            <div className="flex-1">
+                              <input
+                                type="number"
+                                min={0}
+                                max={maxCarat}
+                                step={0.01}
+                                value={caratRange[1]}
+                                onChange={(e) => {
+                                  const value = parseFloat(e.target.value);
+                                  if (isNaN(value)) return;
+                                  setCaratRange([
+                                    caratRange[0],
+                                    Math.max(value, caratRange[0] + 0.01),
+                                  ]);
+                                }}
+                                className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Cut Filter */}
+                        <div className="mb-4">
+                          <h3 className="text-base font-medium text-gray-900 mb-3">
+                            Cut
+                          </h3>
+                          <div className="flex flex-wrap gap-2">
+                            {uniqueCuts.map((cut) => (
+                              <button
+                                key={cut}
+                                onClick={() => toggleFilter(cut, cuts, setCuts)}
+                                className={`px-3 py-1 text-xs rounded-full ${
+                                  cuts.includes(cut)
+                                    ? "bg-gray-900 text-white"
+                                    : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                                }`}
+                              >
+                                {cut}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Clarity Filter */}
+                        <div className="mb-4">
+                          <h3 className="text-base font-medium text-gray-900 mb-3">
+                            Clarity
+                          </h3>
+                          <div className="flex flex-wrap gap-2">
+                            {uniqueClarities.map((clarity) => (
+                              <button
+                                key={clarity}
+                                onClick={() =>
+                                  toggleFilter(clarity, clarities, setClarities)
+                                }
+                                className={`px-3 py-1 text-xs rounded-full ${
+                                  clarities.includes(clarity)
+                                    ? "bg-gray-900 text-white"
+                                    : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                                }`}
+                              >
+                                {clarity}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                       </div>
-                      <h3 className="text-xl font-medium text-gray-900 mb-3">
-                        {searchQuery
-                          ? `No products found matching "${searchQuery}"`
-                          : "No products found"}
+                    </div>
+
+                    {/* Mobile Advanced Filters Section */}
+                    <div className="border-t border-gray-200 pt-5 mt-5">
+                      <h3 className="text-base font-medium text-gray-900 mb-4">
+                        Advanced Filters
                       </h3>
-                      <p className="text-gray-500 mb-8 max-w-md mx-auto">
-                        {searchQuery
-                          ? "Try a different search term or adjust your filters"
-                          : "Try adjusting your filters or search criteria to find what you're looking for"}
-                      </p>
+
+                      {/* Clarity Filter */}
+                      <div className="mb-4">
+                        <h4 className="text-sm font-medium text-gray-900 mb-2">
+                          Clarity
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {uniqueClarities.map((clarity) => (
+                            <button
+                              key={clarity}
+                              onClick={() =>
+                                toggleFilter(clarity, clarities, setClarities)
+                              }
+                              className={`px-3 py-1 text-xs rounded-full ${
+                                clarities.includes(clarity)
+                                  ? "bg-gray-900 text-white"
+                                  : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                              }`}
+                            >
+                              {clarity}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Cut Filter */}
+                      <div className="mb-4">
+                        <h4 className="text-sm font-medium text-gray-900 mb-2">
+                          Cut
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {uniqueCuts.map((cut) => (
+                            <button
+                              key={cut}
+                              onClick={() => toggleFilter(cut, cuts, setCuts)}
+                              className={`px-3 py-1 text-xs rounded-full ${
+                                cuts.includes(cut)
+                                  ? "bg-gray-900 text-white"
+                                  : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                              }`}
+                            >
+                              {cut}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Polish Filter */}
+                      <div className="mb-4">
+                        <h4 className="text-sm font-medium text-gray-900 mb-2">
+                          Polish
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {uniquePolishes.map((polish) => (
+                            <button
+                              key={polish}
+                              onClick={() =>
+                                toggleFilter(polish, polishes, setPolishes)
+                              }
+                              className={`px-3 py-1 text-xs rounded-full ${
+                                polishes.includes(polish)
+                                  ? "bg-gray-900 text-white"
+                                  : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                              }`}
+                            >
+                              {polish}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Symmetry Filter */}
+                      <div className="mb-4">
+                        <h4 className="text-sm font-medium text-gray-900 mb-2">
+                          Symmetry
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {uniqueSymmetries.map((symmetry) => (
+                            <button
+                              key={symmetry}
+                              onClick={() =>
+                                toggleFilter(
+                                  symmetry,
+                                  symmetries,
+                                  setSymmetries
+                                )
+                              }
+                              className={`px-3 py-1 text-xs rounded-full ${
+                                symmetries.includes(symmetry)
+                                  ? "bg-gray-900 text-white"
+                                  : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                              }`}
+                            >
+                              {symmetry}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Certification/Lab Filter */}
+                      <div className="mb-4">
+                        <h4 className="text-sm font-medium text-gray-900 mb-2">
+                          Certification
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {uniqueLabs.map((lab) => (
+                            <button
+                              key={lab}
+                              onClick={() => toggleFilter(lab, labs, setLabs)}
+                              className={`px-3 py-1 text-xs rounded-full ${
+                                labs.includes(lab)
+                                  ? "bg-gray-900 text-white"
+                                  : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                              }`}
+                            >
+                              {lab}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Fluorescence Filter */}
+                      <div className="mb-4">
+                        <h4 className="text-sm font-medium text-gray-900 mb-2">
+                          Fluorescence
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {uniqueFluorescences.map((fluorescence) => (
+                            <button
+                              key={fluorescence}
+                              onClick={() =>
+                                toggleFilter(
+                                  fluorescence,
+                                  fluorescences,
+                                  setFluorescences
+                                )
+                              }
+                              className={`px-3 py-1 text-xs rounded-full ${
+                                fluorescences.includes(fluorescence)
+                                  ? "bg-gray-900 text-white"
+                                  : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                              }`}
+                            >
+                              {fluorescence}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Sort Options */}
+
+                    {/* Clear All Filters Button */}
+                    <button
+                      onClick={clearFilters}
+                      className="w-full py-2 bg-black text-white rounded-lg text-sm font-medium"
+                    >
+                      Clear All Filters
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* SECTION 2: Left Sidebar with Advanced Filters - Hidden on Mobile */}
+            <div className="hidden lg:block lg:w-1/4 xl:w-1/5">
+              <div className="sticky top-24 bg-white p-6 rounded-lg shadow-sm border border-gray-100 overflow-y-auto max-h-[calc(100vh-200px)]">
+                <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                  Advanced Filters
+                </h2>
+
+                {/* Clarity Filter */}
+                <div className="mb-6">
+                  <h3 className="text-base font-medium text-gray-900 mb-3">
+                    Clarity
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {uniqueClarities.map((clarity) => (
                       <button
-                        onClick={clearFilters}
-                        className="inline-flex items-center px-6 py-3 border border-transparent shadow-sm text-base font-medium text-white bg-gradient-to-br from-gray-900 via-gray-800 to-black hover:from-gray-800 hover:to-gray-700 transition-colors"
+                        key={clarity}
+                        onClick={() =>
+                          toggleFilter(clarity, clarities, setClarities)
+                        }
+                        className={`px-3 py-1 text-xs rounded-full ${
+                          clarities.includes(clarity)
+                            ? "bg-gray-900 text-white"
+                            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                        }`}
                       >
-                        Clear Filters
+                        {clarity}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Cut Filter */}
+                <div className="mb-6">
+                  <h3 className="text-base font-medium text-gray-900 mb-3">
+                    Cut
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {uniqueCuts.map((cut) => (
+                      <button
+                        key={cut}
+                        onClick={() => toggleFilter(cut, cuts, setCuts)}
+                        className={`px-3 py-1 text-xs rounded-full ${
+                          cuts.includes(cut)
+                            ? "bg-gray-900 text-white"
+                            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                        }`}
+                      >
+                        {cut}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Polish Filter */}
+                <div className="mb-6">
+                  <h3 className="text-base font-medium text-gray-900 mb-3">
+                    Polish
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {uniquePolishes.map((polish) => (
+                      <button
+                        key={polish}
+                        onClick={() =>
+                          toggleFilter(polish, polishes, setPolishes)
+                        }
+                        className={`px-3 py-1 text-xs rounded-full ${
+                          polishes.includes(polish)
+                            ? "bg-gray-900 text-white"
+                            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                        }`}
+                      >
+                        {polish}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Symmetry Filter */}
+                <div className="mb-6">
+                  <h3 className="text-base font-medium text-gray-900 mb-3">
+                    Symmetry
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {uniqueSymmetries.map((symmetry) => (
+                      <button
+                        key={symmetry}
+                        onClick={() =>
+                          toggleFilter(symmetry, symmetries, setSymmetries)
+                        }
+                        className={`px-3 py-1 text-xs rounded-full ${
+                          symmetries.includes(symmetry)
+                            ? "bg-gray-900 text-white"
+                            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                        }`}
+                      >
+                        {symmetry}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Table % Filter */}
+                <div className="mb-6">
+                  <h3 className="text-base font-medium text-gray-900 mb-3">
+                    Table %
+                  </h3>
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <input
+                        type="number"
+                        min={0}
+                        max={100}
+                        step={0.1}
+                        placeholder="Min"
+                        className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                      />
+                    </div>
+                    <div className="mx-4 text-gray-400">to</div>
+                    <div className="flex-1">
+                      <input
+                        type="number"
+                        min={0}
+                        max={100}
+                        step={0.1}
+                        placeholder="Max"
+                        className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* L/W Ratio % Filter */}
+                <div className="mb-6">
+                  <h3 className="text-base font-medium text-gray-900 mb-3">
+                    L/W Ratio %
+                  </h3>
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <input
+                        type="number"
+                        min={0}
+                        step={0.01}
+                        placeholder="Min"
+                        className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                      />
+                    </div>
+                    <div className="mx-4 text-gray-400">to</div>
+                    <div className="flex-1">
+                      <input
+                        type="number"
+                        min={0}
+                        step={0.01}
+                        placeholder="Max"
+                        className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Length (L) in mm Filter */}
+                <div className="mb-6">
+                  <h3 className="text-base font-medium text-gray-900 mb-3">
+                    Length (mm)
+                  </h3>
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <input
+                        type="number"
+                        min={0}
+                        step={0.01}
+                        placeholder="Min"
+                        className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                      />
+                    </div>
+                    <div className="mx-4 text-gray-400">to</div>
+                    <div className="flex-1">
+                      <input
+                        type="number"
+                        min={0}
+                        step={0.01}
+                        placeholder="Max"
+                        className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Width (W) in mm Filter */}
+                <div className="mb-6">
+                  <h3 className="text-base font-medium text-gray-900 mb-3">
+                    Width (mm)
+                  </h3>
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <input
+                        type="number"
+                        min={0}
+                        step={0.01}
+                        placeholder="Min"
+                        className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                      />
+                    </div>
+                    <div className="mx-4 text-gray-400">to</div>
+                    <div className="flex-1">
+                      <input
+                        type="number"
+                        min={0}
+                        step={0.01}
+                        placeholder="Max"
+                        className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Depth % Filter */}
+                <div className="mb-6">
+                  <h3 className="text-base font-medium text-gray-900 mb-3">
+                    Depth %
+                  </h3>
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <input
+                        type="number"
+                        min={0}
+                        max={100}
+                        step={0.1}
+                        placeholder="Min"
+                        className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                      />
+                    </div>
+                    <div className="mx-4 text-gray-400">to</div>
+                    <div className="flex-1">
+                      <input
+                        type="number"
+                        min={0}
+                        max={100}
+                        step={0.1}
+                        placeholder="Max"
+                        className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Certification/Lab Filter */}
+                <div className="mb-6">
+                  <h3 className="text-base font-medium text-gray-900 mb-3">
+                    Certification
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {uniqueLabs.map((lab) => (
+                      <button
+                        key={lab}
+                        onClick={() => toggleFilter(lab, labs, setLabs)}
+                        className={`px-3 py-1 text-xs rounded-full ${
+                          labs.includes(lab)
+                            ? "bg-gray-900 text-white"
+                            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                        }`}
+                      >
+                        {lab}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Fluorescence Filter */}
+                <div className="mb-6">
+                  <h3 className="text-base font-medium text-gray-900 mb-3">
+                    Fluorescence
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {uniqueFluorescences.map((fluorescence) => (
+                      <button
+                        key={fluorescence}
+                        onClick={() =>
+                          toggleFilter(
+                            fluorescence,
+                            fluorescences,
+                            setFluorescences
+                          )
+                        }
+                        className={`px-3 py-1 text-xs rounded-full ${
+                          fluorescences.includes(fluorescence)
+                            ? "bg-gray-900 text-white"
+                            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                        }`}
+                      >
+                        {fluorescence}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Clear Filters Button */}
+                {(clarities.length > 0 ||
+                  cuts.length > 0 ||
+                  polishes.length > 0 ||
+                  symmetries.length > 0 ||
+                  fluorescences.length > 0 ||
+                  labs.length > 0) && (
+                  <div className="mt-5">
+                    <button
+                      onClick={resetAdvancedFilters}
+                      className="w-full py-2 bg-black text-white rounded-lg text-sm font-medium"
+                    >
+                      Clear Advanced Filters
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* SECTION 3: Products Grid */}
+            <div className="lg:w-3/4 xl:w-4/5">
+              {/* Product Count and Active Filters */}
+              <div className="mb-6 flex flex-wrap justify-between items-center">
+                <h2 className="text-xl font-semibold text-gray-900">
+                  {isLoading
+                    ? "Loading products..."
+                    : `${filterProducts.length} products`}
+                </h2>
+
+                {/* Active Filters */}
+                <div className="flex flex-wrap gap-2 mt-2 sm:mt-0">
+                  {selectedCategories.map((catId) => {
+                    const categoryObj = filteredCategories.find(
+                      (cat) => cat._id === catId
+                    );
+                    return (
+                      categoryObj && (
+                        <div
+                          key={`cat-${catId}`}
+                          className="flex items-center bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm"
+                        >
+                          <span className="mr-1">
+                            Category: {categoryObj.name}
+                          </span>
+                          <button
+                            onClick={() =>
+                              setSelectedCategories(
+                                selectedCategories.filter((c) => c !== catId)
+                              )
+                            }
+                            className="text-gray-500 hover:text-gray-700"
+                          >
+                            <FaTimes className="h-3 w-3" />
+                          </button>
+                        </div>
+                      )
+                    );
+                  })}
+                  {colors.length > 0 && (
+                    <div className="flex items-center bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm">
+                      <span className="mr-1">
+                        Color{colors.length > 1 ? "s" : ""}: {colors.length}
+                      </span>
+                      <button
+                        onClick={() => setColors([])}
+                        className="text-gray-500 hover:text-gray-700"
+                      >
+                        <FaTimes className="h-3 w-3" />
                       </button>
                     </div>
                   )}
+                  {/* Add badges for other active filters as needed */}
                 </div>
               </div>
-            </motion.div>
+
+              {/* Sort Options - Added as dropdown in product section */}
+              <div className="mb-6">
+                <div className="relative">
+                  <button
+                    onClick={() => setShowSortOptions(!showSortOptions)}
+                    className="flex items-center space-x-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                  >
+                    <FaSort className="h-4 w-4" />
+                    <span>
+                      Sort:{" "}
+                      {sortOptions.find((opt) => opt.value === sortType)?.label}
+                    </span>
+                    <FaChevronDown className="h-3 w-3 ml-2" />
+                  </button>
+
+                  {showSortOptions && (
+                    <div className="absolute z-10 mt-1 w-auto bg-white border border-gray-200 rounded-lg shadow-lg">
+                      {sortOptions.map((option) => (
+                        <button
+                          key={option.value}
+                          onClick={() => {
+                            setSortType(option.value);
+                            setShowSortOptions(false);
+                          }}
+                          className={`block w-full text-left px-4 py-2 hover:bg-gray-100 ${
+                            sortType === option.value
+                              ? "bg-gray-100 font-medium"
+                              : ""
+                          }`}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Product Grid */}
+              {isLoading ? (
+                <div className="flex justify-center items-center h-64">
+                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+                </div>
+              ) : filterProducts.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-64 text-center">
+                  <FaGem className="text-gray-300 text-5xl mb-4" />
+                  <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                    No products found
+                  </h3>
+                  <p className="text-gray-500 max-w-md mb-6">
+                    We couldn't find any products that match your criteria. Try
+                    adjusting your filters or search terms.
+                  </p>
+                  <button
+                    onClick={clearFilters}
+                    className="px-6 py-2 bg-gray-900 text-white rounded-lg"
+                  >
+                    Clear All Filters
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8">
+                  <AnimatePresence>
+                    {filterProducts.map((product, index) => (
+                      <motion.div
+                        key={product._id}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <GalleryItem
+                          item={product}
+                          price={true}
+                          index={index}
+                        />
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </div>
+              )}
+
+              {/* Pagination */}
+              {/* Uncomment and implement if pagination is needed */}
+              {/* <div className="mt-8 flex justify-center">
+                <nav className="flex items-center">
+                  <button className="p-2 rounded-md hover:bg-gray-100">
+                    <FaChevronLeft className="h-5 w-5 text-gray-500" />
+                  </button>
+                  <button className="mx-1 px-4 py-2 rounded-md bg-gray-900 text-white">
+                    1
+                  </button>
+                  <button className="mx-1 px-4 py-2 rounded-md hover:bg-gray-100">
+                    2
+                  </button>
+                  <button className="p-2 rounded-md hover:bg-gray-100">
+                    <FaChevronRight className="h-5 w-5 text-gray-500" />
+                  </button>
+                </nav>
+              </div> */}
+            </div>
           </div>
         </div>
       </div>
-
-      {/* Decorative divider */}
-      <div className="relative bg-white py-16">
-        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
-            viewport={{ once: true }}
-            className="flex flex-col items-center"
-          >
-            <div className="w-24 h-0.5 bg-gray-300 mb-8"></div>
-            <div className="flex items-center justify-center space-x-4 mb-8">
-              <motion.div
-                animate={{
-                  scale: [1, 1.2, 1],
-                }}
-                transition={{
-                  repeat: Infinity,
-                  repeatType: "reverse",
-                  duration: 2,
-                  delay: 0.5,
-                }}
-                className="w-2 h-2  bg-gray-900"
-              ></motion.div>
-              <motion.div
-                animate={{
-                  scale: [1, 1.2, 1],
-                }}
-                transition={{
-                  repeat: Infinity,
-                  repeatType: "reverse",
-                  duration: 2,
-                  delay: 1,
-                }}
-                className="w-3 h-3  bg-gray-700"
-              ></motion.div>
-              <motion.div
-                animate={{
-                  scale: [1, 1.2, 1],
-                }}
-                transition={{
-                  repeat: Infinity,
-                  repeatType: "reverse",
-                  duration: 2,
-                  delay: 1.5,
-                }}
-                className="w-4 h-4  bg-gray-500"
-              ></motion.div>
-              <motion.div
-                animate={{
-                  scale: [1, 1.2, 1],
-                }}
-                transition={{
-                  repeat: Infinity,
-                  repeatType: "reverse",
-                  duration: 2,
-                  delay: 1,
-                }}
-                className="w-3 h-3  bg-gray-700"
-              ></motion.div>
-              <motion.div
-                animate={{
-                  scale: [1, 1.2, 1],
-                }}
-                transition={{
-                  repeat: Infinity,
-                  repeatType: "reverse",
-                  duration: 2,
-                  delay: 0.5,
-                }}
-                className="w-2 h-2  bg-gray-900"
-              ></motion.div>
-            </div>
-            <div className="flex items-center mb-10">
-              <div className="w-16 h-0.5 bg-gray-300"></div>
-              <motion.svg
-                animate={{
-                  rotate: [0, 360],
-                }}
-                transition={{
-                  repeat: Infinity,
-                  duration: 20,
-                  ease: "linear",
-                }}
-                viewBox="0 0 24 24"
-                fill="none"
-                className="w-8 h-8 mx-4 text-gray-800"
-              >
-                <path
-                  d="M12 3L20 10L12 21L4 10L12 3Z"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M4 10H20"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </motion.svg>
-              <div className="w-16 h-0.5 bg-gray-300"></div>
-            </div>
-            <p className="text-gray-600 italic text-center max-w-xl text-lg font-light">
-              "Our diamonds are carefully selected for exceptional quality,
-              brilliance, and ethical sourcing. We celebrate the natural beauty
-              of each stone in our designs."
-            </p>
-          </motion.div>
-        </div>
-      </div>
-
-      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white py-20">
-        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-3xl font-semibold mb-6">
-              Exquisite Craftsmanship
-            </h2>
-            <p className="max-w-2xl mx-auto mb-10 text-gray-300 text-lg">
-              Each piece in our collection is meticulously crafted by master
-              artisans, ensuring exceptional quality and timeless elegance.
-            </p>
-            <Link
-              to="/about"
-              className="relative group inline-block px-10 py-4 border-2 border-white hover:bg-white hover:text-gray-900 transition-colors text-lg font-medium overflow-hidden"
-            >
-              <span className="relative z-10">Learn About Our Process</span>
-              <span className="absolute inset-0 bg-white transform scale-x-0 group-hover:scale-x-100 transition-transform origin-right duration-500"></span>
-              <span className="absolute inset-0 bg-white transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500 delay-100"></span>
-            </Link>
-          </motion.div>
-        </div>
-      </div>
-
       <NewsletterBox />
-    </>
+    </div>
   );
 };
 

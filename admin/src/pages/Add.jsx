@@ -26,6 +26,29 @@ const Add = ({ token }) => {
   const [popularProduct, setPopularProduct] = useState(false);
   const [categories, setCategories] = useState([]);
 
+  // Diamond-specific properties
+  const [shape, setShape] = useState("");
+  const [carats, setCarats] = useState("");
+  const [col, setCol] = useState("");
+  const [clar, setClar] = useState("");
+  const [cut, setCut] = useState("");
+  const [pol, setPol] = useState("");
+  const [symm, setSymm] = useState("");
+  const [flo, setFlo] = useState("");
+  const [floCol, setFloCol] = useState("");
+  const [length, setLength] = useState("");
+  const [width, setWidth] = useState("");
+  const [height, setHeight] = useState("");
+  const [depth, setDepth] = useState("");
+  const [table, setTable] = useState("");
+  const [culet, setCulet] = useState("");
+  const [lab, setLab] = useState("");
+  const [girdle, setGirdle] = useState("");
+  const [eyeClean, setEyeClean] = useState("");
+  const [brown, setBrown] = useState("");
+  const [green, setGreen] = useState("");
+  const [milky, setMilky] = useState("");
+
   const config = {
     key: "AZdksUMuR2CArgS8xFhATz",
     placeholderText: "Edit Your Content Here!",
@@ -87,15 +110,31 @@ const Add = ({ token }) => {
       if (image3) formData.append("images", image3);
       if (image4) formData.append("images", image4);
 
-      // Debug formData
-      console.log("Submitting form data:");
-      for (let pair of formData.entries()) {
-        console.log(pair[0] + ": " + pair[1]);
-      }
+      // Append diamond-specific properties
+      if (shape) formData.append("shape", shape);
+      if (carats) formData.append("carats", carats);
+      if (col) formData.append("col", col);
+      if (clar) formData.append("clar", clar);
+      if (cut) formData.append("cut", cut);
+      if (pol) formData.append("pol", pol);
+      if (symm) formData.append("symm", symm);
+      if (flo) formData.append("flo", flo);
+      if (floCol) formData.append("floCol", floCol);
+      if (length) formData.append("length", length);
+      if (width) formData.append("width", width);
+      if (height) formData.append("height", height);
+      if (depth) formData.append("depth", depth);
+      if (table) formData.append("table", table);
+      if (culet) formData.append("culet", culet);
+      if (lab) formData.append("lab", lab);
+      if (girdle) formData.append("girdle", girdle);
+      if (eyeClean) formData.append("eyeClean", eyeClean);
+      if (brown) formData.append("brown", brown);
+      if (green) formData.append("green", green);
+      if (milky) formData.append("milky", milky);
 
       const product = await addProduct(formData, token);
       if (product) {
-        console.log("Product added:", product);
         toast.success("Product added successfully");
       } else {
         toast.error("Failed to add product");
@@ -110,6 +149,29 @@ const Add = ({ token }) => {
       setImage4(false);
       setPrice("");
       setPopularProduct(false);
+
+      // Reset diamond-specific properties
+      setShape("");
+      setCarats("");
+      setCol("");
+      setClar("");
+      setCut("");
+      setPol("");
+      setSymm("");
+      setFlo("");
+      setFloCol("");
+      setLength("");
+      setWidth("");
+      setHeight("");
+      setDepth("");
+      setTable("");
+      setCulet("");
+      setLab("");
+      setGirdle("");
+      setEyeClean("");
+      setBrown("");
+      setGreen("");
+      setMilky("");
     } catch (error) {
       console.error("Submit error:", error);
       toast.error(
@@ -238,9 +300,300 @@ const Add = ({ token }) => {
                 onChange={(e) => setPrice(e.target.value)}
                 value={price}
                 className="w-full px-3 py-2 border rounded text-sm md:text-base"
-                type="Number"
+                type="number"
                 placeholder="25"
+                required
               />
+            </div>
+          </div>
+
+          {/* Diamond Properties */}
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold mb-4">Diamond Properties</h3>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Row 1 */}
+              <div>
+                <p className="mb-2 text-sm md:text-base font-medium">Shape</p>
+                <input
+                  onChange={(e) => setShape(e.target.value)}
+                  value={shape}
+                  className="w-full px-3 py-2 border rounded text-sm md:text-base"
+                  type="text"
+                  placeholder="Round, Princess, etc."
+                />
+              </div>
+
+              <div>
+                <p className="mb-2 text-sm md:text-base font-medium">Carats</p>
+                <input
+                  onChange={(e) => setCarats(e.target.value)}
+                  value={carats}
+                  className="w-full px-3 py-2 border rounded text-sm md:text-base"
+                  type="number"
+                  step="0.01"
+                  placeholder="0.50"
+                />
+              </div>
+
+              <div>
+                <p className="mb-2 text-sm md:text-base font-medium">Color</p>
+                <input
+                  onChange={(e) => setCol(e.target.value)}
+                  value={col}
+                  className="w-full px-3 py-2 border rounded text-sm md:text-base"
+                  type="text"
+                  placeholder="D, E, F, etc."
+                />
+              </div>
+
+              {/* Row 2 */}
+              <div>
+                <p className="mb-2 text-sm md:text-base font-medium">Clarity</p>
+                <input
+                  onChange={(e) => setClar(e.target.value)}
+                  value={clar}
+                  className="w-full px-3 py-2 border rounded text-sm md:text-base"
+                  type="text"
+                  placeholder="IF, VVS1, etc."
+                />
+              </div>
+
+              <div>
+                <p className="mb-2 text-sm md:text-base font-medium">Cut</p>
+                <input
+                  onChange={(e) => setCut(e.target.value)}
+                  value={cut}
+                  className="w-full px-3 py-2 border rounded text-sm md:text-base"
+                  type="text"
+                  placeholder="Excellent, Very Good, etc."
+                />
+              </div>
+
+              <div>
+                <p className="mb-2 text-sm md:text-base font-medium">Polish</p>
+                <input
+                  onChange={(e) => setPol(e.target.value)}
+                  value={pol}
+                  className="w-full px-3 py-2 border rounded text-sm md:text-base"
+                  type="text"
+                  placeholder="Excellent, Very Good, etc."
+                />
+              </div>
+
+              {/* Row 3 */}
+              <div>
+                <p className="mb-2 text-sm md:text-base font-medium">
+                  Symmetry
+                </p>
+                <input
+                  onChange={(e) => setSymm(e.target.value)}
+                  value={symm}
+                  className="w-full px-3 py-2 border rounded text-sm md:text-base"
+                  type="text"
+                  placeholder="Excellent, Very Good, etc."
+                />
+              </div>
+
+              <div>
+                <p className="mb-2 text-sm md:text-base font-medium">
+                  Fluorescence
+                </p>
+                <input
+                  onChange={(e) => setFlo(e.target.value)}
+                  value={flo}
+                  className="w-full px-3 py-2 border rounded text-sm md:text-base"
+                  type="text"
+                  placeholder="None, Faint, etc."
+                />
+              </div>
+
+              <div>
+                <p className="mb-2 text-sm md:text-base font-medium">
+                  Fluorescence Color
+                </p>
+                <input
+                  onChange={(e) => setFloCol(e.target.value)}
+                  value={floCol}
+                  className="w-full px-3 py-2 border rounded text-sm md:text-base"
+                  type="text"
+                  placeholder="Blue, Yellow, etc."
+                />
+              </div>
+
+              {/* Row 4 - Measurements */}
+              <div>
+                <p className="mb-2 text-sm md:text-base font-medium">
+                  Length (mm)
+                </p>
+                <input
+                  onChange={(e) => setLength(e.target.value)}
+                  value={length}
+                  className="w-full px-3 py-2 border rounded text-sm md:text-base"
+                  type="number"
+                  step="0.01"
+                  placeholder="5.50"
+                />
+              </div>
+
+              <div>
+                <p className="mb-2 text-sm md:text-base font-medium">
+                  Width (mm)
+                </p>
+                <input
+                  onChange={(e) => setWidth(e.target.value)}
+                  value={width}
+                  className="w-full px-3 py-2 border rounded text-sm md:text-base"
+                  type="number"
+                  step="0.01"
+                  placeholder="5.45"
+                />
+              </div>
+
+              <div>
+                <p className="mb-2 text-sm md:text-base font-medium">
+                  Height (mm)
+                </p>
+                <input
+                  onChange={(e) => setHeight(e.target.value)}
+                  value={height}
+                  className="w-full px-3 py-2 border rounded text-sm md:text-base"
+                  type="number"
+                  step="0.01"
+                  placeholder="3.30"
+                />
+              </div>
+
+              {/* Row 5 */}
+              <div>
+                <p className="mb-2 text-sm md:text-base font-medium">
+                  Depth (%)
+                </p>
+                <input
+                  onChange={(e) => setDepth(e.target.value)}
+                  value={depth}
+                  className="w-full px-3 py-2 border rounded text-sm md:text-base"
+                  type="number"
+                  step="0.1"
+                  placeholder="61.5"
+                />
+              </div>
+
+              <div>
+                <p className="mb-2 text-sm md:text-base font-medium">
+                  Table (%)
+                </p>
+                <input
+                  onChange={(e) => setTable(e.target.value)}
+                  value={table}
+                  className="w-full px-3 py-2 border rounded text-sm md:text-base"
+                  type="number"
+                  step="0.1"
+                  placeholder="56.0"
+                />
+              </div>
+
+              <div>
+                <p className="mb-2 text-sm md:text-base font-medium">Culet</p>
+                <input
+                  onChange={(e) => setCulet(e.target.value)}
+                  value={culet}
+                  className="w-full px-3 py-2 border rounded text-sm md:text-base"
+                  type="text"
+                  placeholder="None, Very Small, etc."
+                />
+              </div>
+
+              {/* Row 6 */}
+              <div>
+                <p className="mb-2 text-sm md:text-base font-medium">Lab</p>
+                <input
+                  onChange={(e) => setLab(e.target.value)}
+                  value={lab}
+                  className="w-full px-3 py-2 border rounded text-sm md:text-base"
+                  type="text"
+                  placeholder="GIA, IGI, etc."
+                />
+              </div>
+
+              <div>
+                <p className="mb-2 text-sm md:text-base font-medium">Girdle</p>
+                <input
+                  onChange={(e) => setGirdle(e.target.value)}
+                  value={girdle}
+                  className="w-full px-3 py-2 border rounded text-sm md:text-base"
+                  type="text"
+                  placeholder="Thin, Medium, etc."
+                />
+              </div>
+
+              <div>
+                <p className="mb-2 text-sm md:text-base font-medium">
+                  Eye Clean
+                </p>
+                <select
+                  onChange={(e) => setEyeClean(e.target.value)}
+                  value={eyeClean}
+                  className="w-full px-3 py-2 border rounded text-sm md:text-base"
+                >
+                  <option value="">Select</option>
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+              </div>
+
+              {/* Row 7 - Tints */}
+              <div>
+                <p className="mb-2 text-sm md:text-base font-medium">
+                  Brown Tint
+                </p>
+                <select
+                  onChange={(e) => setBrown(e.target.value)}
+                  value={brown}
+                  className="w-full px-3 py-2 border rounded text-sm md:text-base"
+                >
+                  <option value="">Select</option>
+                  <option value="None">None</option>
+                  <option value="Faint">Faint</option>
+                  <option value="Light">Light</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Strong">Strong</option>
+                </select>
+              </div>
+
+              <div>
+                <p className="mb-2 text-sm md:text-base font-medium">
+                  Green Tint
+                </p>
+                <select
+                  onChange={(e) => setGreen(e.target.value)}
+                  value={green}
+                  className="w-full px-3 py-2 border rounded text-sm md:text-base"
+                >
+                  <option value="">Select</option>
+                  <option value="None">None</option>
+                  <option value="Faint">Faint</option>
+                  <option value="Light">Light</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Strong">Strong</option>
+                </select>
+              </div>
+
+              <div>
+                <p className="mb-2 text-sm md:text-base font-medium">Milky</p>
+                <select
+                  onChange={(e) => setMilky(e.target.value)}
+                  value={milky}
+                  className="w-full px-3 py-2 border rounded text-sm md:text-base"
+                >
+                  <option value="">Select</option>
+                  <option value="None">None</option>
+                  <option value="Faint">Faint</option>
+                  <option value="Light">Light</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Strong">Strong</option>
+                </select>
+              </div>
             </div>
           </div>
 

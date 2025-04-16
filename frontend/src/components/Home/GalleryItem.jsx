@@ -70,12 +70,9 @@ const GalleryItem = ({ item, index, price = false }) => {
               <p className="text-gray-300 mb-6 text-sm uppercase tracking-wider">
                 {item.title}
               </p>
-              <Link
-                to={`/product/${item._id}`}
-                className="inline-block py-2 px-6 border border-white/40 hover:bg-white hover:text-gray-900 transition-all duration-300 rounded-md text-sm uppercase tracking-wider text-white"
-              >
+              <button className="inline-block py-2 px-6 border border-white/40 hover:bg-white hover:text-gray-900 transition-all duration-300 rounded-md text-sm uppercase tracking-wider text-white">
                 Discover
-              </Link>
+              </button>
             </motion.div>
           </div>
         </div>
@@ -87,7 +84,7 @@ const GalleryItem = ({ item, index, price = false }) => {
           </h3>
           {price && (
             <p className="text-gray-900 font-semibold mt-2">
-              <p>$ {item.price.toLocaleString()}</p>
+              ${item.price.toLocaleString()}
             </p>
           )}
         </div>

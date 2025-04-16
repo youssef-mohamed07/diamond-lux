@@ -12,6 +12,14 @@ import {
   FaGem,
   FaRuler,
   FaCertificate,
+  FaSearchPlus,
+  FaMagic,
+  FaTags,
+  FaFlask,
+  FaEye,
+  FaStar,
+  FaCrown,
+  FaRulerHorizontal,
 } from "react-icons/fa";
 import ScrollToTop from "../components/ScrollToTop";
 
@@ -177,66 +185,454 @@ const Product = () => {
               <div className="flex items-center mb-4">
                 <p className="text-2xl font-semibold text-gray-900">
                   {currency}
-                  {product.price.toFixed(2)}
+                  {product.price.toLocaleString()}
                 </p>
                 {product.oldPrice && (
                   <p className="ml-4 text-lg text-gray-500 line-through">
                     {currency}
-                    {product.oldPrice.toFixed(2)}
+                    {product.oldPrice.toLocaleString()}
                   </p>
                 )}
               </div>
 
               {/* Product Specifications */}
-              <div className="bg-gray-50 rounded-lg p-6 mb-6">
-                <h2 className="text-lg font-medium text-gray-900 mb-4">
-                  Product Specifications
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {product.category && (
-                    <div className="flex items-center">
-                      <p
-                        className="text-md leading-relaxed"
-                        dangerouslySetInnerHTML={{
-                          __html: product.description,
-                        }}
-                      />
-                    </div>
-                  )}
-
-                  {product.material && (
-                    <div className="flex items-center">
-                      <span className="w-24 text-sm font-medium text-gray-500">
-                        Material:
-                      </span>
-                      <span className="text-sm text-gray-900">
-                        {product.material}
-                      </span>
-                    </div>
-                  )}
-
-                  {product.gemstone && (
-                    <div className="flex items-center">
-                      <span className="w-24 text-sm font-medium text-gray-500">
-                        Gemstone:
-                      </span>
-                      <span className="text-sm text-gray-900">
-                        {product.gemstone}
-                      </span>
-                    </div>
-                  )}
-
-                  {product.caratWeight && (
-                    <div className="flex items-center">
-                      <span className="w-24 text-sm font-medium text-gray-500">
-                        Carat Weight:
-                      </span>
-                      <span className="text-sm text-gray-900">
-                        {product.caratWeight}
-                      </span>
-                    </div>
-                  )}
+              <div className="bg-gray-50 rounded-lg overflow-hidden mb-6 shadow-sm border border-gray-100">
+                <div className="px-6 py-4 bg-gradient-to-r from-gray-100 to-white border-b border-gray-200">
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Product Specifications
+                  </h2>
                 </div>
+
+                {product.description && (
+                  <div className="p-6 border-b border-gray-100">
+                    <p
+                      className="text-md leading-relaxed text-gray-700"
+                      dangerouslySetInnerHTML={{
+                        __html: product.description,
+                      }}
+                    />
+                  </div>
+                )}
+
+                {/* Diamond Main Properties Section */}
+                {(product.shape ||
+                  product.carats ||
+                  product.col ||
+                  product.clar) && (
+                  <div className="p-6 border-b border-gray-100">
+                    <div className="flex items-center mb-4">
+                      <FaStar className="text-yellow-500 mr-3 text-xl" />
+                      <h3 className="text-md font-semibold text-gray-800">
+                        Diamond Properties
+                      </h3>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-y-4 gap-x-6">
+                      {product.shape && (
+                        <div className="flex flex-col">
+                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                            Shape
+                          </span>
+                          <span className="text-sm font-medium text-gray-900">
+                            {product.shape}
+                          </span>
+                        </div>
+                      )}
+
+                      {product.carats && (
+                        <div className="flex flex-col">
+                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                            Carats
+                          </span>
+                          <span className="text-sm font-medium text-gray-900">
+                            {product.carats} ct
+                          </span>
+                        </div>
+                      )}
+
+                      {product.col && (
+                        <div className="flex flex-col">
+                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                            Color
+                          </span>
+                          <span className="text-sm font-medium text-gray-900">
+                            {product.col}
+                          </span>
+                        </div>
+                      )}
+
+                      {product.clar && (
+                        <div className="flex flex-col">
+                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                            Clarity
+                          </span>
+                          <span className="text-sm font-medium text-gray-900">
+                            {product.clar}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Cut Quality Section */}
+                {(product.cut || product.pol || product.symm) && (
+                  <div className="p-6 border-b border-gray-100 bg-gray-50">
+                    <div className="flex items-center mb-4">
+                      <FaRulerHorizontal className="text-purple-500 mr-3 text-xl" />
+                      <h3 className="text-md font-semibold text-gray-800">
+                        Cut Quality
+                      </h3>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-y-4 gap-x-6">
+                      {product.cut && (
+                        <div className="flex flex-col">
+                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                            Cut
+                          </span>
+                          <div className="flex items-center">
+                            <span className="text-sm font-medium text-gray-900">
+                              {product.cut}
+                            </span>
+                            {product.cut
+                              .toLowerCase()
+                              .includes("excellent") && (
+                              <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
+                                Top Grade
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {product.pol && (
+                        <div className="flex flex-col">
+                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                            Polish
+                          </span>
+                          <div className="flex items-center">
+                            <span className="text-sm font-medium text-gray-900">
+                              {product.pol}
+                            </span>
+                            {product.pol
+                              .toLowerCase()
+                              .includes("excellent") && (
+                              <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
+                                Top Grade
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {product.symm && (
+                        <div className="flex flex-col">
+                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                            Symmetry
+                          </span>
+                          <div className="flex items-center">
+                            <span className="text-sm font-medium text-gray-900">
+                              {product.symm}
+                            </span>
+                            {product.symm
+                              .toLowerCase()
+                              .includes("excellent") && (
+                              <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
+                                Top Grade
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Measurements Section */}
+                {(product.length ||
+                  product.width ||
+                  product.height ||
+                  product.depth ||
+                  product.table) && (
+                  <div className="p-6 border-b border-gray-100">
+                    <div className="flex items-center mb-4">
+                      <FaCrown className="text-teal-500 mr-3 text-xl" />
+                      <h3 className="text-md font-semibold text-gray-800">
+                        Measurements
+                      </h3>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-y-4 gap-x-6">
+                      {product.length && (
+                        <div className="flex flex-col">
+                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                            Length
+                          </span>
+                          <span className="text-sm font-medium text-gray-900">
+                            {product.length} mm
+                          </span>
+                        </div>
+                      )}
+
+                      {product.width && (
+                        <div className="flex flex-col">
+                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                            Width
+                          </span>
+                          <span className="text-sm font-medium text-gray-900">
+                            {product.width} mm
+                          </span>
+                        </div>
+                      )}
+
+                      {product.height && (
+                        <div className="flex flex-col">
+                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                            Height
+                          </span>
+                          <span className="text-sm font-medium text-gray-900">
+                            {product.height} mm
+                          </span>
+                        </div>
+                      )}
+
+                      {product.depth && (
+                        <div className="flex flex-col">
+                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                            Depth
+                          </span>
+                          <span className="text-sm font-medium text-gray-900">
+                            {product.depth}%
+                          </span>
+                        </div>
+                      )}
+
+                      {product.table && (
+                        <div className="flex flex-col">
+                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                            Table
+                          </span>
+                          <span className="text-sm font-medium text-gray-900">
+                            {product.table}%
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Dimensions visualization */}
+                    {product.length && product.width && product.height && (
+                      <div className="mt-4 pt-4 border-t border-gray-100">
+                        <div className="flex items-center text-sm text-gray-700">
+                          <FaSearchPlus className="text-gray-400 mr-2" />
+                          <span>
+                            L {product.length} mm × W {product.width} mm × H{" "}
+                            {product.height} mm
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Additional Features */}
+                {(product.flo ||
+                  product.floCol ||
+                  product.culet ||
+                  product.lab ||
+                  product.girdle) && (
+                  <div className="p-6 border-b border-gray-100 bg-gray-50">
+                    <div className="flex items-center mb-4">
+                      <FaMagic className="text-indigo-500 mr-3 text-xl" />
+                      <h3 className="text-md font-semibold text-gray-800">
+                        Additional Features
+                      </h3>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-6">
+                      {product.flo && (
+                        <div className="flex flex-col">
+                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                            Fluorescence
+                          </span>
+                          <span className="text-sm font-medium text-gray-900">
+                            {product.flo}
+                          </span>
+                        </div>
+                      )}
+
+                      {product.floCol && (
+                        <div className="flex flex-col">
+                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                            Fluorescence Color
+                          </span>
+                          <span className="text-sm font-medium text-gray-900">
+                            {product.floCol}
+                          </span>
+                        </div>
+                      )}
+
+                      {product.culet && (
+                        <div className="flex flex-col">
+                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                            Culet
+                          </span>
+                          <span className="text-sm font-medium text-gray-900">
+                            {product.culet}
+                          </span>
+                        </div>
+                      )}
+
+                      {product.lab && (
+                        <div className="flex flex-col">
+                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                            Certification
+                          </span>
+                          <div className="flex items-center">
+                            <span className="text-sm font-medium text-gray-900">
+                              {product.lab}
+                            </span>
+                            {(product.lab === "GIA" ||
+                              product.lab === "IGI") && (
+                              <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded-full">
+                                Certified
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {product.girdle && (
+                        <div className="flex flex-col">
+                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                            Girdle
+                          </span>
+                          <span className="text-sm font-medium text-gray-900">
+                            {product.girdle}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Characteristics */}
+                {(product.eyeClean ||
+                  product.brown ||
+                  product.green ||
+                  product.milky) && (
+                  <div className="p-6">
+                    <div className="flex items-center mb-4">
+                      <FaEye className="text-amber-500 mr-3 text-xl" />
+                      <h3 className="text-md font-semibold text-gray-800">
+                        Characteristics
+                      </h3>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6">
+                      {product.eyeClean && (
+                        <div className="flex flex-col">
+                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                            Eye Clean
+                          </span>
+                          <div className="flex items-center">
+                            <span className="text-sm font-medium text-gray-900">
+                              {product.eyeClean}
+                            </span>
+                            {product.eyeClean === "Yes" && (
+                              <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
+                                No Visible Inclusions
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {product.brown && (
+                        <div className="flex flex-col">
+                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                            Brown Tint
+                          </span>
+                          <div className="flex items-center">
+                            <span className="text-sm font-medium text-gray-900">
+                              {product.brown}
+                            </span>
+                            {product.brown === "None" && (
+                              <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
+                                None
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {product.green && (
+                        <div className="flex flex-col">
+                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                            Green Tint
+                          </span>
+                          <div className="flex items-center">
+                            <span className="text-sm font-medium text-gray-900">
+                              {product.green}
+                            </span>
+                            {product.green === "None" && (
+                              <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
+                                None
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {product.milky && (
+                        <div className="flex flex-col">
+                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                            Milky Appearance
+                          </span>
+                          <div className="flex items-center">
+                            <span className="text-sm font-medium text-gray-900">
+                              {product.milky}
+                            </span>
+                            {product.milky === "None" && (
+                              <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
+                                None
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Other Properties */}
+                {(product.material || product.gemstone) && (
+                  <div className="px-6 py-4 border-t border-gray-100 bg-gray-50">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6">
+                      {product.material && (
+                        <div className="flex flex-col">
+                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                            Material
+                          </span>
+                          <span className="text-sm font-medium text-gray-900">
+                            {product.material}
+                          </span>
+                        </div>
+                      )}
+
+                      {product.gemstone && (
+                        <div className="flex flex-col">
+                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                            Gemstone
+                          </span>
+                          <span className="text-sm font-medium text-gray-900">
+                            {product.gemstone}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Tabs for Details */}

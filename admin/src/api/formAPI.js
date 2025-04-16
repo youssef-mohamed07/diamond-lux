@@ -50,11 +50,9 @@ export const deleteFormField = async (id) => {
 // Reorder form fields
 export const reorderFormFields = async (newOrder) => {
   try {
-    console.log("Sending new order:", newOrder);
     const response = await axiosInstance.put("/form/reorder-fields", {
       newOrder,
     });
-    console.log("Reordered Fields:", response.data.fields);
     return response.data;
   } catch (error) {
     console.error("Error reordering form fields:", error);
@@ -76,7 +74,9 @@ export const getUnavailableDates = async () => {
 // Add unavailable date
 export const addUnavailableDate = async (date) => {
   try {
-    const response = await axiosInstance.post("/form/unavailable-dates", { date });
+    const response = await axiosInstance.post("/form/unavailable-dates", {
+      date,
+    });
     return response.data;
   } catch (error) {
     console.error("Error adding unavailable date:", error);
@@ -87,7 +87,9 @@ export const addUnavailableDate = async (date) => {
 // Remove unavailable date
 export const removeUnavailableDate = async (date) => {
   try {
-    const response = await axiosInstance.delete(`/form/unavailable-dates/${date}`);
+    const response = await axiosInstance.delete(
+      `/form/unavailable-dates/${date}`
+    );
     return response.data;
   } catch (error) {
     console.error("Error removing unavailable date:", error);

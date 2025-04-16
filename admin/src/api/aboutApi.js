@@ -1,17 +1,16 @@
-import axiosInstance from '../utils/axios';
+import axiosInstance from "../utils/axios";
 
 export const getAboutData = async () => {
-    const response = await axiosInstance.get('/about');
-    return response.data.aboutUs;
+  const response = await axiosInstance.get("/about");
+  return response.data.aboutUs;
 };
 
 export const updateAboutData = async (data) => {
-    console.log(data + "data");
-    const response = await axiosInstance.patch('/about', data);
-    return response.data.aboutUs;
+  const response = await axiosInstance.patch("/about", data);
+  return response.data.aboutUs;
 };
 
 export const getAboutDataById = async (id) => {
-    const response = await axiosInstance.get(`/about/${id}`);
-    return response.data.about;
+  const response = await axiosInstance.get(`/about/${id}`);
+  return response.data.about;
 };
