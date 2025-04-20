@@ -6,8 +6,25 @@ const AddProductVal = Joi.object({
   price: Joi.number().min(0).required(),
   category: Joi.string().required(),
   isPopular: Joi.boolean().required(),
+
+  // Product type validation
+  productType: Joi.string().valid("diamond", "jewelry").required(),
+
+  // Jewelry type validation (required only if productType is jewelry)
+  jewelryType: Joi.string()
+    .valid("earrings", "necklace", "bracelet")
+    .when("productType", {
+      is: "jewelry",
+      then: Joi.required(),
+      otherwise: Joi.forbidden(),
+    }),
+
   // Diamond-specific properties
-  shape: Joi.string().allow("").optional(),
+  shape: Joi.string().when("productType", {
+    is: "diamond",
+    then: Joi.required(),
+    otherwise: Joi.forbidden(),
+  }),
   carats: Joi.number().allow("").optional(),
   col: Joi.string().allow("").optional(),
   clar: Joi.string().allow("").optional(),
@@ -28,6 +45,23 @@ const AddProductVal = Joi.object({
   brown: Joi.string().allow("").optional(),
   green: Joi.string().allow("").optional(),
   milky: Joi.string().allow("").optional(),
+
+  // Jewelry-specific properties
+  diamondType: Joi.string().valid("lab_grown", "natural").when("productType", {
+    is: "jewelry",
+    then: Joi.required(),
+    otherwise: Joi.forbidden(),
+  }),
+  metal: Joi.string().when("productType", {
+    is: "jewelry",
+    then: Joi.required(),
+    otherwise: Joi.forbidden(),
+  }),
+  metalColor: Joi.string().when("productType", {
+    is: "jewelry",
+    then: Joi.required(),
+    otherwise: Joi.forbidden(),
+  }),
 });
 
 export { AddProductVal };

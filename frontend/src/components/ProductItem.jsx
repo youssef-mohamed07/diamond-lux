@@ -11,6 +11,7 @@ const ProductItem = ({
   title,
   price,
   loading = false,
+  productType,
 }) => {
   const { currency } = useContext(ShopContext);
 

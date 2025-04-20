@@ -7,48 +7,69 @@ import { toast } from "react-toastify";
 export const ShopContext = createContext(null);
 
 export const ShopContextProvider = (props) => {
-  const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
-  
+  const backendUrl =
+    import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+
   // Products
-  const { products, loading: productsLoading } = useProducts();
-  
+  const {
+    products,
+    loading: productsLoading,
+    diamondProducts,
+    jewelleryProducts,
+    popularProducts,
+    earrings,
+    necklaces,
+    bracelets,
+  } = useProducts();
+
   // Auth
   const [token, setToken] = useState(localStorage.getItem("token") || "");
   const [user, setUser] = useState(null);
-  
+
   // Cart/Wishlist
-  const { wishlist, wishlistItemsCount, loading: wishlistLoading } = useWishlist(token);
-  
+  const {
+    wishlist,
+    wishlistItemsCount,
+    loading: wishlistLoading,
+  } = useWishlist(token);
+
   // Guest cart/wishlist
   const [guestWishlist, setGuestWishlist] = useState(() => {
     const saved = localStorage.getItem("guestWishlist");
     return saved ? JSON.parse(saved) : [];
   });
-  
+
   const [guestWishlistCount, setGuestWishlistCount] = useState(0);
-  
+
   // Favorites (wishlist)
   const [favorites, setFavorites] = useState(() => {
     const saved = localStorage.getItem("favorites");
     return saved ? JSON.parse(saved) : [];
   });
-  
+
   // Search
   const [search, setSearch] = useState("");
   const [showSearch, setShowSearch] = useState(false);
-  
+
+  // Diamond filter states
+  const [selectedDiamondCategory, setSelectedDiamondCategory] = useState("");
+  const [diamondShapes, setDiamondShapes] = useState([]);
+
   // Currency
   const [currency, setCurrency] = useState("$");
 
   // Update guest wishlist count
   useEffect(() => {
     if (guestWishlist.length > 0) {
-      const count = guestWishlist.reduce((total, item) => total + item.quantity, 0);
+      const count = guestWishlist.reduce(
+        (total, item) => total + item.quantity,
+        0
+      );
       setGuestWishlistCount(count);
     } else {
       setGuestWishlistCount(0);
     }
-    
+
     localStorage.setItem("guestWishlist", JSON.stringify(guestWishlist));
   }, [guestWishlist]);
 
@@ -103,22 +124,24 @@ export const ShopContextProvider = (props) => {
         return updatedWishlist;
       } else {
         // If guest, add to local storage wishlist
-        const existingItem = guestWishlist.find(item => item.productId === productId);
-        
+        const existingItem = guestWishlist.find(
+          (item) => item.productId === productId
+        );
+
         if (existingItem) {
           // Update quantity if item exists
-          setGuestWishlist(prev => 
-            prev.map(item => 
-              item.productId === productId 
-                ? { ...item, quantity: item.quantity + quantity } 
+          setGuestWishlist((prev) =>
+            prev.map((item) =>
+              item.productId === productId
+                ? { ...item, quantity: item.quantity + quantity }
                 : item
             )
           );
         } else {
           // Add new item
-          setGuestWishlist(prev => [...prev, { productId, quantity }]);
+          setGuestWishlist((prev) => [...prev, { productId, quantity }]);
         }
-        
+
         toast.success("Item added to cart");
         return guestWishlist;
       }
@@ -151,22 +174,22 @@ export const ShopContextProvider = (props) => {
     localStorage.setItem("token", newToken);
     setToken(newToken);
     setUser(userData);
-    
+
     // If there are guest items, merge them with user's wishlist
     if (guestWishlist.length > 0) {
       Promise.all(
-        guestWishlist.map(item => 
+        guestWishlist.map((item) =>
           addToWishlist(item.productId, item.quantity)
         )
       )
-      .then(() => {
-        // Clear guest wishlist after merging
-        setGuestWishlist([]);
-        toast.success("Your cart items have been saved to your account");
-      })
-      .catch(error => {
-        console.error("Error merging guest cart:", error);
-      });
+        .then(() => {
+          // Clear guest wishlist after merging
+          setGuestWishlist([]);
+          toast.success("Your cart items have been saved to your account");
+        })
+        .catch((error) => {
+          console.error("Error merging guest cart:", error);
+        });
     }
   };
 
@@ -180,6 +203,12 @@ export const ShopContextProvider = (props) => {
   // Context value
   const contextValue = useMemo(
     () => ({
+      diamondProducts,
+      jewelleryProducts,
+      popularProducts,
+      earrings,
+      necklaces,
+      bracelets,
       products,
       productsLoading,
       wishlist,
@@ -199,9 +228,19 @@ export const ShopContextProvider = (props) => {
       setSearch,
       showSearch,
       setShowSearch,
+      selectedDiamondCategory,
+      setSelectedDiamondCategory,
+      diamondShapes,
+      setDiamondShapes,
     }),
     [
       products,
+      diamondProducts,
+      jewelleryProducts,
+      popularProducts,
+      earrings,
+      necklaces,
+      bracelets,
       productsLoading,
       wishlist,
       wishlistItemsCount,
@@ -213,6 +252,8 @@ export const ShopContextProvider = (props) => {
       currency,
       search,
       showSearch,
+      selectedDiamondCategory,
+      diamondShapes,
     ]
   );
 

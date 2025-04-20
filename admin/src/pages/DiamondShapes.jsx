@@ -6,12 +6,15 @@ import { backendUrl } from "../App";
 import { toast } from "react-toastify";
 import { useProducts } from "../hooks/useProducts";
 
-function Categories({ token }) {
+function DiamondShapes({ token }) {
   const [list, setList] = useState([]);
   const { products } = useProducts();
   const [uploading, setUploading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const fileInputRef = useRef(null);
+
+  const backendURL = import.meta.env.VITE_BACKEND_URL;
+  const BACKEND_URL_WITHOUT_API = backendURL.replace("/api", "");
 
   const fetchList = async () => {
     try {
@@ -41,33 +44,33 @@ function Categories({ token }) {
 
     try {
       const formData = new FormData();
-      formData.append('img', file);
+      formData.append("img", file);
 
       const response = await axios.post(
-        `${backendUrl}/category/${categoryId}/image`, 
+        `${backendUrl}/category/${categoryId}/image`,
         formData,
         {
           headers: {
-            'Content-Type': 'multipart/form-data',
-            'Authorization': `Bearer ${token}`
-          }
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
       if (response.data) {
-        toast.success('Image uploaded successfully');
+        toast.success("Image uploaded successfully");
         // Update the local list with the new image
-        setList(prevList => 
-          prevList.map(cat => 
-            cat._id === categoryId 
-              ? {...cat, image: response.data.category.image} 
+        setList((prevList) =>
+          prevList.map((cat) =>
+            cat._id === categoryId
+              ? { ...cat, image: response.data.category.image }
               : cat
           )
         );
       }
     } catch (error) {
-      console.error('Upload error:', error);
-      toast.error(error.response?.data?.message || 'Failed to upload image');
+      console.error("Upload error:", error);
+      toast.error(error.response?.data?.message || "Failed to upload image");
     } finally {
       setUploading(false);
       setSelectedCategory(null);
@@ -103,8 +106,8 @@ function Categories({ token }) {
           </p>
         </div>
 
-        <input 
-          type="file" 
+        <input
+          type="file"
           ref={fileInputRef}
           className="hidden"
           onChange={handleFileChange}
@@ -127,8 +130,8 @@ function Categories({ token }) {
                 <div className="flex flex-col items-center">
                   <div className="bg-gray-50 rounded h-16 w-16 flex items-center justify-center mb-2 overflow-hidden">
                     {category.image ? (
-                      <img 
-                        src={`${backendUrl}/uploads/diamond-shapes/${category.image}`} 
+                      <img
+                        src={`${BACKEND_URL_WITHOUT_API}/uploads/diamond-shapes/${category.image}`}
                         alt={category.name}
                         className="object-contain h-14 w-14"
                       />
@@ -141,10 +144,11 @@ function Categories({ token }) {
                     disabled={uploading && selectedCategory === category._id}
                     className="text-xs py-1 px-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-blue-300"
                   >
-                    {uploading && selectedCategory === category._id 
-                      ? 'Uploading...'
-                      : category.image ? 'Change Image' : 'Upload Image'
-                    }
+                    {uploading && selectedCategory === category._id
+                      ? "Uploading..."
+                      : category.image
+                      ? "Change Image"
+                      : "Upload Image"}
                   </button>
                 </div>
               </div>
@@ -156,4 +160,4 @@ function Categories({ token }) {
   );
 }
 
-export default Categories;
+export default DiamondShapes;

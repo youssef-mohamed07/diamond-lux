@@ -1,9 +1,9 @@
 import { Category } from "../../../DB/models/Category.schema.js";
 import { catchError } from "../../MiddleWares/CatchError.js";
 import { DIAMOND_CATEGORIES } from "../../utils/staticCategories.js";
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -56,53 +56,62 @@ const getCategoryById = catchError(async (req, res, next) => {
 const updateDiamondShapeImage = catchError(async (req, res, next) => {
   // Check if category exists in static categories
   const categoryId = req.params.id;
-  const categoryIndex = DIAMOND_CATEGORIES.findIndex(cat => cat._id === categoryId);
-  
+  const categoryIndex = DIAMOND_CATEGORIES.findIndex(
+    (cat) => cat._id === categoryId
+  );
+
   if (categoryIndex === -1) {
-    return res.status(404).json({ message: "Diamond shape category not found" });
+    return res
+      .status(404)
+      .json({ message: "Diamond shape category not found" });
   }
-  
+
   // Get the uploaded file
   if (!req.file) {
     return res.status(400).json({ message: "No image file uploaded" });
   }
-  
-  // Ensure the filename ends with .webp
+
   const originalFilename = req.file.filename;
-  const fileExtension = path.extname(originalFilename).toLowerCase();
-  
-  let imagePath = originalFilename;
-  
-  // If the file is not already .webp, we'll need to handle conversion or rename
-  // For now, we're just renaming the file to ensure consistent naming in our references
-  if (fileExtension !== '.webp') {
-    // Strip the extension and add .webp
-    const filenameWithoutExt = path.parse(originalFilename).name;
-    const newFilename = `${filenameWithoutExt}.webp`;
-    const originalPath = path.join(__dirname, '../../../uploads/diamond-shapes', originalFilename);
-    const newPath = path.join(__dirname, '../../../uploads/diamond-shapes', newFilename);
-    
-    try {
-      // Rename the file
-      fs.renameSync(originalPath, newPath);
-      imagePath = newFilename;
-    } catch (error) {
-      console.error('Error renaming file:', error);
-      // If rename fails, keep the original filename
-      imagePath = originalFilename;
+  const uploadPath = req.file.path;
+  // Extract the file extension from the uploaded file
+  const fileExtension = path.extname(originalFilename);
+
+  // Define the new filename with the category ID and original extension
+  const newFilename = `${categoryId}${fileExtension}`;
+
+  // Get the uploads directory path
+  const uploadDir = path.dirname(uploadPath);
+  const newFilePath = path.join(uploadDir, newFilename);
+
+  try {
+    // Check if a file with the same name already exists, and remove it
+    if (fs.existsSync(newFilePath) && uploadPath !== newFilePath) {
+      fs.unlinkSync(newFilePath);
     }
+
+    // Rename the uploaded file
+    fs.renameSync(uploadPath, newFilePath);
+
+    // Update the image path in the DIAMOND_CATEGORIES array for future requests
+    DIAMOND_CATEGORIES[categoryIndex].image = newFilename;
+
+    // Create an object to return with updated information
+    const updatedCategory = {
+      ...DIAMOND_CATEGORIES[categoryIndex],
+    };
+
+    res.status(200).json({
+      message: "Diamond shape image updated successfully",
+      category: updatedCategory,
+    });
+  } catch (error) {
+    // If there's an error with file operations, return an error
+    console.error("File operation error:", error);
+    return res.status(500).json({
+      message: "Failed to process the uploaded image",
+      error: error.message,
+    });
   }
-  
-  // Create an object to return with updated information
-  const updatedCategory = {
-    ...DIAMOND_CATEGORIES[categoryIndex],
-    image: imagePath
-  };
-  
-  res.status(200).json({
-    message: "Diamond shape image updated successfully",
-    category: updatedCategory
-  });
 });
 
 export {
@@ -111,5 +120,5 @@ export {
   updateCategory,
   deleteCategory,
   getCategoryById,
-  updateDiamondShapeImage
+  updateDiamondShapeImage,
 };

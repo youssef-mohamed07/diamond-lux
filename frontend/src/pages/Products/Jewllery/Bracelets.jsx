@@ -5,12 +5,12 @@ import React, {
   useCallback,
   useRef,
 } from "react";
-import { ShopContext } from "../context/ShopContext";
-import Title from "../components/Title";
-import GalleryItem from "../components/Home/GalleryItem";
-import { assets } from "../assets/assets";
-import { useCategories } from "../../hooks/useCategories";
-import NewsletterBox from "../components/NewsletterBox";
+import { ShopContext } from "../../../context/ShopContext";
+import Title from "../../../components/Title";
+import GalleryItem from "../../../components/Home/GalleryItem";
+import { assets } from "../../../assets/assets";
+import { useCategories } from "../../../../hooks/useCategories";
+import NewsletterBox from "../../../components/NewsletterBox";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FaFilter,
@@ -27,7 +27,10 @@ import {
 import { Link } from "react-router-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 
-const Products = () => {
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const backendURL_WITHOUT_API = VITE_BACKEND_URL.replace("/api", "");
+
+const Bracelets = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
@@ -35,7 +38,7 @@ const Products = () => {
   const categoryParam = searchParams.get("category") || "";
 
   // Data store
-  const { products } = useContext(ShopContext);
+  const { bracelets } = useContext(ShopContext);
 
   // Core filtering states
   const [selectedCategories, setSelectedCategories] = useState(
@@ -158,21 +161,21 @@ const Products = () => {
     setIsSearching(false);
   };
 
-  // Filter and sort products
+  // Filter and sort bracelets
   useEffect(() => {
-    let filteredProducts = [...products];
+    let filteredProducts = [...bracelets];
 
     // Apply search filter
     if (searchQuery) {
-      filteredProducts = filteredProducts.filter((product) =>
-        product.title.toLowerCase().includes(searchQuery.toLowerCase())
+      filteredProducts = filteredProducts.filter((bracelet) =>
+        bracelet.title.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
     // Apply category filter
     if (selectedCategories.length > 0) {
-      filteredProducts = filteredProducts.filter((product) =>
-        selectedCategories.includes(product.category)
+      filteredProducts = filteredProducts.filter((bracelet) =>
+        selectedCategories.includes(bracelet.category)
       );
     }
 
@@ -180,70 +183,70 @@ const Products = () => {
     // Shape filter
     if (shapes.length > 0) {
       filteredProducts = filteredProducts.filter(
-        (product) => product.shape && shapes.includes(product.shape)
+        (bracelet) => bracelet.shape && shapes.includes(bracelet.shape)
       );
     }
 
     // Color filter
     if (colors.length > 0) {
       filteredProducts = filteredProducts.filter(
-        (product) => product.col && colors.includes(product.col)
+        (bracelet) => bracelet.col && colors.includes(bracelet.col)
       );
     }
 
     // Clarity filter
     if (clarities.length > 0) {
       filteredProducts = filteredProducts.filter(
-        (product) => product.clar && clarities.includes(product.clar)
+        (bracelet) => bracelet.clar && clarities.includes(bracelet.clar)
       );
     }
 
     // Cut filter
     if (cuts.length > 0) {
       filteredProducts = filteredProducts.filter(
-        (product) => product.cut && cuts.includes(product.cut)
+        (bracelet) => bracelet.cut && cuts.includes(bracelet.cut)
       );
     }
 
     // Polish filter
     if (polishes.length > 0) {
       filteredProducts = filteredProducts.filter(
-        (product) => product.pol && polishes.includes(product.pol)
+        (bracelet) => bracelet.pol && polishes.includes(bracelet.pol)
       );
     }
 
     // Symmetry filter
     if (symmetries.length > 0) {
       filteredProducts = filteredProducts.filter(
-        (product) => product.symm && symmetries.includes(product.symm)
+        (bracelet) => bracelet.symm && symmetries.includes(bracelet.symm)
       );
     }
 
     // Fluorescence filter
     if (fluorescences.length > 0) {
       filteredProducts = filteredProducts.filter(
-        (product) => product.flo && fluorescences.includes(product.flo)
+        (bracelet) => bracelet.flo && fluorescences.includes(bracelet.flo)
       );
     }
 
     // Lab filter
     if (labs.length > 0) {
       filteredProducts = filteredProducts.filter(
-        (product) => product.lab && labs.includes(product.lab)
+        (bracelet) => bracelet.lab && labs.includes(bracelet.lab)
       );
     }
 
     // Carat range filter
     filteredProducts = filteredProducts.filter(
-      (product) =>
-        !product.carats ||
-        (product.carats >= caratRange[0] && product.carats <= caratRange[1])
+      (bracelet) =>
+        !bracelet.carats ||
+        (bracelet.carats >= caratRange[0] && bracelet.carats <= caratRange[1])
     );
 
     // Price range filter
     filteredProducts = filteredProducts.filter(
-      (product) =>
-        product.price >= priceRange[0] && product.price <= priceRange[1]
+      (bracelet) =>
+        bracelet.price >= priceRange[0] && bracelet.price <= priceRange[1]
     );
 
     // Apply sorting
@@ -256,7 +259,7 @@ const Products = () => {
     setFilterProducts(filteredProducts);
     setIsLoading(false);
   }, [
-    products,
+    bracelets,
     searchQuery,
     selectedCategories,
     sortType,
@@ -274,10 +277,10 @@ const Products = () => {
 
   // Extract unique values for filter options and filter categories
   useEffect(() => {
-    if (products && products.length > 0) {
+    if (bracelets && bracelets.length > 0) {
       // Find max price and carat for ranges
-      const maxProductPrice = Math.max(...products.map((p) => p.price || 0));
-      const maxProductCarat = Math.max(...products.map((p) => p.carats || 0));
+      const maxProductPrice = Math.max(...bracelets.map((p) => p.price || 0));
+      const maxProductCarat = Math.max(...bracelets.map((p) => p.carats || 0));
       setMaxPrice(maxProductPrice > 0 ? maxProductPrice : 1000000);
       setMaxCarat(maxProductCarat > 0 ? maxProductCarat : 10);
       setPriceRange([0, maxProductPrice > 0 ? maxProductPrice : 1000000]);
@@ -285,33 +288,33 @@ const Products = () => {
 
       // Extract unique values
       setUniqueShapes([
-        ...new Set(products.filter((p) => p.shape).map((p) => p.shape)),
+        ...new Set(bracelets.filter((p) => p.shape).map((p) => p.shape)),
       ]);
       setUniqueColors([
-        ...new Set(products.filter((p) => p.col).map((p) => p.col)),
+        ...new Set(bracelets.filter((p) => p.col).map((p) => p.col)),
       ]);
       setUniqueClarities([
-        ...new Set(products.filter((p) => p.clar).map((p) => p.clar)),
+        ...new Set(bracelets.filter((p) => p.clar).map((p) => p.clar)),
       ]);
       setUniqueCuts([
-        ...new Set(products.filter((p) => p.cut).map((p) => p.cut)),
+        ...new Set(bracelets.filter((p) => p.cut).map((p) => p.cut)),
       ]);
       setUniquePolishes([
-        ...new Set(products.filter((p) => p.pol).map((p) => p.pol)),
+        ...new Set(bracelets.filter((p) => p.pol).map((p) => p.pol)),
       ]);
       setUniqueSymmetries([
-        ...new Set(products.filter((p) => p.symm).map((p) => p.symm)),
+        ...new Set(bracelets.filter((p) => p.symm).map((p) => p.symm)),
       ]);
       setUniqueFluorescences([
-        ...new Set(products.filter((p) => p.flo).map((p) => p.flo)),
+        ...new Set(bracelets.filter((p) => p.flo).map((p) => p.flo)),
       ]);
       setUniqueLabs([
-        ...new Set(products.filter((p) => p.lab).map((p) => p.lab)),
+        ...new Set(bracelets.filter((p) => p.lab).map((p) => p.lab)),
       ]);
 
       // Filter categories to only include those with associated products
       if (categories && categories.length > 0) {
-        const usedCategoryIds = [...new Set(products.map((p) => p.category))];
+        const usedCategoryIds = [...new Set(bracelets.map((p) => p.category))];
         setFilteredCategories(
           categories.filter((category) =>
             usedCategoryIds.includes(category._id)
@@ -319,14 +322,14 @@ const Products = () => {
         );
       }
     }
-  }, [products, categories]);
+  }, [bracelets, categories]);
 
   // Reset form when there are no products or categories to show
   useEffect(() => {
-    if (products.length === 0 || filteredCategories.length === 0) {
+    if (bracelets.length === 0 || filteredCategories.length === 0) {
       setSelectedCategories([]);
     }
-  }, [products, filteredCategories]);
+  }, [bracelets, filteredCategories]);
 
   // Clear selected categories if they no longer exist in filtered categories
   useEffect(() => {
@@ -344,72 +347,72 @@ const Products = () => {
 
   // Add CSS for range sliders
   const rangeSliderStyles = `
-    .multi-range {
-      position: relative;
-      height: 30px;
-    }
-    
-    .multi-range input[type="range"] {
-      position: absolute;
-      width: 100%;
-      height: 5px;
-      top: 10px;
-      background: none;
-      pointer-events: none;
-    }
-    
-    .multi-range input[type="range"]::-webkit-slider-thumb {
-      pointer-events: auto;
-      -webkit-appearance: none;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background: #000;
-      cursor: pointer;
-      margin-top: -6px;
-      z-index: 50;
-      position: relative;
-    }
-    
-    .multi-range input[type="range"]::-moz-range-thumb {
-      pointer-events: auto;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background: #000;
-      cursor: pointer;
-      border: none;
-      z-index: 50;
-      position: relative;
-    }
-    
-    .multi-range .range-track {
-      position: absolute;
-      width: 100%;
-      height: 5px;
-      top: 12px;
-      background: #e5e7eb;
-      z-index: 1;
-    }
-    
-    .multi-range .min-slider {
-      z-index: 2;
-    }
-    
-    .multi-range .max-slider {
-      z-index: 3;
-    }
-
-    /* Hide scrollbar styles */
-    .scrollbar-hide::-webkit-scrollbar {
-      display: none;
-    }
-    
-    .scrollbar-hide {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
-  `;
+      .multi-range {
+        position: relative;
+        height: 30px;
+      }
+      
+      .multi-range input[type="range"] {
+        position: absolute;
+        width: 100%;
+        height: 5px;
+        top: 10px;
+        background: none;
+        pointer-events: none;
+      }
+      
+      .multi-range input[type="range"]::-webkit-slider-thumb {
+        pointer-events: auto;
+        -webkit-appearance: none;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #000;
+        cursor: pointer;
+        margin-top: -6px;
+        z-index: 50;
+        position: relative;
+      }
+      
+      .multi-range input[type="range"]::-moz-range-thumb {
+        pointer-events: auto;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #000;
+        cursor: pointer;
+        border: none;
+        z-index: 50;
+        position: relative;
+      }
+      
+      .multi-range .range-track {
+        position: absolute;
+        width: 100%;
+        height: 5px;
+        top: 12px;
+        background: #e5e7eb;
+        z-index: 1;
+      }
+      
+      .multi-range .min-slider {
+        z-index: 2;
+      }
+      
+      .multi-range .max-slider {
+        z-index: 3;
+      }
+  
+      /* Hide scrollbar styles */
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+      
+      .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    `;
 
   // Loading screen
   if (isLoading) {
@@ -420,7 +423,7 @@ const Products = () => {
           <div className="absolute inset-2 bg-gradient-to-br from-gray-900 via-gray-800 to-black animate-pulse"></div>
         </div>
         <p className="text-lg mt-6 font-medium text-gray-800">
-          Loading exquisite products...
+          Loading exquisite bracelets...
         </p>
       </div>
     );
@@ -435,7 +438,7 @@ const Products = () => {
         <div className="absolute inset-0 z-0 overflow-hidden">
           <img
             src="/images/products-hero-background.jpg"
-            alt="Luxury jewelry collection"
+            alt="Luxury earrings collection"
             className="w-full h-full object-cover opacity-40"
             onError={(e) => {
               e.target.onerror = null;
@@ -457,16 +460,16 @@ const Products = () => {
             <div className="flex items-center gap-3 mb-6">
               <div className="h-[1px] w-16 bg-white/80"></div>
               <span className="uppercase tracking-[0.3em] text-sm font-light text-white/90">
-                Luxury Collection
+                Luxury Bracelets Collection
               </span>
             </div>
             <h1 className="text-5xl font-bold sm:text-6xl lg:text-7xl mb-8 tracking-tight">
-              Our Collection
+              Our Bracelets Collection
             </h1>
             <p className="text-xl text-gray-100 max-w-3xl leading-relaxed">
-              Discover our exquisite selection of premium diamond jewelry, each
-              piece crafted with exceptional artistry and precision for those
-              who appreciate true luxury.
+              Discover our exquisite selection of premium bracelets, each piece
+              crafted with exceptional artistry and precision for those who
+              appreciate true luxury.
             </p>
 
             {/* Decorative element */}
@@ -493,10 +496,10 @@ const Products = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="flex flex-col mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Our Collection
+            Our Bracelets Collection
           </h1>
           <p className="text-lg text-gray-600">
-            Explore our curated selection of exquisite diamonds and fine jewelry
+            Explore our curated selection of exquisite bracelets
           </p>
         </div>
 
@@ -508,7 +511,7 @@ const Products = () => {
                 type="text"
                 value={searchQuery}
                 onChange={handleSearchChange}
-                placeholder="Search products..."
+                placeholder="Search bracelets..."
                 className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
               />
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -536,148 +539,161 @@ const Products = () => {
 
             <div className="flex flex-col">
               {/* Diamond Shapes Category Slider - 100% Width */}
-              <div className="w-full mb-8">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">
-                  Diamond Shapes
-                </h3>
-                {filteredCategories.length > 0 ? (
-                  <div className="relative group">
-                    {/* Left Arrow Navigation */}
-                    <button
-                      className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white/80 hover:bg-white shadow-md rounded-full p-2 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity -ml-2"
-                      onClick={() => {
-                        const container = document.getElementById(
-                          "diamond-shapes-slider"
-                        );
-                        if (container) {
-                          container.scrollBy({
-                            left: -200,
-                            behavior: "smooth",
-                          });
-                        }
-                      }}
-                    >
-                      <FaChevronLeft className="text-gray-600 w-4 h-4" />
-                    </button>
+              {categories.length > 0 && (
+                <div className="w-full mb-8">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    Diamond Shapes
+                  </h3>
+                  {filteredCategories.length > 0 ? (
+                    <div className="relative group">
+                      {/* Left Arrow Navigation */}
+                      <button
+                        className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white/80 hover:bg-white shadow-md rounded-full p-2 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity -ml-2"
+                        onClick={() => {
+                          const container = document.getElementById(
+                            "diamond-shapes-slider"
+                          );
+                          if (container) {
+                            container.scrollBy({
+                              left: -200,
+                              behavior: "smooth",
+                            });
+                          }
+                        }}
+                      >
+                        <FaChevronLeft className="text-gray-600 w-4 h-4" />
+                      </button>
 
-                    {/* Right Arrow Navigation */}
-                    <button
-                      className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white/80 hover:bg-white shadow-md rounded-full p-2 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity -mr-2"
-                      onClick={() => {
-                        const container = document.getElementById(
-                          "diamond-shapes-slider"
-                        );
-                        if (container) {
-                          container.scrollBy({ left: 200, behavior: "smooth" });
-                        }
-                      }}
-                    >
-                      <FaChevronRight className="text-gray-600 w-4 h-4" />
-                    </button>
+                      {/* Right Arrow Navigation */}
+                      <button
+                        className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white/80 hover:bg-white shadow-md rounded-full p-2 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity -mr-2"
+                        onClick={() => {
+                          const container = document.getElementById(
+                            "diamond-shapes-slider"
+                          );
+                          if (container) {
+                            container.scrollBy({
+                              left: 200,
+                              behavior: "smooth",
+                            });
+                          }
+                        }}
+                      >
+                        <FaChevronRight className="text-gray-600 w-4 h-4" />
+                      </button>
 
-                    {/* Slider Container */}
-                    <div
-                      id="diamond-shapes-slider"
-                      className="overflow-x-auto scrollbar-hide py-4 px-2"
-                      style={{
-                        scrollbarWidth: "none",
-                        msOverflowStyle: "none",
-                      }}
-                    >
-                      <div className="flex flex-row space-x-4 md:space-x-6 min-w-max">
-                        {filteredCategories.map((category) => (
-                          <div
-                            key={category._id}
-                            onClick={() => {
-                              if (selectedCategories.includes(category._id)) {
-                                setSelectedCategories(
-                                  selectedCategories.filter(
-                                    (id) => id !== category._id
-                                  )
-                                );
-                              } else {
-                                setSelectedCategories([
-                                  ...selectedCategories,
-                                  category._id,
-                                ]);
-                              }
-                            }}
-                            className={`cursor-pointer flex flex-col items-center transition-all transform hover:scale-105 ${
-                              selectedCategories.includes(category._id)
-                                ? "scale-105 opacity-100"
-                                : "opacity-80 hover:opacity-100"
-                            }`}
-                          >
+                      {/* Slider Container */}
+                      <div
+                        id="diamond-shapes-slider"
+                        className="overflow-x-auto scrollbar-hide py-4 px-2"
+                        style={{
+                          scrollbarWidth: "none",
+                          msOverflowStyle: "none",
+                        }}
+                      >
+                        <div className="flex flex-row space-x-4 md:space-x-6 min-w-max">
+                          {filteredCategories.map((category) => (
                             <div
-                              className={`w-16 h-16 sm:w-18 sm:h-18 md:w-20 md:h-20 rounded-full overflow-hidden mb-2 border-2 shadow-md flex items-center justify-center ${
+                              key={category._id}
+                              onClick={() => {
+                                if (selectedCategories.includes(category._id)) {
+                                  setSelectedCategories(
+                                    selectedCategories.filter(
+                                      (id) => id !== category._id
+                                    )
+                                  );
+                                } else {
+                                  setSelectedCategories([
+                                    ...selectedCategories,
+                                    category._id,
+                                  ]);
+                                }
+                              }}
+                              className={`cursor-pointer flex flex-col items-center transition-all transform hover:scale-105 ${
                                 selectedCategories.includes(category._id)
-                                  ? "border-gray-900 ring-2 ring-gray-300"
-                                  : "border-transparent hover:border-gray-300"
+                                  ? "scale-105 opacity-100"
+                                  : "opacity-80 hover:opacity-100"
                               }`}
                             >
-                              {category.image ? (
-                                <img 
-                                  src={`http://localhost:3000/uploads/diamond-shapes/${category.image}`} 
-                                  alt={category.name}
-                                  className="w-full h-full object-contain"
-                                  onError={(e) => {
-                                    // If image fails to load, show the initial letter
-                                    e.target.style.display = 'none';
-                                    e.target.parentNode.querySelector('.fallback-icon').style.display = 'flex';
-                                  }}
-                                />
-                              ) : (
-                                <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-gray-200 rounded-full fallback-icon">
-                                  <span className="text-gray-500 text-lg sm:text-xl font-medium">
-                                    {category.name ? category.name.substring(0, 1).toUpperCase() : '?'}
-                                  </span>
-                                </div>
-                              )}
+                              <div
+                                className={`w-16 h-16 sm:w-18 sm:h-18 md:w-20 md:h-20 rounded-full overflow-hidden mb-2 border-2 shadow-md flex items-center justify-center ${
+                                  selectedCategories.includes(category._id)
+                                    ? "border-gray-900 ring-2 ring-gray-300"
+                                    : "border-transparent hover:border-gray-300"
+                                }`}
+                              >
+                                {category.image ? (
+                                  <img
+                                    src={`${backendURL_WITHOUT_API}/uploads/diamond-shapes/${category.image}`}
+                                    alt={category.name}
+                                    className="w-full h-full object-contain"
+                                    onError={(e) => {
+                                      // If image fails to load, show the initial letter
+                                      e.target.style.display = "none";
+                                      e.target.parentNode.querySelector(
+                                        ".fallback-icon"
+                                      ).style.display = "flex";
+                                    }}
+                                  />
+                                ) : (
+                                  <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-gray-200 rounded-full fallback-icon">
+                                    <span className="text-gray-500 text-lg sm:text-xl font-medium">
+                                      {category.name
+                                        ? category.name
+                                            .substring(0, 1)
+                                            .toUpperCase()
+                                        : "?"}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                              <span
+                                className={`text-xs sm:text-sm text-center ${
+                                  selectedCategories.includes(category._id)
+                                    ? "font-semibold"
+                                    : "font-normal"
+                                }`}
+                              >
+                                {category.name}
+                              </span>
                             </div>
-                            <span
-                              className={`text-xs sm:text-sm text-center ${
-                                selectedCategories.includes(category._id)
-                                  ? "font-semibold"
-                                  : "font-normal"
-                              }`}
-                            >
-                              {category.name}
-                            </span>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ) : (
-                  <div className="p-6 bg-gray-50 rounded-lg text-center">
-                    <p className="text-gray-500">
-                      No diamond shapes available for the current products.
-                    </p>
-                  </div>
-                )}
-              </div>
+                  ) : (
+                    <div className="p-6 bg-gray-50 rounded-lg text-center">
+                      <p className="text-gray-500">
+                        No diamond shapes available for the current bracelets.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Color Filter - 100% Width */}
-              <div className="w-full mb-8">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">
-                  Color
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {uniqueColors.map((color) => (
-                    <button
-                      key={color}
-                      onClick={() => toggleFilter(color, colors, setColors)}
-                      className={`px-3 py-1 text-xs rounded-full ${
-                        colors.includes(color)
-                          ? "bg-gray-900 text-white shadow-md"
-                          : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                      }`}
-                    >
-                      {color}
-                    </button>
-                  ))}
+              {uniqueColors.length > 0 && (
+                <div className="w-full mb-8">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    Color
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {uniqueColors.map((color) => (
+                      <button
+                        key={color}
+                        onClick={() => toggleFilter(color, colors, setColors)}
+                        className={`px-3 py-1 text-xs rounded-full ${
+                          colors.includes(color)
+                            ? "bg-gray-900 text-white shadow-md"
+                            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                        }`}
+                      >
+                        {color}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* 2x2 Grid for Price/Carat and Cut/Clarity */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-4">
@@ -784,50 +800,54 @@ const Products = () => {
                 </div>
 
                 {/* Cut Filter */}
-                <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">
-                    Cut
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {uniqueCuts.map((cut) => (
-                      <button
-                        key={cut}
-                        onClick={() => toggleFilter(cut, cuts, setCuts)}
-                        className={`px-3 py-1 text-xs rounded-full ${
-                          cuts.includes(cut)
-                            ? "bg-gray-900 text-white shadow-md"
-                            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                        }`}
-                      >
-                        {cut}
-                      </button>
-                    ))}
+                {uniqueCuts > 0 && (
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">
+                      Cut
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {uniqueCuts.map((cut) => (
+                        <button
+                          key={cut}
+                          onClick={() => toggleFilter(cut, cuts, setCuts)}
+                          className={`px-3 py-1 text-xs rounded-full ${
+                            cuts.includes(cut)
+                              ? "bg-gray-900 text-white shadow-md"
+                              : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                          }`}
+                        >
+                          {cut}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Clarity Filter */}
-                <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">
-                    Clarity
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {uniqueClarities.map((clarity) => (
-                      <button
-                        key={clarity}
-                        onClick={() =>
-                          toggleFilter(clarity, clarities, setClarities)
-                        }
-                        className={`px-3 py-1 text-xs rounded-full ${
-                          clarities.includes(clarity)
-                            ? "bg-gray-900 text-white shadow-md"
-                            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                        }`}
-                      >
-                        {clarity}
-                      </button>
-                    ))}
+                {uniqueClarities.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">
+                      Clarity
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {uniqueClarities.map((clarity) => (
+                        <button
+                          key={clarity}
+                          onClick={() =>
+                            toggleFilter(clarity, clarities, setClarities)
+                          }
+                          className={`px-3 py-1 text-xs rounded-full ${
+                            clarities.includes(clarity)
+                              ? "bg-gray-900 text-white shadow-md"
+                              : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                          }`}
+                        >
+                          {clarity}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
@@ -960,20 +980,26 @@ const Products = () => {
                                       }`}
                                     >
                                       {category.image ? (
-                                        <img 
-                                          src={`http://localhost:3000/uploads/diamond-shapes/${category.image}`} 
+                                        <img
+                                          src={`${backendURL_WITHOUT_API}/uploads/diamond-shapes/${category.image}`}
                                           alt={category.name}
                                           className="w-full h-full object-contain"
                                           onError={(e) => {
                                             // If image fails to load, show the initial letter
-                                            e.target.style.display = 'none';
-                                            e.target.parentNode.querySelector('.fallback-icon').style.display = 'flex';
+                                            e.target.style.display = "none";
+                                            e.target.parentNode.querySelector(
+                                              ".fallback-icon"
+                                            ).style.display = "flex";
                                           }}
                                         />
                                       ) : (
                                         <div className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center bg-gray-200 rounded-full fallback-icon">
                                           <span className="text-gray-500 text-md sm:text-lg font-medium">
-                                            {category.name ? category.name.substring(0, 1).toUpperCase() : '?'}
+                                            {category.name
+                                              ? category.name
+                                                  .substring(0, 1)
+                                                  .toUpperCase()
+                                              : "?"}
                                           </span>
                                         </div>
                                       )}
@@ -1005,28 +1031,30 @@ const Products = () => {
                       </div>
 
                       {/* Color Filter */}
-                      <div className="mb-6">
-                        <h3 className="text-base font-medium text-gray-900 mb-3">
-                          Color
-                        </h3>
-                        <div className="flex flex-wrap gap-2">
-                          {uniqueColors.map((color) => (
-                            <button
-                              key={color}
-                              onClick={() =>
-                                toggleFilter(color, colors, setColors)
-                              }
-                              className={`px-3 py-1 text-xs rounded-full ${
-                                colors.includes(color)
-                                  ? "bg-gray-900 text-white"
-                                  : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                              }`}
-                            >
-                              {color}
-                            </button>
-                          ))}
+                      {uniqueColors.length > 0 && (
+                        <div className="mb-6">
+                          <h3 className="text-base font-medium text-gray-900 mb-3">
+                            Color
+                          </h3>
+                          <div className="flex flex-wrap gap-2">
+                            {uniqueColors.map((color) => (
+                              <button
+                                key={color}
+                                onClick={() =>
+                                  toggleFilter(color, colors, setColors)
+                                }
+                                className={`px-3 py-1 text-xs rounded-full ${
+                                  colors.includes(color)
+                                    ? "bg-gray-900 text-white"
+                                    : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                                }`}
+                              >
+                                {color}
+                              </button>
+                            ))}
+                          </div>
                         </div>
-                      </div>
+                      )}
 
                       {/* 2x2 Grid for Other Quick Filters */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1137,50 +1165,60 @@ const Products = () => {
                         </div>
 
                         {/* Cut Filter */}
-                        <div className="mb-4">
-                          <h3 className="text-base font-medium text-gray-900 mb-3">
-                            Cut
-                          </h3>
-                          <div className="flex flex-wrap gap-2">
-                            {uniqueCuts.map((cut) => (
-                              <button
-                                key={cut}
-                                onClick={() => toggleFilter(cut, cuts, setCuts)}
-                                className={`px-3 py-1 text-xs rounded-full ${
-                                  cuts.includes(cut)
-                                    ? "bg-gray-900 text-white"
-                                    : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                                }`}
-                              >
-                                {cut}
-                              </button>
-                            ))}
+                        {uniqueCuts.length > 0 && (
+                          <div className="mb-4">
+                            <h3 className="text-base font-medium text-gray-900 mb-3">
+                              Cut
+                            </h3>
+                            <div className="flex flex-wrap gap-2">
+                              {uniqueCuts.map((cut) => (
+                                <button
+                                  key={cut}
+                                  onClick={() =>
+                                    toggleFilter(cut, cuts, setCuts)
+                                  }
+                                  className={`px-3 py-1 text-xs rounded-full ${
+                                    cuts.includes(cut)
+                                      ? "bg-gray-900 text-white"
+                                      : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                                  }`}
+                                >
+                                  {cut}
+                                </button>
+                              ))}
+                            </div>
                           </div>
-                        </div>
+                        )}
 
                         {/* Clarity Filter */}
-                        <div className="mb-4">
-                          <h3 className="text-base font-medium text-gray-900 mb-3">
-                            Clarity
-                          </h3>
-                          <div className="flex flex-wrap gap-2">
-                            {uniqueClarities.map((clarity) => (
-                              <button
-                                key={clarity}
-                                onClick={() =>
-                                  toggleFilter(clarity, clarities, setClarities)
-                                }
-                                className={`px-3 py-1 text-xs rounded-full ${
-                                  clarities.includes(clarity)
-                                    ? "bg-gray-900 text-white"
-                                    : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                                }`}
-                              >
-                                {clarity}
-                              </button>
-                            ))}
+                        {uniqueClarities.length > 0 && (
+                          <div className="mb-4">
+                            <h3 className="text-base font-medium text-gray-900 mb-3">
+                              Clarity
+                            </h3>
+                            <div className="flex flex-wrap gap-2">
+                              {uniqueClarities.map((clarity) => (
+                                <button
+                                  key={clarity}
+                                  onClick={() =>
+                                    toggleFilter(
+                                      clarity,
+                                      clarities,
+                                      setClarities
+                                    )
+                                  }
+                                  className={`px-3 py-1 text-xs rounded-full ${
+                                    clarities.includes(clarity)
+                                      ? "bg-gray-900 text-white"
+                                      : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                                  }`}
+                                >
+                                  {clarity}
+                                </button>
+                              ))}
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </div>
                     </div>
 
@@ -1190,153 +1228,115 @@ const Products = () => {
                         Advanced Filters
                       </h3>
 
-                      {/* Clarity Filter */}
-                      <div className="mb-4">
-                        <h4 className="text-sm font-medium text-gray-900 mb-2">
-                          Clarity
-                        </h4>
-                        <div className="flex flex-wrap gap-2">
-                          {uniqueClarities.map((clarity) => (
-                            <button
-                              key={clarity}
-                              onClick={() =>
-                                toggleFilter(clarity, clarities, setClarities)
-                              }
-                              className={`px-3 py-1 text-xs rounded-full ${
-                                clarities.includes(clarity)
-                                  ? "bg-gray-900 text-white"
-                                  : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                              }`}
-                            >
-                              {clarity}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Cut Filter */}
-                      <div className="mb-4">
-                        <h4 className="text-sm font-medium text-gray-900 mb-2">
-                          Cut
-                        </h4>
-                        <div className="flex flex-wrap gap-2">
-                          {uniqueCuts.map((cut) => (
-                            <button
-                              key={cut}
-                              onClick={() => toggleFilter(cut, cuts, setCuts)}
-                              className={`px-3 py-1 text-xs rounded-full ${
-                                cuts.includes(cut)
-                                  ? "bg-gray-900 text-white"
-                                  : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                              }`}
-                            >
-                              {cut}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
                       {/* Polish Filter */}
-                      <div className="mb-4">
-                        <h4 className="text-sm font-medium text-gray-900 mb-2">
-                          Polish
-                        </h4>
-                        <div className="flex flex-wrap gap-2">
-                          {uniquePolishes.map((polish) => (
-                            <button
-                              key={polish}
-                              onClick={() =>
-                                toggleFilter(polish, polishes, setPolishes)
-                              }
-                              className={`px-3 py-1 text-xs rounded-full ${
-                                polishes.includes(polish)
-                                  ? "bg-gray-900 text-white"
-                                  : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                              }`}
-                            >
-                              {polish}
-                            </button>
-                          ))}
+                      {uniquePolishes.length > 0 && (
+                        <div className="mb-4">
+                          <h4 className="text-sm font-medium text-gray-900 mb-2">
+                            Polish
+                          </h4>
+                          <div className="flex flex-wrap gap-2">
+                            {uniquePolishes.map((polish) => (
+                              <button
+                                key={polish}
+                                onClick={() =>
+                                  toggleFilter(polish, polishes, setPolishes)
+                                }
+                                className={`px-3 py-1 text-xs rounded-full ${
+                                  polishes.includes(polish)
+                                    ? "bg-gray-900 text-white"
+                                    : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                                }`}
+                              >
+                                {polish}
+                              </button>
+                            ))}
+                          </div>
                         </div>
-                      </div>
+                      )}
 
                       {/* Symmetry Filter */}
-                      <div className="mb-4">
-                        <h4 className="text-sm font-medium text-gray-900 mb-2">
-                          Symmetry
-                        </h4>
-                        <div className="flex flex-wrap gap-2">
-                          {uniqueSymmetries.map((symmetry) => (
-                            <button
-                              key={symmetry}
-                              onClick={() =>
-                                toggleFilter(
-                                  symmetry,
-                                  symmetries,
-                                  setSymmetries
-                                )
-                              }
-                              className={`px-3 py-1 text-xs rounded-full ${
-                                symmetries.includes(symmetry)
-                                  ? "bg-gray-900 text-white"
-                                  : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                              }`}
-                            >
-                              {symmetry}
-                            </button>
-                          ))}
+                      {uniqueSymmetries.length > 0 && (
+                        <div className="mb-4">
+                          <h4 className="text-sm font-medium text-gray-900 mb-2">
+                            Symmetry
+                          </h4>
+                          <div className="flex flex-wrap gap-2">
+                            {uniqueSymmetries.map((symmetry) => (
+                              <button
+                                key={symmetry}
+                                onClick={() =>
+                                  toggleFilter(
+                                    symmetry,
+                                    symmetries,
+                                    setSymmetries
+                                  )
+                                }
+                                className={`px-3 py-1 text-xs rounded-full ${
+                                  symmetries.includes(symmetry)
+                                    ? "bg-gray-900 text-white"
+                                    : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                                }`}
+                              >
+                                {symmetry}
+                              </button>
+                            ))}
+                          </div>
                         </div>
-                      </div>
+                      )}
 
                       {/* Certification/Lab Filter */}
-                      <div className="mb-4">
-                        <h4 className="text-sm font-medium text-gray-900 mb-2">
-                          Certification
-                        </h4>
-                        <div className="flex flex-wrap gap-2">
-                          {uniqueLabs.map((lab) => (
-                            <button
-                              key={lab}
-                              onClick={() => toggleFilter(lab, labs, setLabs)}
-                              className={`px-3 py-1 text-xs rounded-full ${
-                                labs.includes(lab)
-                                  ? "bg-gray-900 text-white"
-                                  : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                              }`}
-                            >
-                              {lab}
-                            </button>
-                          ))}
+                      {uniqueLabs.length > 0 && (
+                        <div className="mb-4">
+                          <h4 className="text-sm font-medium text-gray-900 mb-2">
+                            Certification
+                          </h4>
+                          <div className="flex flex-wrap gap-2">
+                            {uniqueLabs.map((lab) => (
+                              <button
+                                key={lab}
+                                onClick={() => toggleFilter(lab, labs, setLabs)}
+                                className={`px-3 py-1 text-xs rounded-full ${
+                                  labs.includes(lab)
+                                    ? "bg-gray-900 text-white"
+                                    : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                                }`}
+                              >
+                                {lab}
+                              </button>
+                            ))}
+                          </div>
                         </div>
-                      </div>
+                      )}
 
                       {/* Fluorescence Filter */}
-                      <div className="mb-4">
-                        <h4 className="text-sm font-medium text-gray-900 mb-2">
-                          Fluorescence
-                        </h4>
-                        <div className="flex flex-wrap gap-2">
-                          {uniqueFluorescences.map((fluorescence) => (
-                            <button
-                              key={fluorescence}
-                              onClick={() =>
-                                toggleFilter(
-                                  fluorescence,
-                                  fluorescences,
-                                  setFluorescences
-                                )
-                              }
-                              className={`px-3 py-1 text-xs rounded-full ${
-                                fluorescences.includes(fluorescence)
-                                  ? "bg-gray-900 text-white"
-                                  : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                              }`}
-                            >
-                              {fluorescence}
-                            </button>
-                          ))}
+                      {uniqueFluorescences.length > 0 && (
+                        <div className="mb-4">
+                          <h4 className="text-sm font-medium text-gray-900 mb-2">
+                            Fluorescence
+                          </h4>
+                          <div className="flex flex-wrap gap-2">
+                            {uniqueFluorescences.map((fluorescence) => (
+                              <button
+                                key={fluorescence}
+                                onClick={() =>
+                                  toggleFilter(
+                                    fluorescence,
+                                    fluorescences,
+                                    setFluorescences
+                                  )
+                                }
+                                className={`px-3 py-1 text-xs rounded-full ${
+                                  fluorescences.includes(fluorescence)
+                                    ? "bg-gray-900 text-white"
+                                    : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                                }`}
+                              >
+                                {fluorescence}
+                              </button>
+                            ))}
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
 
                     {/* Sort Options */}
@@ -1360,99 +1360,57 @@ const Products = () => {
                   Advanced Filters
                 </h2>
 
-                {/* Clarity Filter */}
-                <div className="mb-6">
-                  <h3 className="text-base font-medium text-gray-900 mb-3">
-                    Clarity
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {uniqueClarities.map((clarity) => (
-                      <button
-                        key={clarity}
-                        onClick={() =>
-                          toggleFilter(clarity, clarities, setClarities)
-                        }
-                        className={`px-3 py-1 text-xs rounded-full ${
-                          clarities.includes(clarity)
-                            ? "bg-gray-900 text-white"
-                            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                        }`}
-                      >
-                        {clarity}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Cut Filter */}
-                <div className="mb-6">
-                  <h3 className="text-base font-medium text-gray-900 mb-3">
-                    Cut
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {uniqueCuts.map((cut) => (
-                      <button
-                        key={cut}
-                        onClick={() => toggleFilter(cut, cuts, setCuts)}
-                        className={`px-3 py-1 text-xs rounded-full ${
-                          cuts.includes(cut)
-                            ? "bg-gray-900 text-white"
-                            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                        }`}
-                      >
-                        {cut}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
                 {/* Polish Filter */}
-                <div className="mb-6">
-                  <h3 className="text-base font-medium text-gray-900 mb-3">
-                    Polish
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {uniquePolishes.map((polish) => (
-                      <button
-                        key={polish}
-                        onClick={() =>
-                          toggleFilter(polish, polishes, setPolishes)
-                        }
-                        className={`px-3 py-1 text-xs rounded-full ${
-                          polishes.includes(polish)
-                            ? "bg-gray-900 text-white"
-                            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                        }`}
-                      >
-                        {polish}
-                      </button>
-                    ))}
+                {uniquePolishes.length > 0 && (
+                  <div className="mb-6">
+                    <h3 className="text-base font-medium text-gray-900 mb-3">
+                      Polish
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {uniquePolishes.map((polish) => (
+                        <button
+                          key={polish}
+                          onClick={() =>
+                            toggleFilter(polish, polishes, setPolishes)
+                          }
+                          className={`px-3 py-1 text-xs rounded-full ${
+                            polishes.includes(polish)
+                              ? "bg-gray-900 text-white"
+                              : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                          }`}
+                        >
+                          {polish}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Symmetry Filter */}
-                <div className="mb-6">
-                  <h3 className="text-base font-medium text-gray-900 mb-3">
-                    Symmetry
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {uniqueSymmetries.map((symmetry) => (
-                      <button
-                        key={symmetry}
-                        onClick={() =>
-                          toggleFilter(symmetry, symmetries, setSymmetries)
-                        }
-                        className={`px-3 py-1 text-xs rounded-full ${
-                          symmetries.includes(symmetry)
-                            ? "bg-gray-900 text-white"
-                            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                        }`}
-                      >
-                        {symmetry}
-                      </button>
-                    ))}
+                {uniqueSymmetries.length > 0 && (
+                  <div className="mb-6">
+                    <h3 className="text-base font-medium text-gray-900 mb-3">
+                      Symmetry
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {uniqueSymmetries.map((symmetry) => (
+                        <button
+                          key={symmetry}
+                          onClick={() =>
+                            toggleFilter(symmetry, symmetries, setSymmetries)
+                          }
+                          className={`px-3 py-1 text-xs rounded-full ${
+                            symmetries.includes(symmetry)
+                              ? "bg-gray-900 text-white"
+                              : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                          }`}
+                        >
+                          {symmetry}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Table % Filter */}
                 <div className="mb-6">
@@ -1599,54 +1557,58 @@ const Products = () => {
                 </div>
 
                 {/* Certification/Lab Filter */}
-                <div className="mb-6">
-                  <h3 className="text-base font-medium text-gray-900 mb-3">
-                    Certification
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {uniqueLabs.map((lab) => (
-                      <button
-                        key={lab}
-                        onClick={() => toggleFilter(lab, labs, setLabs)}
-                        className={`px-3 py-1 text-xs rounded-full ${
-                          labs.includes(lab)
-                            ? "bg-gray-900 text-white"
-                            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                        }`}
-                      >
-                        {lab}
-                      </button>
-                    ))}
+                {uniqueLabs.length > 0 && (
+                  <div className="mb-6">
+                    <h3 className="text-base font-medium text-gray-900 mb-3">
+                      Certification
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {uniqueLabs.map((lab) => (
+                        <button
+                          key={lab}
+                          onClick={() => toggleFilter(lab, labs, setLabs)}
+                          className={`px-3 py-1 text-xs rounded-full ${
+                            labs.includes(lab)
+                              ? "bg-gray-900 text-white"
+                              : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                          }`}
+                        >
+                          {lab}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Fluorescence Filter */}
-                <div className="mb-6">
-                  <h3 className="text-base font-medium text-gray-900 mb-3">
-                    Fluorescence
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {uniqueFluorescences.map((fluorescence) => (
-                      <button
-                        key={fluorescence}
-                        onClick={() =>
-                          toggleFilter(
-                            fluorescence,
-                            fluorescences,
-                            setFluorescences
-                          )
-                        }
-                        className={`px-3 py-1 text-xs rounded-full ${
-                          fluorescences.includes(fluorescence)
-                            ? "bg-gray-900 text-white"
-                            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                        }`}
-                      >
-                        {fluorescence}
-                      </button>
-                    ))}
+                {uniqueFluorescences.length > 0 && (
+                  <div className="mb-6">
+                    <h3 className="text-base font-medium text-gray-900 mb-3">
+                      Fluorescence
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {uniqueFluorescences.map((fluorescence) => (
+                        <button
+                          key={fluorescence}
+                          onClick={() =>
+                            toggleFilter(
+                              fluorescence,
+                              fluorescences,
+                              setFluorescences
+                            )
+                          }
+                          className={`px-3 py-1 text-xs rounded-full ${
+                            fluorescences.includes(fluorescence)
+                              ? "bg-gray-900 text-white"
+                              : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                          }`}
+                        >
+                          {fluorescence}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Clear Filters Button */}
                 {(clarities.length > 0 ||
@@ -1786,16 +1748,16 @@ const Products = () => {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8">
                   <AnimatePresence>
-                    {filterProducts.map((product, index) => (
+                    {filterProducts.map((bracelet, index) => (
                       <motion.div
-                        key={product._id}
+                        key={bracelet._id}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.3 }}
                       >
                         <GalleryItem
-                          item={product}
+                          item={bracelet}
                           price={true}
                           index={index}
                         />
@@ -1808,21 +1770,21 @@ const Products = () => {
               {/* Pagination */}
               {/* Uncomment and implement if pagination is needed */}
               {/* <div className="mt-8 flex justify-center">
-                <nav className="flex items-center">
-                  <button className="p-2 rounded-md hover:bg-gray-100">
-                    <FaChevronLeft className="h-5 w-5 text-gray-500" />
-                  </button>
-                  <button className="mx-1 px-4 py-2 rounded-md bg-gray-900 text-white">
-                    1
-                  </button>
-                  <button className="mx-1 px-4 py-2 rounded-md hover:bg-gray-100">
-                    2
-                  </button>
-                  <button className="p-2 rounded-md hover:bg-gray-100">
-                    <FaChevronRight className="h-5 w-5 text-gray-500" />
-                  </button>
-                </nav>
-              </div> */}
+                  <nav className="flex items-center">
+                    <button className="p-2 rounded-md hover:bg-gray-100">
+                      <FaChevronLeft className="h-5 w-5 text-gray-500" />
+                    </button>
+                    <button className="mx-1 px-4 py-2 rounded-md bg-gray-900 text-white">
+                      1
+                    </button>
+                    <button className="mx-1 px-4 py-2 rounded-md hover:bg-gray-100">
+                      2
+                    </button>
+                    <button className="p-2 rounded-md hover:bg-gray-100">
+                      <FaChevronRight className="h-5 w-5 text-gray-500" />
+                    </button>
+                  </nav>
+                </div> */}
             </div>
           </div>
         </div>
@@ -1832,4 +1794,4 @@ const Products = () => {
   );
 };
 
-export default Products;
+export default Bracelets;

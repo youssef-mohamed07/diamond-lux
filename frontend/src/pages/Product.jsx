@@ -102,39 +102,389 @@ const Product = () => {
     product.description.length > 10 &&
     product.description !== "adfds";
 
+  // Render diamond-specific properties
+  const renderDiamondProperties = () => {
+    if (product.productType !== "diamond") return null;
+
+    return (
+      <>
+        {/* Diamond Main Properties Section */}
+        {(product.shape || product.carats || product.col || product.clar) && (
+          <div className="p-6 border-b border-gray-100">
+            <div className="flex items-center mb-4">
+              <FaStar className="text-yellow-500 mr-3 text-xl" />
+              <h3 className="text-md font-semibold text-gray-800">
+                Diamond Properties
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-y-4 gap-x-6">
+              {product.shape && (
+                <div className="flex flex-col">
+                  <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                    Shape
+                  </span>
+                  <span className="text-sm font-medium text-gray-900">
+                    {product.shape}
+                  </span>
+                </div>
+              )}
+
+              {product.carats && (
+                <div className="flex flex-col">
+                  <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                    Carats
+                  </span>
+                  <span className="text-sm font-medium text-gray-900">
+                    {product.carats} ct
+                  </span>
+                </div>
+              )}
+
+              {product.col && (
+                <div className="flex flex-col">
+                  <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                    Color
+                  </span>
+                  <span className="text-sm font-medium text-gray-900">
+                    {product.col}
+                  </span>
+                </div>
+              )}
+
+              {product.clar && (
+                <div className="flex flex-col">
+                  <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                    Clarity
+                  </span>
+                  <span className="text-sm font-medium text-gray-900">
+                    {product.clar}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Cut Quality Section */}
+        {(product.cut || product.pol || product.symm) && (
+          <div className="p-6 border-b border-gray-100 bg-gray-50">
+            <div className="flex items-center mb-4">
+              <FaRulerHorizontal className="text-purple-500 mr-3 text-xl" />
+              <h3 className="text-md font-semibold text-gray-800">
+                Cut Quality
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-y-4 gap-x-6">
+              {product.cut && (
+                <div className="flex flex-col">
+                  <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                    Cut
+                  </span>
+                  <div className="flex items-center">
+                    <span className="text-sm font-medium text-gray-900">
+                      {product.cut}
+                    </span>
+                    {product.cut.toLowerCase().includes("excellent") && (
+                      <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
+                        Top Grade
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {product.pol && (
+                <div className="flex flex-col">
+                  <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                    Polish
+                  </span>
+                  <div className="flex items-center">
+                    <span className="text-sm font-medium text-gray-900">
+                      {product.pol}
+                    </span>
+                    {product.pol.toLowerCase().includes("excellent") && (
+                      <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
+                        Top Grade
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {product.symm && (
+                <div className="flex flex-col">
+                  <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                    Symmetry
+                  </span>
+                  <div className="flex items-center">
+                    <span className="text-sm font-medium text-gray-900">
+                      {product.symm}
+                    </span>
+                    {product.symm.toLowerCase().includes("excellent") && (
+                      <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
+                        Top Grade
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Additional Features */}
+        {(product.flo ||
+          product.floCol ||
+          product.culet ||
+          product.lab ||
+          product.girdle) && (
+          <div className="p-6 border-b border-gray-100 bg-gray-50">
+            <div className="flex items-center mb-4">
+              <FaMagic className="text-indigo-500 mr-3 text-xl" />
+              <h3 className="text-md font-semibold text-gray-800">
+                Additional Features
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-6">
+              {product.flo && (
+                <div className="flex flex-col">
+                  <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                    Fluorescence
+                  </span>
+                  <span className="text-sm font-medium text-gray-900">
+                    {product.flo}
+                  </span>
+                </div>
+              )}
+
+              {product.floCol && (
+                <div className="flex flex-col">
+                  <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                    Fluorescence Color
+                  </span>
+                  <span className="text-sm font-medium text-gray-900">
+                    {product.floCol}
+                  </span>
+                </div>
+              )}
+
+              {product.culet && (
+                <div className="flex flex-col">
+                  <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                    Culet
+                  </span>
+                  <span className="text-sm font-medium text-gray-900">
+                    {product.culet}
+                  </span>
+                </div>
+              )}
+
+              {product.lab && (
+                <div className="flex flex-col">
+                  <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                    Certification
+                  </span>
+                  <div className="flex items-center">
+                    <span className="text-sm font-medium text-gray-900">
+                      {product.lab}
+                    </span>
+                    {(product.lab === "GIA" || product.lab === "IGI") && (
+                      <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded-full">
+                        Certified
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {product.girdle && (
+                <div className="flex flex-col">
+                  <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                    Girdle
+                  </span>
+                  <span className="text-sm font-medium text-gray-900">
+                    {product.girdle}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Characteristics */}
+        {(product.eyeClean ||
+          product.brown ||
+          product.green ||
+          product.milky) && (
+          <div className="p-6">
+            <div className="flex items-center mb-4">
+              <FaEye className="text-amber-500 mr-3 text-xl" />
+              <h3 className="text-md font-semibold text-gray-800">
+                Characteristics
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6">
+              {product.eyeClean && (
+                <div className="flex flex-col">
+                  <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                    Eye Clean
+                  </span>
+                  <div className="flex items-center">
+                    <span className="text-sm font-medium text-gray-900">
+                      {product.eyeClean}
+                    </span>
+                    {product.eyeClean === "Yes" && (
+                      <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
+                        No Visible Inclusions
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {product.brown && (
+                <div className="flex flex-col">
+                  <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                    Brown Tint
+                  </span>
+                  <div className="flex items-center">
+                    <span className="text-sm font-medium text-gray-900">
+                      {product.brown}
+                    </span>
+                    {product.brown === "None" && (
+                      <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
+                        None
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {product.green && (
+                <div className="flex flex-col">
+                  <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                    Green Tint
+                  </span>
+                  <div className="flex items-center">
+                    <span className="text-sm font-medium text-gray-900">
+                      {product.green}
+                    </span>
+                    {product.green === "None" && (
+                      <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
+                        None
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {product.milky && (
+                <div className="flex flex-col">
+                  <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                    Milky Appearance
+                  </span>
+                  <div className="flex items-center">
+                    <span className="text-sm font-medium text-gray-900">
+                      {product.milky}
+                    </span>
+                    {product.milky === "None" && (
+                      <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
+                        None
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </>
+    );
+  };
+
+  // Render jewelry-specific properties
+  const renderJewelryProperties = () => {
+    if (product.productType !== "jewelry") return null;
+
+    return (
+      <>
+        {/* Jewelry Type and Properties */}
+        <div className="p-6 border-b border-gray-100">
+          <div className="flex items-center mb-4">
+            <FaGem className="text-blue-500 mr-3 text-xl" />
+            <h3 className="text-md font-semibold text-gray-800">
+              {product.jewelryType === "necklace"
+                ? "Necklace Properties"
+                : product.jewelryType === "bracelet"
+                ? "Bracelet Properties"
+                : product.jewelryType === "earrings"
+                ? "Earrings Properties"
+                : "Jewelry Properties"}
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-y-4 gap-x-6">
+            {product.jewelryType && (
+              <div className="flex flex-col">
+                <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                  Type
+                </span>
+                <span className="text-sm font-medium text-gray-900 capitalize">
+                  {product.jewelryType}
+                </span>
+              </div>
+            )}
+
+            {product.diamondType && (
+              <div className="flex flex-col">
+                <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                  Diamond Type
+                </span>
+                <span className="text-sm font-medium text-gray-900 capitalize">
+                  {product.diamondType.replace("_", " ")}
+                </span>
+              </div>
+            )}
+
+            {product.metal && (
+              <div className="flex flex-col">
+                <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                  Metal
+                </span>
+                <span className="text-sm font-medium text-gray-900 capitalize">
+                  {product.metal}
+                </span>
+              </div>
+            )}
+
+            {product.metalColor && (
+              <div className="flex flex-col">
+                <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                  Metal Color
+                </span>
+                <span className="text-sm font-medium text-gray-900 capitalize">
+                  {product.metalColor}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      </>
+    );
+  };
+
   return (
     <>
       <ScrollToTop />
       <div className="bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 my-0">
           <div className="flex items-center mb-8">
-            <button
-              onClick={() => navigate(-1)}
-              className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              <FaArrowLeft className="mr-2" />
-              <span>Back</span>
-            </button>
             <div className="mx-4 text-gray-400">/</div>
-            <Link
-              to="/products"
-              className="text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              Products
-            </Link>
-            {product.category && (
-              <>
-                <div className="mx-4 text-gray-400">/</div>
-                <Link
-                  to={`/products?category=${product.category}`}
-                  className="text-gray-600 hover:text-gray-900 transition-colors"
-                >
-                  {product.category}
-                </Link>
-              </>
-            )}
             <div className="mx-4 text-gray-400">/</div>
-            <span className="text-gray-900 font-medium">{product.title}</span>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -214,142 +564,11 @@ const Product = () => {
                   </div>
                 )}
 
-                {/* Diamond Main Properties Section */}
-                {(product.shape ||
-                  product.carats ||
-                  product.col ||
-                  product.clar) && (
-                  <div className="p-6 border-b border-gray-100">
-                    <div className="flex items-center mb-4">
-                      <FaStar className="text-yellow-500 mr-3 text-xl" />
-                      <h3 className="text-md font-semibold text-gray-800">
-                        Diamond Properties
-                      </h3>
-                    </div>
+                {/* Render properties based on product type */}
+                {renderDiamondProperties()}
+                {renderJewelryProperties()}
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-y-4 gap-x-6">
-                      {product.shape && (
-                        <div className="flex flex-col">
-                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
-                            Shape
-                          </span>
-                          <span className="text-sm font-medium text-gray-900">
-                            {product.shape}
-                          </span>
-                        </div>
-                      )}
-
-                      {product.carats && (
-                        <div className="flex flex-col">
-                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
-                            Carats
-                          </span>
-                          <span className="text-sm font-medium text-gray-900">
-                            {product.carats} ct
-                          </span>
-                        </div>
-                      )}
-
-                      {product.col && (
-                        <div className="flex flex-col">
-                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
-                            Color
-                          </span>
-                          <span className="text-sm font-medium text-gray-900">
-                            {product.col}
-                          </span>
-                        </div>
-                      )}
-
-                      {product.clar && (
-                        <div className="flex flex-col">
-                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
-                            Clarity
-                          </span>
-                          <span className="text-sm font-medium text-gray-900">
-                            {product.clar}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Cut Quality Section */}
-                {(product.cut || product.pol || product.symm) && (
-                  <div className="p-6 border-b border-gray-100 bg-gray-50">
-                    <div className="flex items-center mb-4">
-                      <FaRulerHorizontal className="text-purple-500 mr-3 text-xl" />
-                      <h3 className="text-md font-semibold text-gray-800">
-                        Cut Quality
-                      </h3>
-                    </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-y-4 gap-x-6">
-                      {product.cut && (
-                        <div className="flex flex-col">
-                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
-                            Cut
-                          </span>
-                          <div className="flex items-center">
-                            <span className="text-sm font-medium text-gray-900">
-                              {product.cut}
-                            </span>
-                            {product.cut
-                              .toLowerCase()
-                              .includes("excellent") && (
-                              <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
-                                Top Grade
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      {product.pol && (
-                        <div className="flex flex-col">
-                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
-                            Polish
-                          </span>
-                          <div className="flex items-center">
-                            <span className="text-sm font-medium text-gray-900">
-                              {product.pol}
-                            </span>
-                            {product.pol
-                              .toLowerCase()
-                              .includes("excellent") && (
-                              <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
-                                Top Grade
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      {product.symm && (
-                        <div className="flex flex-col">
-                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
-                            Symmetry
-                          </span>
-                          <div className="flex items-center">
-                            <span className="text-sm font-medium text-gray-900">
-                              {product.symm}
-                            </span>
-                            {product.symm
-                              .toLowerCase()
-                              .includes("excellent") && (
-                              <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
-                                Top Grade
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Measurements Section */}
+                {/* Measurements Section - Common for both types */}
                 {(product.length ||
                   product.width ||
                   product.height ||
@@ -432,205 +651,6 @@ const Product = () => {
                         </div>
                       </div>
                     )}
-                  </div>
-                )}
-
-                {/* Additional Features */}
-                {(product.flo ||
-                  product.floCol ||
-                  product.culet ||
-                  product.lab ||
-                  product.girdle) && (
-                  <div className="p-6 border-b border-gray-100 bg-gray-50">
-                    <div className="flex items-center mb-4">
-                      <FaMagic className="text-indigo-500 mr-3 text-xl" />
-                      <h3 className="text-md font-semibold text-gray-800">
-                        Additional Features
-                      </h3>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-6">
-                      {product.flo && (
-                        <div className="flex flex-col">
-                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
-                            Fluorescence
-                          </span>
-                          <span className="text-sm font-medium text-gray-900">
-                            {product.flo}
-                          </span>
-                        </div>
-                      )}
-
-                      {product.floCol && (
-                        <div className="flex flex-col">
-                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
-                            Fluorescence Color
-                          </span>
-                          <span className="text-sm font-medium text-gray-900">
-                            {product.floCol}
-                          </span>
-                        </div>
-                      )}
-
-                      {product.culet && (
-                        <div className="flex flex-col">
-                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
-                            Culet
-                          </span>
-                          <span className="text-sm font-medium text-gray-900">
-                            {product.culet}
-                          </span>
-                        </div>
-                      )}
-
-                      {product.lab && (
-                        <div className="flex flex-col">
-                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
-                            Certification
-                          </span>
-                          <div className="flex items-center">
-                            <span className="text-sm font-medium text-gray-900">
-                              {product.lab}
-                            </span>
-                            {(product.lab === "GIA" ||
-                              product.lab === "IGI") && (
-                              <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded-full">
-                                Certified
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      {product.girdle && (
-                        <div className="flex flex-col">
-                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
-                            Girdle
-                          </span>
-                          <span className="text-sm font-medium text-gray-900">
-                            {product.girdle}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Characteristics */}
-                {(product.eyeClean ||
-                  product.brown ||
-                  product.green ||
-                  product.milky) && (
-                  <div className="p-6">
-                    <div className="flex items-center mb-4">
-                      <FaEye className="text-amber-500 mr-3 text-xl" />
-                      <h3 className="text-md font-semibold text-gray-800">
-                        Characteristics
-                      </h3>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6">
-                      {product.eyeClean && (
-                        <div className="flex flex-col">
-                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
-                            Eye Clean
-                          </span>
-                          <div className="flex items-center">
-                            <span className="text-sm font-medium text-gray-900">
-                              {product.eyeClean}
-                            </span>
-                            {product.eyeClean === "Yes" && (
-                              <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
-                                No Visible Inclusions
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      {product.brown && (
-                        <div className="flex flex-col">
-                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
-                            Brown Tint
-                          </span>
-                          <div className="flex items-center">
-                            <span className="text-sm font-medium text-gray-900">
-                              {product.brown}
-                            </span>
-                            {product.brown === "None" && (
-                              <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
-                                None
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      {product.green && (
-                        <div className="flex flex-col">
-                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
-                            Green Tint
-                          </span>
-                          <div className="flex items-center">
-                            <span className="text-sm font-medium text-gray-900">
-                              {product.green}
-                            </span>
-                            {product.green === "None" && (
-                              <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
-                                None
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      {product.milky && (
-                        <div className="flex flex-col">
-                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
-                            Milky Appearance
-                          </span>
-                          <div className="flex items-center">
-                            <span className="text-sm font-medium text-gray-900">
-                              {product.milky}
-                            </span>
-                            {product.milky === "None" && (
-                              <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
-                                None
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Other Properties */}
-                {(product.material || product.gemstone) && (
-                  <div className="px-6 py-4 border-t border-gray-100 bg-gray-50">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6">
-                      {product.material && (
-                        <div className="flex flex-col">
-                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
-                            Material
-                          </span>
-                          <span className="text-sm font-medium text-gray-900">
-                            {product.material}
-                          </span>
-                        </div>
-                      )}
-
-                      {product.gemstone && (
-                        <div className="flex flex-col">
-                          <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
-                            Gemstone
-                          </span>
-                          <span className="text-sm font-medium text-gray-900">
-                            {product.gemstone}
-                          </span>
-                        </div>
-                      )}
-                    </div>
                   </div>
                 )}
               </div>
@@ -741,7 +761,7 @@ const Product = () => {
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white py-16">
+        <div className="bg-gradient-to-br max-w-7xl mx-auto from-gray-900 via-gray-800 to-black text-white py-16 mb-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -764,8 +784,6 @@ const Product = () => {
             </motion.div>
           </div>
         </div>
-
-        <NewsletterBox />
       </div>
     </>
   );

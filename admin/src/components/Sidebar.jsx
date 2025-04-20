@@ -27,7 +27,7 @@ const Sidebar = () => {
           to="/categories"
         >
           <img className="w-5 h-5" src={assets.order_icon} alt="" />
-          <p className="hidden md:block">Categories</p>
+          <p className="hidden md:block">Diamond Shapes</p>
         </NavLink>
 
         <NavLink

@@ -2,7 +2,12 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 
-const GalleryItem = ({ item, index, price = false }) => {
+const GalleryItem = ({ item, index, price = false, productType }) => {
+  // Early return if item is null or undefined
+  if (!item || !item._id) {
+    return null;
+  }
+
   return (
     <Link to={`/product/${item._id}`} className="group">
       <motion.div
@@ -21,8 +26,8 @@ const GalleryItem = ({ item, index, price = false }) => {
       >
         <div className="relative overflow-hidden  aspect-square">
           <img
-            src={item.imageCover}
-            alt={item.name}
+            src={item.imageCover || ""}
+            alt={item.name || "Product"}
             className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
           />
           <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-black opacity-0 group-hover:opacity-60 transition-opacity duration-300"></div>

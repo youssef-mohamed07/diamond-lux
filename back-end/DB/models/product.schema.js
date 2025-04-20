@@ -16,8 +16,29 @@ const schema = new Schema(
     images: [String],
     isPopular: { type: Boolean, default: false },
 
-    // New fields from diamond data
-    shape: String,
+    // Product type (diamond or jewelry)
+    productType: {
+      type: String,
+      enum: ["diamond", "jewelry"],
+      required: true,
+    },
+
+    // Sub-category for jewelry (earrings, necklace, bracelet)
+    jewelryType: {
+      type: String,
+      enum: ["earrings", "necklace", "bracelet"],
+      required: function () {
+        return this.productType === "jewelry";
+      },
+    },
+
+    // Diamond-specific properties
+    shape: {
+      type: String,
+      required: function () {
+        return this.productType === "diamond";
+      },
+    },
     carats: Number,
     col: String, // color
     clar: String, // clarity
@@ -38,6 +59,27 @@ const schema = new Schema(
     brown: String,
     green: String,
     milky: String,
+
+    // Jewelry-specific properties
+    diamondType: {
+      type: String,
+      enum: ["lab_grown", "natural"],
+      required: function () {
+        return this.productType === "jewelry";
+      },
+    },
+    metal: {
+      type: String,
+      required: function () {
+        return this.productType === "jewelry";
+      },
+    },
+    metalColor: {
+      type: String,
+      required: function () {
+        return this.productType === "jewelry";
+      },
+    },
   },
   {
     versionKey: false,

@@ -92,9 +92,9 @@ const List = ({ token }) => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {list &&
+            {list.length > 0 ? (
               list.map((item, index) => {
-                const category = categories.find(
+                const category = categories?.find(
                   (cat) => cat._id === item.category
                 );
                 const categoryName = category ? category.name : "Unknown";
@@ -136,7 +136,14 @@ const List = ({ token }) => {
                     </td>
                   </tr>
                 );
-              })}
+              })
+            ) : (
+              <tr>
+                <td colSpan="6" className="px-3 py-4 text-center text-gray-500">
+                  No products found
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

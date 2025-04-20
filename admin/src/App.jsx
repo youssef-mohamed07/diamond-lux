@@ -7,7 +7,7 @@ import List from "./pages/List";
 import Login from "./components/Login";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Categories from "./pages/Categories";
+import DiamondShapes from "./pages/DiamondShapes";
 import Home from "./pages/Home";
 import About_us from "./pages/Aboutus";
 import UI from "./pages/UI";
@@ -43,7 +43,7 @@ const App = () => {
                 <Route path="/list" element={<List token={token} />} />
                 <Route
                   path="/categories"
-                  element={<Categories token={token} />}
+                  element={<DiamondShapes token={token} />}
                 />
                 <Route path="/home" element={<Home token={token} />} />
                 <Route path="/about-us" element={<About_us token={token} />} />
