@@ -125,6 +125,7 @@ const CategoryShapes = () => {
 
   // Handle category click
   const handleCategoryClick = (categoryId, categoryName) => {
+    console.log("Category clicked:", categoryId, categoryName);
     // Navigate to diamond page with the category parameter
     navigate({
       pathname: '/products/diamond',

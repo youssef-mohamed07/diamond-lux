@@ -13,6 +13,11 @@ const filterAndSortDiamonds = ({
   caratRange = [0, 10],
   priceRange = [0, 100000],
   sortType = "",
+  tableRange = [0, 100],
+  lwRatioRange = [0, 10],
+  lengthRange = [0, 30],
+  widthRange = [0, 30],
+  depthRange = [0, 100],
 }) => {
   console.log("filterAndSortDiamonds DETAILED:", {
     diamondProductsCount: diamondProducts.length,
@@ -187,6 +192,55 @@ const filterAndSortDiamonds = ({
     console.log(
       `Price filter: ${beforePriceCount} -> ${filteredProducts.length}`
     );
+  }
+
+  // Table percentage range
+  if (tableRange && tableRange.length === 2) {
+    filteredProducts = filteredProducts.filter((product) => {
+      const tablePercent = parseFloat(product.table);
+      if (isNaN(tablePercent)) return true; // Skip if not a number
+      return tablePercent >= tableRange[0] && tablePercent <= tableRange[1];
+    });
+  }
+
+  // Length/Width ratio range
+  if (lwRatioRange && lwRatioRange.length === 2) {
+    filteredProducts = filteredProducts.filter((product) => {
+      // Calculate l/w ratio if both dimensions exist
+      if (product.length && product.width) {
+        const ratio = parseFloat(product.length) / parseFloat(product.width);
+        if (isNaN(ratio)) return true; // Skip if not a number
+        return ratio >= lwRatioRange[0] && ratio <= lwRatioRange[1];
+      }
+      return true; // Keep products without l/w data
+    });
+  }
+
+  // Length range
+  if (lengthRange && lengthRange.length === 2) {
+    filteredProducts = filteredProducts.filter((product) => {
+      const length = parseFloat(product.length);
+      if (isNaN(length)) return true; // Skip if not a number
+      return length >= lengthRange[0] && length <= lengthRange[1];
+    });
+  }
+
+  // Width range
+  if (widthRange && widthRange.length === 2) {
+    filteredProducts = filteredProducts.filter((product) => {
+      const width = parseFloat(product.width);
+      if (isNaN(width)) return true; // Skip if not a number
+      return width >= widthRange[0] && width <= widthRange[1];
+    });
+  }
+
+  // Depth percentage range
+  if (depthRange && depthRange.length === 2) {
+    filteredProducts = filteredProducts.filter((product) => {
+      const depthPercent = parseFloat(product.depth);
+      if (isNaN(depthPercent)) return true; // Skip if not a number
+      return depthPercent >= depthRange[0] && depthPercent <= depthRange[1];
+    });
   }
 
   // Sorting

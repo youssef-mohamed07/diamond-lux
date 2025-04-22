@@ -78,6 +78,13 @@ const Diamond = () => {
   const [priceRange, setPriceRange] = useState([0, 100000]);
   const [maxCarat, setMaxCarat] = useState(20);
   const [maxPrice, setMaxPrice] = useState(100000);
+  
+  // Additional range states for advanced filters
+  const [tableRange, setTableRange] = useState([0, 100]);
+  const [lwRatioRange, setLwRatioRange] = useState([0, 10]);
+  const [lengthRange, setLengthRange] = useState([0, 30]);
+  const [widthRange, setWidthRange] = useState([0, 30]);
+  const [depthRange, setDepthRange] = useState([0, 100]);
 
   // Unique values for filter options
   const [uniqueShapes, setUniqueShapes] = useState([]);
@@ -117,6 +124,11 @@ const Diamond = () => {
         caratRange,
         priceRange,
         sortType,
+        tableRange,
+        lwRatioRange,
+        lengthRange,
+        widthRange,
+        depthRange
       });
       setFilterProducts(filteredProducts);
       setIsLoading(false);
@@ -136,28 +148,22 @@ const Diamond = () => {
     labs,
     caratRange,
     priceRange,
+    tableRange,
+    lwRatioRange,
+    lengthRange,
+    widthRange,
+    depthRange
   ]);
 
-  // Update URL when selectedCategories change
+  // Instead, initialize the category selection once on component mount
   useEffect(() => {
-    if (selectedCategories.length > 0) {
-      const params = new URLSearchParams(location.search);
-      params.set('category', selectedCategories[0]);
-      navigate(`${location.pathname}?${params.toString()}`, { replace: true });
-    } else if (categoryParam) {
-      const params = new URLSearchParams(location.search);
-      params.delete('category');
-      navigate(`${location.pathname}?${params.toString()}`, { replace: true });
+    const initialCategoryParam = searchParams.get("category") || "";
+    if (initialCategoryParam) {
+      setSelectedCategories([initialCategoryParam]);
+    } else {
+      setSelectedCategories([]);
     }
-  }, [selectedCategories, location.search, location.pathname, navigate, categoryParam]);
-
-  // Listen for URL category parameter changes
-  useEffect(() => {
-    const newCategoryParam = searchParams.get("category") || "";
-    if (newCategoryParam && newCategoryParam !== (selectedCategories[0] || "")) {
-      setSelectedCategories(newCategoryParam ? [newCategoryParam] : []);
-    }
-  }, [location.search, searchParams, selectedCategories]);
+  }, [searchParams]);
 
   // Extract unique values for filter options and filter categories
   useEffect(() => {
@@ -216,8 +222,34 @@ const Diamond = () => {
     setLabs([]);
     setCaratRange([0, maxCarat]);
     setPriceRange([0, maxPrice]);
+    setTableRange([0, 100]);
+    setLwRatioRange([0, 10]);
+    setLengthRange([0, 30]);
+    setWidthRange([0, 30]);
+    setDepthRange([0, 100]);
     setSearchQuery("");
     navigate({ search: "" }, { replace: true });
+  };
+
+  // Toggle category selection
+  const toggleCategorySelection = (categoryId) => {
+    if (selectedCategories.includes(categoryId)) {
+      // If this category is already selected, deselect it
+      setSelectedCategories([]);
+      
+      // Update URL directly
+      const params = new URLSearchParams(location.search);
+      params.delete('category');
+      navigate(`${location.pathname}?${params.toString()}`, { replace: true });
+    } else {
+      // Otherwise select this category (replacing any existing selection)
+      setSelectedCategories([categoryId]);
+      
+      // Update URL directly
+      const params = new URLSearchParams(location.search);
+      params.set('category', categoryId);
+      navigate(`${location.pathname}?${params.toString()}`, { replace: true });
+    }
   };
 
   // Loading screen
@@ -356,8 +388,16 @@ const Diamond = () => {
               {/* Diamond Shapes Category Slider - 100% Width */}
               {categories.length > 0 && (
                 <div className="w-full mb-8">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">
-                    Diamond Shapes
+                  <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center justify-between">
+                    <span>Diamond Shapes</span>
+                    {selectedCategories.length > 0 && (
+                      <button 
+                        onClick={() => toggleCategorySelection(selectedCategories[0])}
+                        className="text-xs font-normal text-white bg-gray-900 hover:bg-gray-700 px-3 py-1 rounded-full transition-colors"
+                      >
+                        Clear Selection
+                      </button>
+                    )}
                   </h3>
                   {filteredCategories.length > 0 ? (
                     <div className="relative group">
@@ -410,33 +450,25 @@ const Diamond = () => {
                           {filteredCategories.map((category) => (
                             <div
                               key={category._id}
-                              onClick={() => {
-                                if (selectedCategories.includes(category._id)) {
-                                  setSelectedCategories(
-                                    selectedCategories.filter(
-                                      (id) => id !== category._id
-                                    )
-                                  );
-                                } else {
-                                  setSelectedCategories([
-                                    ...selectedCategories,
-                                    category._id,
-                                  ]);
-                                }
-                              }}
-                              className={`cursor-pointer flex flex-col items-center transition-all transform hover:scale-105 ${
+                              onClick={() => toggleCategorySelection(category._id)}
+                              className={`cursor-pointer flex flex-col items-center transition-all transform hover:scale-105 active:scale-95 ${
                                 selectedCategories.includes(category._id)
                                   ? "scale-105 opacity-100"
                                   : "opacity-80 hover:opacity-100"
                               }`}
                             >
                               <div
-                                className={`w-16 h-16 sm:w-18 sm:h-18 md:w-20 md:h-20 rounded-full overflow-hidden mb-2 border-2 shadow-md flex items-center justify-center ${
+                                className={`w-16 h-16 sm:w-18 sm:h-18 md:w-20 md:h-20 rounded-full overflow-hidden mb-2 border-2 shadow-md flex items-center justify-center transition-all relative ${
                                   selectedCategories.includes(category._id)
-                                    ? "border-gray-900 ring-2 ring-gray-300"
-                                    : "border-transparent hover:border-gray-300"
+                                    ? "border-gray-900 ring-2 ring-gray-300 hover:bg-gray-100"
+                                    : "border-transparent hover:border-gray-300 hover:bg-gray-50"
                                 }`}
                               >
+                                {selectedCategories.includes(category._id) && (
+                                  <div className="absolute top-0 right-0 w-5 h-5 bg-gray-900 rounded-full flex items-center justify-center">
+                                    <span className="text-white text-xs">✓</span>
+                                  </div>
+                                )}
                                 {category.image ? (
                                   <img
                                     src={`${backendURL_WITHOUT_API}/uploads/diamond-shapes/${category.image}`}
@@ -731,8 +763,16 @@ const Diamond = () => {
                     <div className="mb-5">
                       {/* Diamond Shapes */}
                       <div className="mb-6">
-                        <h3 className="text-base font-medium text-gray-900 mb-3">
-                          Diamond Shapes
+                        <h3 className="text-base font-medium text-gray-900 mb-3 flex items-center justify-between">
+                          <span>Diamond Shapes</span>
+                          {selectedCategories.length > 0 && (
+                            <button 
+                              onClick={() => toggleCategorySelection(selectedCategories[0])}
+                              className="text-xs font-normal text-white bg-gray-900 hover:bg-gray-700 px-2 py-1 rounded-full transition-colors"
+                            >
+                              Clear
+                            </button>
+                          )}
                         </h3>
                         {filteredCategories.length > 0 ? (
                           <div className="relative group">
@@ -785,39 +825,25 @@ const Diamond = () => {
                                 {filteredCategories.map((category) => (
                                   <div
                                     key={category._id}
-                                    onClick={() => {
-                                      if (
-                                        selectedCategories.includes(
-                                          category._id
-                                        )
-                                      ) {
-                                        setSelectedCategories(
-                                          selectedCategories.filter(
-                                            (id) => id !== category._id
-                                          )
-                                        );
-                                      } else {
-                                        setSelectedCategories([
-                                          ...selectedCategories,
-                                          category._id,
-                                        ]);
-                                      }
-                                    }}
-                                    className={`cursor-pointer flex flex-col items-center transition-all transform hover:scale-105 ${
+                                    onClick={() => toggleCategorySelection(category._id)}
+                                    className={`cursor-pointer flex flex-col items-center transition-all transform hover:scale-105 active:scale-95 ${
                                       selectedCategories.includes(category._id)
                                         ? "scale-105 opacity-100"
                                         : "opacity-80 hover:opacity-100"
                                     }`}
                                   >
                                     <div
-                                      className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden mb-2 border-2 shadow-md flex items-center justify-center ${
-                                        selectedCategories.includes(
-                                          category._id
-                                        )
-                                          ? "border-gray-900 ring-1 ring-gray-300"
-                                          : "border-transparent hover:border-gray-300"
+                                      className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden mb-2 border-2 shadow-md flex items-center justify-center transition-all ${
+                                        selectedCategories.includes(category._id)
+                                          ? "border-gray-900 ring-1 ring-gray-300 hover:bg-gray-100"
+                                          : "border-transparent hover:border-gray-300 hover:bg-gray-50"
                                       }`}
                                     >
+                                      {selectedCategories.includes(category._id) && (
+                                        <div className="absolute top-0 right-0 w-5 h-5 bg-gray-900 rounded-full flex items-center justify-center">
+                                          <span className="text-white text-xs">✓</span>
+                                        </div>
+                                      )}
                                       {category.image ? (
                                         <img
                                           src={`${backendURL_WITHOUT_API}/uploads/diamond-shapes/${category.image}`}
@@ -845,9 +871,7 @@ const Diamond = () => {
                                     </div>
                                     <span
                                       className={`text-xs text-center max-w-[60px] sm:max-w-[80px] truncate ${
-                                        selectedCategories.includes(
-                                          category._id
-                                        )
+                                        selectedCategories.includes(category._id)
                                           ? "font-semibold"
                                           : "font-normal"
                                       }`}
@@ -988,9 +1012,7 @@ const Diamond = () => {
                                 className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                               />
                             </div>
-                            <div className="mx-2 text-gray-400 self-center">
-                              to
-                            </div>
+                            <div className="mx-4 text-gray-400 self-end mb-2">to</div>
                             <div className="flex-1">
                               <input
                                 type="number"
@@ -1005,10 +1027,7 @@ const Diamond = () => {
                                   setCaratRange([
                                     caratRange[0],
                                     parseFloat(
-                                      Math.max(
-                                        value,
-                                        caratRange[0] + 0.001
-                                      ).toFixed(2)
+                                      Math.max(value, caratRange[0] + 0.001).toFixed(2)
                                     ),
                                   ]);
                                 }}
@@ -1153,29 +1172,49 @@ const Diamond = () => {
                       )}
 
                       {/* Table % Filter */}
-                      <div className="mb-4">
-                        <h4 className="text-sm font-medium text-gray-900 mb-2">
+                      <div className="mb-6">
+                        <h3 className="text-base font-medium text-gray-900 mb-3">
                           Table %
-                        </h4>
+                        </h3>
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
                             <input
                               type="number"
                               min={0}
                               max={100}
-                              step={0.1}
-                              placeholder="Min"
+                              step="0.1"
+                              value={tableRange[0]}
+                              onChange={(e) => {
+                                const value = parseFloat(e.target.value);
+                                if (isNaN(value)) return;
+                                // Ensure min doesn't exceed max
+                                const safeValue = Math.min(value, tableRange[1] - 0.1);
+                                setTableRange([
+                                  safeValue,
+                                  tableRange[1],
+                                ]);
+                              }}
                               className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                             />
                           </div>
-                          <div className="mx-2 text-gray-400 self-center">to</div>
+                          <div className="mx-4 text-gray-400">to</div>
                           <div className="flex-1">
                             <input
                               type="number"
                               min={0}
                               max={100}
-                              step={0.1}
-                              placeholder="Max"
+                              step="0.1"
+                              value={tableRange[1]}
+                              onChange={(e) => {
+                                const value = parseFloat(e.target.value);
+                                if (isNaN(value)) return;
+                                // Ensure max is greater than min
+                                const safeValue = Math.max(value, tableRange[0] + 0.1);
+                                setTableRange([
+                                  tableRange[0],
+                                  safeValue,
+                                ]);
+                              }}
                               className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                             />
                           </div>
@@ -1183,27 +1222,49 @@ const Diamond = () => {
                       </div>
 
                       {/* L/W Ratio % Filter */}
-                      <div className="mb-4">
-                        <h4 className="text-sm font-medium text-gray-900 mb-2">
+                      <div className="mb-6">
+                        <h3 className="text-base font-medium text-gray-900 mb-3">
                           L/W Ratio %
-                        </h4>
+                        </h3>
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
                             <input
                               type="number"
                               min={0}
-                              step={0.01}
-                              placeholder="Min"
+                              max={10}
+                              step="0.01"
+                              value={lwRatioRange[0]}
+                              onChange={(e) => {
+                                const value = parseFloat(e.target.value);
+                                if (isNaN(value)) return;
+                                // Ensure min doesn't exceed max
+                                const safeValue = Math.min(value, lwRatioRange[1] - 0.01);
+                                setLwRatioRange([
+                                  safeValue,
+                                  lwRatioRange[1],
+                                ]);
+                              }}
                               className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                             />
                           </div>
-                          <div className="mx-2 text-gray-400 self-center">to</div>
+                          <div className="mx-4 text-gray-400">to</div>
                           <div className="flex-1">
                             <input
                               type="number"
                               min={0}
-                              step={0.01}
-                              placeholder="Max"
+                              max={10}
+                              step="0.01"
+                              value={lwRatioRange[1]}
+                              onChange={(e) => {
+                                const value = parseFloat(e.target.value);
+                                if (isNaN(value)) return;
+                                // Ensure max is greater than min
+                                const safeValue = Math.max(value, lwRatioRange[0] + 0.01);
+                                setLwRatioRange([
+                                  lwRatioRange[0],
+                                  safeValue,
+                                ]);
+                              }}
                               className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                             />
                           </div>
@@ -1211,27 +1272,47 @@ const Diamond = () => {
                       </div>
 
                       {/* Length (L) in mm Filter */}
-                      <div className="mb-4">
-                        <h4 className="text-sm font-medium text-gray-900 mb-2">
+                      <div className="mb-6">
+                        <h3 className="text-base font-medium text-gray-900 mb-3">
                           Length (mm)
-                        </h4>
+                        </h3>
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
                             <input
                               type="number"
                               min={0}
-                              step={0.01}
-                              placeholder="Min"
+                              max={30}
+                              step="0.01"
+                              value={lengthRange[0]}
+                              onChange={(e) => {
+                                const value = parseFloat(e.target.value);
+                                if (isNaN(value)) return;
+                                const safeValue = Math.min(value, lengthRange[1] - 0.01);
+                                setLengthRange([
+                                  safeValue,
+                                  lengthRange[1],
+                                ]);
+                              }}
                               className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                             />
                           </div>
-                          <div className="mx-2 text-gray-400 self-center">to</div>
+                          <div className="mx-4 text-gray-400 self-end mb-2">to</div>
                           <div className="flex-1">
                             <input
                               type="number"
                               min={0}
-                              step={0.01}
-                              placeholder="Max"
+                              max={30}
+                              step="0.01"
+                              value={lengthRange[1]}
+                              onChange={(e) => {
+                                const value = parseFloat(e.target.value);
+                                if (isNaN(value)) return;
+                                const safeValue = Math.max(value, lengthRange[0] + 0.01);
+                                setLengthRange([
+                                  lengthRange[0],
+                                  safeValue,
+                                ]);
+                              }}
                               className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                             />
                           </div>
@@ -1239,27 +1320,47 @@ const Diamond = () => {
                       </div>
 
                       {/* Width (W) in mm Filter */}
-                      <div className="mb-4">
-                        <h4 className="text-sm font-medium text-gray-900 mb-2">
+                      <div className="mb-6">
+                        <h3 className="text-base font-medium text-gray-900 mb-3">
                           Width (mm)
-                        </h4>
+                        </h3>
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
                             <input
                               type="number"
                               min={0}
-                              step={0.01}
-                              placeholder="Min"
+                              max={30}
+                              step="0.01"
+                              value={widthRange[0]}
+                              onChange={(e) => {
+                                const value = parseFloat(e.target.value);
+                                if (isNaN(value)) return;
+                                const safeValue = Math.min(value, widthRange[1] - 0.01);
+                                setWidthRange([
+                                  safeValue,
+                                  widthRange[1],
+                                ]);
+                              }}
                               className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                             />
                           </div>
-                          <div className="mx-2 text-gray-400 self-center">to</div>
+                          <div className="mx-4 text-gray-400 self-center">to</div>
                           <div className="flex-1">
                             <input
                               type="number"
                               min={0}
-                              step={0.01}
-                              placeholder="Max"
+                              max={30}
+                              step="0.01"
+                              value={widthRange[1]}
+                              onChange={(e) => {
+                                const value = parseFloat(e.target.value);
+                                if (isNaN(value)) return;
+                                const safeValue = Math.max(value, widthRange[0] + 0.01);
+                                setWidthRange([
+                                  widthRange[0],
+                                  safeValue,
+                                ]);
+                              }}
                               className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                             />
                           </div>
@@ -1267,29 +1368,47 @@ const Diamond = () => {
                       </div>
 
                       {/* Depth % Filter */}
-                      <div className="mb-4">
-                        <h4 className="text-sm font-medium text-gray-900 mb-2">
+                      <div className="mb-6">
+                        <h3 className="text-base font-medium text-gray-900 mb-3">
                           Depth %
-                        </h4>
+                        </h3>
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
                             <input
                               type="number"
                               min={0}
                               max={100}
-                              step={0.1}
-                              placeholder="Min"
+                              step="0.1"
+                              value={depthRange[0]}
+                              onChange={(e) => {
+                                const value = parseFloat(e.target.value);
+                                if (isNaN(value)) return;
+                                const safeValue = Math.min(value, depthRange[1] - 0.1);
+                                setDepthRange([
+                                  safeValue,
+                                  depthRange[1],
+                                ]);
+                              }}
                               className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                             />
                           </div>
-                          <div className="mx-2 text-gray-400 self-center">to</div>
+                          <div className="mx-4 text-gray-400 self-center">to</div>
                           <div className="flex-1">
                             <input
                               type="number"
                               min={0}
                               max={100}
-                              step={0.1}
-                              placeholder="Max"
+                              step="0.1"
+                              value={depthRange[1]}
+                              onChange={(e) => {
+                                const value = parseFloat(e.target.value);
+                                if (isNaN(value)) return;
+                                const safeValue = Math.max(value, depthRange[0] + 0.1);
+                                setDepthRange([
+                                  depthRange[0],
+                                  safeValue,
+                                ]);
+                              }}
                               className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                             />
                           </div>
@@ -1458,8 +1577,18 @@ const Diamond = () => {
                         type="number"
                         min={0}
                         max={100}
-                        step={0.1}
-                        placeholder="Min"
+                        step="0.1"
+                        value={tableRange[0]}
+                        onChange={(e) => {
+                          const value = parseFloat(e.target.value);
+                          if (isNaN(value)) return;
+                          // Ensure min doesn't exceed max
+                          const safeValue = Math.min(value, tableRange[1] - 0.1);
+                          setTableRange([
+                            safeValue,
+                            tableRange[1],
+                          ]);
+                        }}
                         className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                       />
                     </div>
@@ -1469,8 +1598,18 @@ const Diamond = () => {
                         type="number"
                         min={0}
                         max={100}
-                        step={0.1}
-                        placeholder="Max"
+                        step="0.1"
+                        value={tableRange[1]}
+                        onChange={(e) => {
+                          const value = parseFloat(e.target.value);
+                          if (isNaN(value)) return;
+                          // Ensure max is greater than min
+                          const safeValue = Math.max(value, tableRange[0] + 0.1);
+                          setTableRange([
+                            tableRange[0],
+                            safeValue,
+                          ]);
+                        }}
                         className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                       />
                     </div>
@@ -1487,8 +1626,19 @@ const Diamond = () => {
                       <input
                         type="number"
                         min={0}
-                        step={0.01}
-                        placeholder="Min"
+                        max={10}
+                        step="0.01"
+                        value={lwRatioRange[0]}
+                        onChange={(e) => {
+                          const value = parseFloat(e.target.value);
+                          if (isNaN(value)) return;
+                          // Ensure min doesn't exceed max
+                          const safeValue = Math.min(value, lwRatioRange[1] - 0.01);
+                          setLwRatioRange([
+                            safeValue,
+                            lwRatioRange[1],
+                          ]);
+                        }}
                         className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                       />
                     </div>
@@ -1497,8 +1647,19 @@ const Diamond = () => {
                       <input
                         type="number"
                         min={0}
-                        step={0.01}
-                        placeholder="Max"
+                        max={10}
+                        step="0.01"
+                        value={lwRatioRange[1]}
+                        onChange={(e) => {
+                          const value = parseFloat(e.target.value);
+                          if (isNaN(value)) return;
+                          // Ensure max is greater than min
+                          const safeValue = Math.max(value, lwRatioRange[0] + 0.01);
+                          setLwRatioRange([
+                            lwRatioRange[0],
+                            safeValue,
+                          ]);
+                        }}
                         className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                       />
                     </div>
@@ -1515,8 +1676,18 @@ const Diamond = () => {
                       <input
                         type="number"
                         min={0}
-                        step={0.01}
-                        placeholder="Min"
+                        max={30}
+                        step="0.01"
+                        value={lengthRange[0]}
+                        onChange={(e) => {
+                          const value = parseFloat(e.target.value);
+                          if (isNaN(value)) return;
+                          const safeValue = Math.min(value, lengthRange[1] - 0.01);
+                          setLengthRange([
+                            safeValue,
+                            lengthRange[1],
+                          ]);
+                        }}
                         className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                       />
                     </div>
@@ -1525,8 +1696,18 @@ const Diamond = () => {
                       <input
                         type="number"
                         min={0}
-                        step={0.01}
-                        placeholder="Max"
+                        max={30}
+                        step="0.01"
+                        value={lengthRange[1]}
+                        onChange={(e) => {
+                          const value = parseFloat(e.target.value);
+                          if (isNaN(value)) return;
+                          const safeValue = Math.max(value, lengthRange[0] + 0.01);
+                          setLengthRange([
+                            lengthRange[0],
+                            safeValue,
+                          ]);
+                        }}
                         className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                       />
                     </div>
@@ -1543,8 +1724,18 @@ const Diamond = () => {
                       <input
                         type="number"
                         min={0}
-                        step={0.01}
-                        placeholder="Min"
+                        max={30}
+                        step="0.01"
+                        value={widthRange[0]}
+                        onChange={(e) => {
+                          const value = parseFloat(e.target.value);
+                          if (isNaN(value)) return;
+                          const safeValue = Math.min(value, widthRange[1] - 0.01);
+                          setWidthRange([
+                            safeValue,
+                            widthRange[1],
+                          ]);
+                        }}
                         className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                       />
                     </div>
@@ -1553,8 +1744,18 @@ const Diamond = () => {
                       <input
                         type="number"
                         min={0}
-                        step={0.01}
-                        placeholder="Max"
+                        max={30}
+                        step="0.01"
+                        value={widthRange[1]}
+                        onChange={(e) => {
+                          const value = parseFloat(e.target.value);
+                          if (isNaN(value)) return;
+                          const safeValue = Math.max(value, widthRange[0] + 0.01);
+                          setWidthRange([
+                            widthRange[0],
+                            safeValue,
+                          ]);
+                        }}
                         className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                       />
                     </div>
@@ -1572,8 +1773,17 @@ const Diamond = () => {
                         type="number"
                         min={0}
                         max={100}
-                        step={0.1}
-                        placeholder="Min"
+                        step="0.1"
+                        value={depthRange[0]}
+                        onChange={(e) => {
+                          const value = parseFloat(e.target.value);
+                          if (isNaN(value)) return;
+                          const safeValue = Math.min(value, depthRange[1] - 0.1);
+                          setDepthRange([
+                            safeValue,
+                            depthRange[1],
+                          ]);
+                        }}
                         className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                       />
                     </div>
@@ -1583,8 +1793,17 @@ const Diamond = () => {
                         type="number"
                         min={0}
                         max={100}
-                        step={0.1}
-                        placeholder="Max"
+                        step="0.1"
+                        value={depthRange[1]}
+                        onChange={(e) => {
+                          const value = parseFloat(e.target.value);
+                          if (isNaN(value)) return;
+                          const safeValue = Math.max(value, depthRange[0] + 0.1);
+                          setDepthRange([
+                            depthRange[0],
+                            safeValue,
+                          ]);
+                        }}
                         className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                       />
                     </div>
@@ -1701,11 +1920,7 @@ const Diamond = () => {
                             Category: {categoryObj.name}
                           </span>
                           <button
-                            onClick={() => {
-                              setSelectedCategories(
-                                selectedCategories.filter((c) => c !== catId)
-                              );
-                            }}
+                            onClick={() => toggleCategorySelection(catId)}
                             className="text-gray-500 hover:text-gray-700"
                           >
                             <FaTimes className="h-3 w-3" />
