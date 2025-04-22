@@ -142,10 +142,6 @@ const Diamond = () => {
   useEffect(() => {
     if (diamondProducts?.length > 0 && categories?.length > 0) {
       const {
-        maxPrice,
-        maxCarat,
-        priceRange,
-        caratRange,
         uniqueShapes,
         uniqueColors,
         uniqueClarities,
@@ -157,10 +153,6 @@ const Diamond = () => {
         filteredCategories,
       } = extractDiamondFilters(diamondProducts, categories);
 
-      setMaxPrice(maxPrice);
-      setMaxCarat(maxCarat);
-      setPriceRange(priceRange);
-      setCaratRange(caratRange);
       setUniqueShapes(uniqueShapes);
       setUniqueColors(uniqueColors);
       setUniqueClarities(uniqueClarities);
@@ -185,6 +177,23 @@ const Diamond = () => {
     selectedCategories,
     setSelectedCategories
   );
+
+  // Clear all filters function - update to use default values
+  const clearAllFilters = () => {
+    setSelectedCategories([]);
+    setShapes([]);
+    setColors([]);
+    setClarities([]);
+    setCuts([]);
+    setPolishes([]);
+    setSymmetries([]);
+    setFluorescences([]);
+    setLabs([]);
+    setCaratRange([0, maxCarat]);
+    setPriceRange([0, maxPrice]);
+    setSearchQuery("");
+    navigate({ search: "" }, { replace: true });
+  };
 
   // Loading screen
   if (isLoading) {
@@ -499,13 +508,12 @@ const Diamond = () => {
                           type="number"
                           min={0}
                           max={maxPrice}
-                          step={100}
                           value={priceRange[0]}
                           onChange={(e) => {
                             const value = parseInt(e.target.value);
                             if (isNaN(value)) return;
                             setPriceRange([
-                              Math.min(value, priceRange[1] - 100),
+                              Math.min(value, priceRange[1] - 1),
                               priceRange[1],
                             ]);
                           }}
@@ -523,14 +531,13 @@ const Diamond = () => {
                           type="number"
                           min={0}
                           max={maxPrice}
-                          step={100}
                           value={priceRange[1]}
                           onChange={(e) => {
                             const value = parseInt(e.target.value);
                             if (isNaN(value)) return;
                             setPriceRange([
                               priceRange[0],
-                              Math.max(value, priceRange[0] + 100),
+                              Math.max(value, priceRange[0] + 1),
                             ]);
                           }}
                           className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
@@ -551,13 +558,18 @@ const Diamond = () => {
                         type="number"
                         min={0}
                         max={maxCarat}
-                        step={0.01}
+                        step="0.01"
                         value={caratRange[0]}
                         onChange={(e) => {
                           const value = parseFloat(e.target.value);
                           if (isNaN(value)) return;
+                          // Calculate a safe maximum that ensures we don't exceed the max value
+                          const safeMax = Math.min(
+                            value,
+                            caratRange[1] - 0.001
+                          );
                           setCaratRange([
-                            Math.min(value, caratRange[1] - 0.01),
+                            parseFloat(safeMax.toFixed(2)),
                             caratRange[1],
                           ]);
                         }}
@@ -570,14 +582,17 @@ const Diamond = () => {
                         type="number"
                         min={0}
                         max={maxCarat}
-                        step={0.01}
+                        step="0.01"
                         value={caratRange[1]}
                         onChange={(e) => {
                           const value = parseFloat(e.target.value);
                           if (isNaN(value)) return;
+                          // Calculate a safe minimum that ensures we're at least 0.001 more than the min value
                           setCaratRange([
                             caratRange[0],
-                            Math.max(value, caratRange[0] + 0.01),
+                            parseFloat(
+                              Math.max(value, caratRange[0] + 0.001).toFixed(2)
+                            ),
                           ]);
                         }}
                         className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
@@ -878,13 +893,12 @@ const Diamond = () => {
                                   type="number"
                                   min={0}
                                   max={maxPrice}
-                                  step={100}
                                   value={priceRange[0]}
                                   onChange={(e) => {
                                     const value = parseInt(e.target.value);
                                     if (isNaN(value)) return;
                                     setPriceRange([
-                                      Math.min(value, priceRange[1] - 100),
+                                      Math.min(value, priceRange[1] - 1),
                                       priceRange[1],
                                     ]);
                                   }}
@@ -904,14 +918,13 @@ const Diamond = () => {
                                   type="number"
                                   min={0}
                                   max={maxPrice}
-                                  step={100}
                                   value={priceRange[1]}
                                   onChange={(e) => {
                                     const value = parseInt(e.target.value);
                                     if (isNaN(value)) return;
                                     setPriceRange([
                                       priceRange[0],
-                                      Math.max(value, priceRange[0] + 100),
+                                      Math.max(value, priceRange[0] + 1),
                                     ]);
                                   }}
                                   className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
@@ -932,13 +945,18 @@ const Diamond = () => {
                                 type="number"
                                 min={0}
                                 max={maxCarat}
-                                step={0.01}
+                                step="0.01"
                                 value={caratRange[0]}
                                 onChange={(e) => {
                                   const value = parseFloat(e.target.value);
                                   if (isNaN(value)) return;
+                                  // Calculate a safe maximum that ensures we don't exceed the max value
+                                  const safeMax = Math.min(
+                                    value,
+                                    caratRange[1] - 0.001
+                                  );
                                   setCaratRange([
-                                    Math.min(value, caratRange[1] - 0.01),
+                                    parseFloat(safeMax.toFixed(2)),
                                     caratRange[1],
                                   ]);
                                 }}
@@ -953,14 +971,20 @@ const Diamond = () => {
                                 type="number"
                                 min={0}
                                 max={maxCarat}
-                                step={0.01}
+                                step="0.01"
                                 value={caratRange[1]}
                                 onChange={(e) => {
                                   const value = parseFloat(e.target.value);
                                   if (isNaN(value)) return;
+                                  // Calculate a safe minimum that ensures we're at least 0.001 more than the min value
                                   setCaratRange([
                                     caratRange[0],
-                                    Math.max(value, caratRange[0] + 0.01),
+                                    parseFloat(
+                                      Math.max(
+                                        value,
+                                        caratRange[0] + 0.001
+                                      ).toFixed(2)
+                                    ),
                                   ]);
                                 }}
                                 className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
@@ -1175,21 +1199,7 @@ const Diamond = () => {
 
                     {/* Clear All Filters Button */}
                     <button
-                      onClick={() => {
-                        setSelectedCategories([]);
-                        setShapes([]);
-                        setColors([]);
-                        setClarities([]);
-                        setCuts([]);
-                        setPolishes([]);
-                        setSymmetries([]);
-                        setFluorescences([]);
-                        setLabs([]);
-                        setCaratRange([0, maxCarat]);
-                        setPriceRange([0, maxPrice]);
-                        setSearchQuery("");
-                        navigate({ search: "" }, { replace: true });
-                      }}
+                      onClick={clearAllFilters}
                       className="w-full py-2 bg-black text-white rounded-lg text-sm font-medium"
                     >
                       Clear All Filters
@@ -1486,21 +1496,7 @@ const Diamond = () => {
                   labs.length > 0) && (
                   <div className="mt-5">
                     <button
-                      onClick={() => {
-                        setSelectedCategories([]);
-                        setShapes([]);
-                        setColors([]);
-                        setClarities([]);
-                        setCuts([]);
-                        setPolishes([]);
-                        setSymmetries([]);
-                        setFluorescences([]);
-                        setLabs([]);
-                        setCaratRange([0, maxCarat]);
-                        setPriceRange([0, maxPrice]);
-                        setSearchQuery("");
-                        navigate({ search: "" }, { replace: true });
-                      }}
+                      onClick={clearAllFilters}
                       className="w-full py-2 bg-black text-white rounded-lg text-sm font-medium"
                     >
                       Clear Advanced Filters
@@ -1622,21 +1618,7 @@ const Diamond = () => {
                     adjusting your filters or search terms.
                   </p>
                   <button
-                    onClick={() => {
-                      setSelectedCategories([]);
-                      setShapes([]);
-                      setColors([]);
-                      setClarities([]);
-                      setCuts([]);
-                      setPolishes([]);
-                      setSymmetries([]);
-                      setFluorescences([]);
-                      setLabs([]);
-                      setCaratRange([0, maxCarat]);
-                      setPriceRange([0, maxPrice]);
-                      setSearchQuery("");
-                      navigate({ search: "" }, { replace: true });
-                    }}
+                    onClick={clearAllFilters}
                     className="px-6 py-2 bg-gray-900 text-white rounded-lg"
                   >
                     Clear All Filters

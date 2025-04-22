@@ -1,13 +1,6 @@
 export const extractDiamondFilters = (diamondProducts, categories) => {
   if (!diamondProducts || !categories) return {};
 
-  const maxProductPrice = Math.max(
-    ...diamondProducts.map((product) => product.price || 0)
-  );
-  const maxProductCarat = Math.max(
-    ...diamondProducts.map((product) => product.carats || 0)
-  );
-
   const unique = (key) => [
     ...new Set(diamondProducts.filter((p) => p[key]).map((p) => p[key])),
   ];
@@ -19,10 +12,6 @@ export const extractDiamondFilters = (diamondProducts, categories) => {
     : [];
 
   return {
-    maxPrice: maxProductPrice > 0 ? maxProductPrice : 1000000,
-    maxCarat: maxProductCarat > 0 ? maxProductCarat : 10,
-    priceRange: [0, maxProductPrice > 0 ? maxProductPrice : 1000000],
-    caratRange: [0, maxProductCarat > 0 ? maxProductCarat : 10],
     uniqueShapes: unique("shape"),
     uniqueColors: unique("col"),
     uniqueClarities: unique("clar"),

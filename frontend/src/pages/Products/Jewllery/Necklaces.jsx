@@ -463,7 +463,9 @@ const Necklaces = () => {
                     {uniqueDiamondTypes.map((type) => (
                       <button
                         key={type}
-                        onClick={() => toggleFilter(type, diamondTypes, setDiamondTypes)}
+                        onClick={() =>
+                          toggleFilter(type, diamondTypes, setDiamondTypes)
+                        }
                         className={`px-3 py-1 text-xs rounded-full ${
                           diamondTypes.includes(type)
                             ? "bg-gray-900 text-white shadow-md"
@@ -511,7 +513,9 @@ const Necklaces = () => {
                     {uniqueMetalColors.map((color) => (
                       <button
                         key={color}
-                        onClick={() => toggleFilter(color, metalColors, setMetalColors)}
+                        onClick={() =>
+                          toggleFilter(color, metalColors, setMetalColors)
+                        }
                         className={`px-3 py-1 text-xs rounded-full ${
                           metalColors.includes(color)
                             ? "bg-gray-900 text-white shadow-md"
@@ -542,22 +546,13 @@ const Necklaces = () => {
                           type="number"
                           min={0}
                           max={maxPrice}
-                          step={100}
                           value={priceRange[0]}
                           onChange={(e) => {
-                            // Parse value and handle empty inputs
-                            let value = e.target.value === '' ? 0 : parseInt(e.target.value);
-                            
-                            // Ensure value is a number and not negative
-                            if (isNaN(value) || value < 0) {
-                              value = 0;
-                            }
-                            
-                            // Ensure min is less than max with a minimum gap of 100
-                            const safeMax = Math.max(priceRange[1], value + 100);
-                            
-                            // Update state with validated values
-                            setPriceRange([value, safeMax]);
+                            const value = parseInt(e.target.value);
+                            if (isNaN(value)) return;
+                            // Calculate a safe maximum that ensures we don't exceed the max value
+                            const safeMax = Math.min(value, priceRange[1] - 1);
+                            setPriceRange([safeMax, priceRange[1]]);
                           }}
                           className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
                         />
@@ -573,25 +568,15 @@ const Necklaces = () => {
                           type="number"
                           min={0}
                           max={maxPrice}
-                          step={100}
                           value={priceRange[1]}
                           onChange={(e) => {
-                            // Parse value and handle empty inputs
-                            let value = e.target.value === '' ? 0 : parseInt(e.target.value);
-                            
-                            // Ensure value is a number and not below minimum
-                            if (isNaN(value) || value <= 0) {
-                              value = priceRange[0] + 100;
-                            }
-                            
-                            // Ensure max is greater than min with a minimum gap of 100
-                            value = Math.max(value, priceRange[0] + 100);
-                            
-                            // Ensure max doesn't exceed the maximum allowed price
-                            value = Math.min(value, maxPrice);
-                            
-                            // Update state with validated values
-                            setPriceRange([priceRange[0], value]);
+                            const value = parseInt(e.target.value);
+                            if (isNaN(value)) return;
+                            // Calculate a safe minimum that ensures we're at least 1 more than the min value
+                            setPriceRange([
+                              priceRange[0],
+                              Math.max(value, priceRange[0] + 1),
+                            ]);
                           }}
                           className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
                         />
@@ -611,25 +596,20 @@ const Necklaces = () => {
                         type="number"
                         min={0}
                         max={maxCarat}
-                        step={0.01}
+                        step="0.01"
                         value={caratRange[0]}
                         onChange={(e) => {
-                          // Parse value and handle empty inputs
-                          let value = e.target.value === '' ? 0 : parseFloat(e.target.value);
-                          
-                          // Ensure value is a number and not negative
-                          if (isNaN(value) || value < 0) {
-                            value = 0;
-                          }
-                          
-                          // Round to 2 decimal places
-                          value = Math.round(value * 100) / 100;
-                          
-                          // Ensure min is less than max with a minimum gap of 0.01
-                          const safeMax = Math.max(caratRange[1], value + 0.01);
-                          
-                          // Update state with validated values
-                          setCaratRange([value, safeMax]);
+                          const value = parseFloat(e.target.value);
+                          if (isNaN(value)) return;
+                          // Calculate a safe maximum that ensures we don't exceed the max value
+                          const safeMax = Math.min(
+                            value,
+                            caratRange[1] - 0.001
+                          );
+                          setCaratRange([
+                            parseFloat(safeMax.toFixed(2)),
+                            caratRange[1],
+                          ]);
                         }}
                         className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                       />
@@ -640,28 +620,18 @@ const Necklaces = () => {
                         type="number"
                         min={0}
                         max={maxCarat}
-                        step={0.01}
+                        step="0.01"
                         value={caratRange[1]}
                         onChange={(e) => {
-                          // Parse value and handle empty inputs
-                          let value = e.target.value === '' ? 0 : parseFloat(e.target.value);
-                          
-                          // Ensure value is a number and not below minimum
-                          if (isNaN(value) || value <= 0) {
-                            value = caratRange[0] + 0.01;
-                          }
-                          
-                          // Round to 2 decimal places
-                          value = Math.round(value * 100) / 100;
-                          
-                          // Ensure max is greater than min with a minimum gap of 0.01
-                          value = Math.max(value, caratRange[0] + 0.01);
-                          
-                          // Ensure max doesn't exceed the maximum allowed carat
-                          value = Math.min(value, maxCarat);
-                          
-                          // Update state with validated values
-                          setCaratRange([caratRange[0], value]);
+                          const value = parseFloat(e.target.value);
+                          if (isNaN(value)) return;
+                          // Calculate a safe minimum that ensures we're at least 0.001 more than the min value
+                          setCaratRange([
+                            caratRange[0],
+                            parseFloat(
+                              Math.max(value, caratRange[0] + 0.001).toFixed(2)
+                            ),
+                          ]);
                         }}
                         className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                       />
@@ -719,7 +689,13 @@ const Necklaces = () => {
                             {uniqueDiamondTypes.map((type) => (
                               <button
                                 key={type}
-                                onClick={() => toggleFilter(type, diamondTypes, setDiamondTypes)}
+                                onClick={() =>
+                                  toggleFilter(
+                                    type,
+                                    diamondTypes,
+                                    setDiamondTypes
+                                  )
+                                }
                                 className={`px-3 py-1 text-xs rounded-full ${
                                   diamondTypes.includes(type)
                                     ? "bg-gray-900 text-white"
@@ -743,7 +719,9 @@ const Necklaces = () => {
                             {uniqueMetals.map((metal) => (
                               <button
                                 key={metal}
-                                onClick={() => toggleFilter(metal, metals, setMetals)}
+                                onClick={() =>
+                                  toggleFilter(metal, metals, setMetals)
+                                }
                                 className={`px-3 py-1 text-xs rounded-full ${
                                   metals.includes(metal)
                                     ? "bg-gray-900 text-white"
@@ -767,7 +745,13 @@ const Necklaces = () => {
                             {uniqueMetalColors.map((color) => (
                               <button
                                 key={color}
-                                onClick={() => toggleFilter(color, metalColors, setMetalColors)}
+                                onClick={() =>
+                                  toggleFilter(
+                                    color,
+                                    metalColors,
+                                    setMetalColors
+                                  )
+                                }
                                 className={`px-3 py-1 text-xs rounded-full ${
                                   metalColors.includes(color)
                                     ? "bg-gray-900 text-white"
@@ -798,22 +782,16 @@ const Necklaces = () => {
                                   type="number"
                                   min={0}
                                   max={maxPrice}
-                                  step={100}
                                   value={priceRange[0]}
                                   onChange={(e) => {
-                                    // Parse value and handle empty inputs
-                                    let value = e.target.value === '' ? 0 : parseInt(e.target.value);
-                                    
-                                    // Ensure value is a number and not negative
-                                    if (isNaN(value) || value < 0) {
-                                      value = 0;
-                                    }
-                                    
-                                    // Ensure min is less than max with a minimum gap of 100
-                                    const safeMax = Math.max(priceRange[1], value + 100);
-                                    
-                                    // Update state with validated values
-                                    setPriceRange([value, safeMax]);
+                                    const value = parseInt(e.target.value);
+                                    if (isNaN(value)) return;
+                                    // Calculate a safe maximum that ensures we don't exceed the max value
+                                    const safeMax = Math.min(
+                                      value,
+                                      priceRange[1] - 1
+                                    );
+                                    setPriceRange([safeMax, priceRange[1]]);
                                   }}
                                   className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
                                 />
@@ -831,25 +809,15 @@ const Necklaces = () => {
                                   type="number"
                                   min={0}
                                   max={maxPrice}
-                                  step={100}
                                   value={priceRange[1]}
                                   onChange={(e) => {
-                                    // Parse value and handle empty inputs
-                                    let value = e.target.value === '' ? 0 : parseInt(e.target.value);
-                                    
-                                    // Ensure value is a number and not below minimum
-                                    if (isNaN(value) || value <= 0) {
-                                      value = priceRange[0] + 100;
-                                    }
-                                    
-                                    // Ensure max is greater than min with a minimum gap of 100
-                                    value = Math.max(value, priceRange[0] + 100);
-                                    
-                                    // Ensure max doesn't exceed the maximum allowed price
-                                    value = Math.min(value, maxPrice);
-                                    
-                                    // Update state with validated values
-                                    setPriceRange([priceRange[0], value]);
+                                    const value = parseInt(e.target.value);
+                                    if (isNaN(value)) return;
+                                    // Calculate a safe minimum that ensures we're at least 1 more than the min value
+                                    setPriceRange([
+                                      priceRange[0],
+                                      Math.max(value, priceRange[0] + 1),
+                                    ]);
                                   }}
                                   className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
                                 />
@@ -869,25 +837,20 @@ const Necklaces = () => {
                                 type="number"
                                 min={0}
                                 max={maxCarat}
-                                step={0.01}
+                                step="0.01"
                                 value={caratRange[0]}
                                 onChange={(e) => {
-                                  // Parse value and handle empty inputs
-                                  let value = e.target.value === '' ? 0 : parseFloat(e.target.value);
-                                  
-                                  // Ensure value is a number and not negative
-                                  if (isNaN(value) || value < 0) {
-                                    value = 0;
-                                  }
-                                  
-                                  // Round to 2 decimal places
-                                  value = Math.round(value * 100) / 100;
-                                  
-                                  // Ensure min is less than max with a minimum gap of 0.01
-                                  const safeMax = Math.max(caratRange[1], value + 0.01);
-                                  
-                                  // Update state with validated values
-                                  setCaratRange([value, safeMax]);
+                                  const value = parseFloat(e.target.value);
+                                  if (isNaN(value)) return;
+                                  // Calculate a safe maximum that ensures we don't exceed the max value
+                                  const safeMax = Math.min(
+                                    value,
+                                    caratRange[1] - 0.001
+                                  );
+                                  setCaratRange([
+                                    parseFloat(safeMax.toFixed(2)),
+                                    caratRange[1],
+                                  ]);
                                 }}
                                 className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                               />
@@ -900,28 +863,21 @@ const Necklaces = () => {
                                 type="number"
                                 min={0}
                                 max={maxCarat}
-                                step={0.01}
+                                step="0.01"
                                 value={caratRange[1]}
                                 onChange={(e) => {
-                                  // Parse value and handle empty inputs
-                                  let value = e.target.value === '' ? 0 : parseFloat(e.target.value);
-                                  
-                                  // Ensure value is a number and not below minimum
-                                  if (isNaN(value) || value <= 0) {
-                                    value = caratRange[0] + 0.01;
-                                  }
-                                  
-                                  // Round to 2 decimal places
-                                  value = Math.round(value * 100) / 100;
-                                  
-                                  // Ensure max is greater than min with a minimum gap of 0.01
-                                  value = Math.max(value, caratRange[0] + 0.01);
-                                  
-                                  // Ensure max doesn't exceed the maximum allowed carat
-                                  value = Math.min(value, maxCarat);
-                                  
-                                  // Update state with validated values
-                                  setCaratRange([caratRange[0], value]);
+                                  const value = parseFloat(e.target.value);
+                                  if (isNaN(value)) return;
+                                  // Calculate a safe minimum that ensures we're at least 0.001 more than the min value
+                                  setCaratRange([
+                                    caratRange[0],
+                                    parseFloat(
+                                      Math.max(
+                                        value,
+                                        caratRange[0] + 0.001
+                                      ).toFixed(2)
+                                    ),
+                                  ]);
                                 }}
                                 className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                               />
@@ -986,7 +942,8 @@ const Necklaces = () => {
                 {diamondTypes.length > 0 && (
                   <div className="flex items-center bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm">
                     <span className="mr-1">
-                      Diamond Type{diamondTypes.length > 1 ? "s" : ""}: {diamondTypes.length}
+                      Diamond Type{diamondTypes.length > 1 ? "s" : ""}:{" "}
+                      {diamondTypes.length}
                     </span>
                     <button
                       onClick={() => setDiamondTypes([])}
@@ -1012,7 +969,8 @@ const Necklaces = () => {
                 {metalColors.length > 0 && (
                   <div className="flex items-center bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm">
                     <span className="mr-1">
-                      Metal Color{metalColors.length > 1 ? "s" : ""}: {metalColors.length}
+                      Metal Color{metalColors.length > 1 ? "s" : ""}:{" "}
+                      {metalColors.length}
                     </span>
                     <button
                       onClick={() => setMetalColors([])}
@@ -1096,11 +1054,7 @@ const Necklaces = () => {
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.3 }}
                     >
-                      <GalleryItem
-                        item={necklace}
-                        price={true}
-                        index={index}
-                      />
+                      <GalleryItem item={necklace} price={true} index={index} />
                     </motion.div>
                   ))}
                 </AnimatePresence>
