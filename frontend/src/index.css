@@ -40,3 +40,6 @@ a.active hr {
   font-family: "Cinzel";
   src: local("Cinzel"), url("/fonts/Cinzel-Main.ttf");
 }
+p[data-f-id="pbf"] {
+  display: none;
+}

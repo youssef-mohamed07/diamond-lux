@@ -78,7 +78,7 @@ const Diamond = () => {
   const [priceRange, setPriceRange] = useState([0, 100000]);
   const [maxCarat, setMaxCarat] = useState(20);
   const [maxPrice, setMaxPrice] = useState(100000);
-  
+
   // Additional range states for advanced filters
   const [tableRange, setTableRange] = useState([0, 100]);
   const [lwRatioRange, setLwRatioRange] = useState([0, 10]);
@@ -128,7 +128,7 @@ const Diamond = () => {
         lwRatioRange,
         lengthRange,
         widthRange,
-        depthRange
+        depthRange,
       });
       setFilterProducts(filteredProducts);
       setIsLoading(false);
@@ -152,7 +152,7 @@ const Diamond = () => {
     lwRatioRange,
     lengthRange,
     widthRange,
-    depthRange
+    depthRange,
   ]);
 
   // Instead, initialize the category selection once on component mount
@@ -236,18 +236,18 @@ const Diamond = () => {
     if (selectedCategories.includes(categoryId)) {
       // If this category is already selected, deselect it
       setSelectedCategories([]);
-      
+
       // Update URL directly
       const params = new URLSearchParams(location.search);
-      params.delete('category');
+      params.delete("category");
       navigate(`${location.pathname}?${params.toString()}`, { replace: true });
     } else {
       // Otherwise select this category (replacing any existing selection)
       setSelectedCategories([categoryId]);
-      
+
       // Update URL directly
       const params = new URLSearchParams(location.search);
-      params.set('category', categoryId);
+      params.set("category", categoryId);
       navigate(`${location.pathname}?${params.toString()}`, { replace: true });
     }
   };
@@ -391,8 +391,10 @@ const Diamond = () => {
                   <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center justify-between">
                     <span>Diamond Shapes</span>
                     {selectedCategories.length > 0 && (
-                      <button 
-                        onClick={() => toggleCategorySelection(selectedCategories[0])}
+                      <button
+                        onClick={() =>
+                          toggleCategorySelection(selectedCategories[0])
+                        }
                         className="text-xs font-normal text-white bg-gray-900 hover:bg-gray-700 px-3 py-1 rounded-full transition-colors"
                       >
                         Clear Selection
@@ -450,7 +452,9 @@ const Diamond = () => {
                           {filteredCategories.map((category) => (
                             <div
                               key={category._id}
-                              onClick={() => toggleCategorySelection(category._id)}
+                              onClick={() =>
+                                toggleCategorySelection(category._id)
+                              }
                               className={`cursor-pointer flex flex-col items-center transition-all transform hover:scale-105 active:scale-95 ${
                                 selectedCategories.includes(category._id)
                                   ? "scale-105 opacity-100"
@@ -466,7 +470,9 @@ const Diamond = () => {
                               >
                                 {selectedCategories.includes(category._id) && (
                                   <div className="absolute top-0 right-0 w-5 h-5 bg-gray-900 rounded-full flex items-center justify-center">
-                                    <span className="text-white text-xs">✓</span>
+                                    <span className="text-white text-xs">
+                                      ✓
+                                    </span>
                                   </div>
                                 )}
                                 {category.image ? (
@@ -766,8 +772,10 @@ const Diamond = () => {
                         <h3 className="text-base font-medium text-gray-900 mb-3 flex items-center justify-between">
                           <span>Diamond Shapes</span>
                           {selectedCategories.length > 0 && (
-                            <button 
-                              onClick={() => toggleCategorySelection(selectedCategories[0])}
+                            <button
+                              onClick={() =>
+                                toggleCategorySelection(selectedCategories[0])
+                              }
                               className="text-xs font-normal text-white bg-gray-900 hover:bg-gray-700 px-2 py-1 rounded-full transition-colors"
                             >
                               Clear
@@ -825,7 +833,9 @@ const Diamond = () => {
                                 {filteredCategories.map((category) => (
                                   <div
                                     key={category._id}
-                                    onClick={() => toggleCategorySelection(category._id)}
+                                    onClick={() =>
+                                      toggleCategorySelection(category._id)
+                                    }
                                     className={`cursor-pointer flex flex-col items-center transition-all transform hover:scale-105 active:scale-95 ${
                                       selectedCategories.includes(category._id)
                                         ? "scale-105 opacity-100"
@@ -834,14 +844,20 @@ const Diamond = () => {
                                   >
                                     <div
                                       className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden mb-2 border-2 shadow-md flex items-center justify-center transition-all ${
-                                        selectedCategories.includes(category._id)
+                                        selectedCategories.includes(
+                                          category._id
+                                        )
                                           ? "border-gray-900 ring-1 ring-gray-300 hover:bg-gray-100"
                                           : "border-transparent hover:border-gray-300 hover:bg-gray-50"
                                       }`}
                                     >
-                                      {selectedCategories.includes(category._id) && (
+                                      {selectedCategories.includes(
+                                        category._id
+                                      ) && (
                                         <div className="absolute top-0 right-0 w-5 h-5 bg-gray-900 rounded-full flex items-center justify-center">
-                                          <span className="text-white text-xs">✓</span>
+                                          <span className="text-white text-xs">
+                                            ✓
+                                          </span>
                                         </div>
                                       )}
                                       {category.image ? (
@@ -871,7 +887,9 @@ const Diamond = () => {
                                     </div>
                                     <span
                                       className={`text-xs text-center max-w-[60px] sm:max-w-[80px] truncate ${
-                                        selectedCategories.includes(category._id)
+                                        selectedCategories.includes(
+                                          category._id
+                                        )
                                           ? "font-semibold"
                                           : "font-normal"
                                       }`}
@@ -1012,7 +1030,9 @@ const Diamond = () => {
                                 className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                               />
                             </div>
-                            <div className="mx-4 text-gray-400 self-end mb-2">to</div>
+                            <div className="mx-4 text-gray-400 self-end mb-2">
+                              to
+                            </div>
                             <div className="flex-1">
                               <input
                                 type="number"
@@ -1027,7 +1047,10 @@ const Diamond = () => {
                                   setCaratRange([
                                     caratRange[0],
                                     parseFloat(
-                                      Math.max(value, caratRange[0] + 0.001).toFixed(2)
+                                      Math.max(
+                                        value,
+                                        caratRange[0] + 0.001
+                                      ).toFixed(2)
                                     ),
                                   ]);
                                 }}
@@ -1187,10 +1210,18 @@ const Diamond = () => {
                               onChange={(e) => {
                                 const value = parseFloat(e.target.value);
                                 if (isNaN(value)) return;
+                                // Ensure value is within bounds
+                                const boundedValue = Math.max(
+                                  0,
+                                  Math.min(value, 100)
+                                );
                                 // Ensure min doesn't exceed max
-                                const safeValue = Math.min(value, tableRange[1] - 0.1);
+                                const safeValue = Math.min(
+                                  boundedValue,
+                                  tableRange[1] - 0.1
+                                );
                                 setTableRange([
-                                  safeValue,
+                                  parseFloat(safeValue.toFixed(1)),
                                   tableRange[1],
                                 ]);
                               }}
@@ -1208,11 +1239,19 @@ const Diamond = () => {
                               onChange={(e) => {
                                 const value = parseFloat(e.target.value);
                                 if (isNaN(value)) return;
+                                // Ensure value is within bounds
+                                const boundedValue = Math.max(
+                                  0,
+                                  Math.min(value, 100)
+                                );
                                 // Ensure max is greater than min
-                                const safeValue = Math.max(value, tableRange[0] + 0.1);
+                                const safeValue = Math.max(
+                                  boundedValue,
+                                  tableRange[0] + 0.1
+                                );
                                 setTableRange([
                                   tableRange[0],
-                                  safeValue,
+                                  parseFloat(safeValue.toFixed(1)),
                                 ]);
                               }}
                               className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
@@ -1224,7 +1263,7 @@ const Diamond = () => {
                       {/* L/W Ratio % Filter */}
                       <div className="mb-6">
                         <h3 className="text-base font-medium text-gray-900 mb-3">
-                          L/W Ratio %
+                          L/W Ratio
                         </h3>
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
@@ -1237,10 +1276,18 @@ const Diamond = () => {
                               onChange={(e) => {
                                 const value = parseFloat(e.target.value);
                                 if (isNaN(value)) return;
+                                // Ensure value is within bounds
+                                const boundedValue = Math.max(
+                                  0,
+                                  Math.min(value, 10)
+                                );
                                 // Ensure min doesn't exceed max
-                                const safeValue = Math.min(value, lwRatioRange[1] - 0.01);
+                                const safeValue = Math.min(
+                                  boundedValue,
+                                  lwRatioRange[1] - 0.01
+                                );
                                 setLwRatioRange([
-                                  safeValue,
+                                  parseFloat(safeValue.toFixed(2)),
                                   lwRatioRange[1],
                                 ]);
                               }}
@@ -1258,11 +1305,19 @@ const Diamond = () => {
                               onChange={(e) => {
                                 const value = parseFloat(e.target.value);
                                 if (isNaN(value)) return;
+                                // Ensure value is within bounds
+                                const boundedValue = Math.max(
+                                  0,
+                                  Math.min(value, 10)
+                                );
                                 // Ensure max is greater than min
-                                const safeValue = Math.max(value, lwRatioRange[0] + 0.01);
+                                const safeValue = Math.max(
+                                  boundedValue,
+                                  lwRatioRange[0] + 0.01
+                                );
                                 setLwRatioRange([
                                   lwRatioRange[0],
-                                  safeValue,
+                                  parseFloat(safeValue.toFixed(2)),
                                 ]);
                               }}
                               className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
@@ -1287,16 +1342,27 @@ const Diamond = () => {
                               onChange={(e) => {
                                 const value = parseFloat(e.target.value);
                                 if (isNaN(value)) return;
-                                const safeValue = Math.min(value, lengthRange[1] - 0.01);
+                                // Ensure value is within bounds
+                                const boundedValue = Math.max(
+                                  0,
+                                  Math.min(value, 30)
+                                );
+                                // Ensure min doesn't exceed max
+                                const safeValue = Math.min(
+                                  boundedValue,
+                                  lengthRange[1] - 0.01
+                                );
                                 setLengthRange([
-                                  safeValue,
+                                  parseFloat(safeValue.toFixed(2)),
                                   lengthRange[1],
                                 ]);
                               }}
                               className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                             />
                           </div>
-                          <div className="mx-4 text-gray-400 self-end mb-2">to</div>
+                          <div className="mx-4 text-gray-400 self-end mb-2">
+                            to
+                          </div>
                           <div className="flex-1">
                             <input
                               type="number"
@@ -1307,10 +1373,19 @@ const Diamond = () => {
                               onChange={(e) => {
                                 const value = parseFloat(e.target.value);
                                 if (isNaN(value)) return;
-                                const safeValue = Math.max(value, lengthRange[0] + 0.01);
+                                // Ensure value is within bounds
+                                const boundedValue = Math.max(
+                                  0,
+                                  Math.min(value, 30)
+                                );
+                                // Ensure max is greater than min
+                                const safeValue = Math.max(
+                                  boundedValue,
+                                  lengthRange[0] + 0.01
+                                );
                                 setLengthRange([
                                   lengthRange[0],
-                                  safeValue,
+                                  parseFloat(safeValue.toFixed(2)),
                                 ]);
                               }}
                               className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
@@ -1335,16 +1410,27 @@ const Diamond = () => {
                               onChange={(e) => {
                                 const value = parseFloat(e.target.value);
                                 if (isNaN(value)) return;
-                                const safeValue = Math.min(value, widthRange[1] - 0.01);
+                                // Ensure value is within bounds
+                                const boundedValue = Math.max(
+                                  0,
+                                  Math.min(value, 30)
+                                );
+                                // Ensure min doesn't exceed max
+                                const safeValue = Math.min(
+                                  boundedValue,
+                                  widthRange[1] - 0.01
+                                );
                                 setWidthRange([
-                                  safeValue,
+                                  parseFloat(safeValue.toFixed(2)),
                                   widthRange[1],
                                 ]);
                               }}
                               className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                             />
                           </div>
-                          <div className="mx-4 text-gray-400 self-center">to</div>
+                          <div className="mx-4 text-gray-400 self-center">
+                            to
+                          </div>
                           <div className="flex-1">
                             <input
                               type="number"
@@ -1355,10 +1441,19 @@ const Diamond = () => {
                               onChange={(e) => {
                                 const value = parseFloat(e.target.value);
                                 if (isNaN(value)) return;
-                                const safeValue = Math.max(value, widthRange[0] + 0.01);
+                                // Ensure value is within bounds
+                                const boundedValue = Math.max(
+                                  0,
+                                  Math.min(value, 30)
+                                );
+                                // Ensure max is greater than min
+                                const safeValue = Math.max(
+                                  boundedValue,
+                                  widthRange[0] + 0.01
+                                );
                                 setWidthRange([
                                   widthRange[0],
-                                  safeValue,
+                                  parseFloat(safeValue.toFixed(2)),
                                 ]);
                               }}
                               className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
@@ -1383,16 +1478,27 @@ const Diamond = () => {
                               onChange={(e) => {
                                 const value = parseFloat(e.target.value);
                                 if (isNaN(value)) return;
-                                const safeValue = Math.min(value, depthRange[1] - 0.1);
+                                // Ensure value is within bounds
+                                const boundedValue = Math.max(
+                                  0,
+                                  Math.min(value, 100)
+                                );
+                                // Ensure min doesn't exceed max
+                                const safeValue = Math.min(
+                                  boundedValue,
+                                  depthRange[1] - 0.1
+                                );
                                 setDepthRange([
-                                  safeValue,
+                                  parseFloat(safeValue.toFixed(1)),
                                   depthRange[1],
                                 ]);
                               }}
                               className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                             />
                           </div>
-                          <div className="mx-4 text-gray-400 self-center">to</div>
+                          <div className="mx-4 text-gray-400 self-center">
+                            to
+                          </div>
                           <div className="flex-1">
                             <input
                               type="number"
@@ -1403,10 +1509,19 @@ const Diamond = () => {
                               onChange={(e) => {
                                 const value = parseFloat(e.target.value);
                                 if (isNaN(value)) return;
-                                const safeValue = Math.max(value, depthRange[0] + 0.1);
+                                // Ensure value is within bounds
+                                const boundedValue = Math.max(
+                                  0,
+                                  Math.min(value, 100)
+                                );
+                                // Ensure max is greater than min
+                                const safeValue = Math.max(
+                                  boundedValue,
+                                  depthRange[0] + 0.1
+                                );
                                 setDepthRange([
                                   depthRange[0],
-                                  safeValue,
+                                  parseFloat(safeValue.toFixed(1)),
                                 ]);
                               }}
                               className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
@@ -1582,10 +1697,18 @@ const Diamond = () => {
                         onChange={(e) => {
                           const value = parseFloat(e.target.value);
                           if (isNaN(value)) return;
+                          // Ensure value is within bounds
+                          const boundedValue = Math.max(
+                            0,
+                            Math.min(value, 100)
+                          );
                           // Ensure min doesn't exceed max
-                          const safeValue = Math.min(value, tableRange[1] - 0.1);
+                          const safeValue = Math.min(
+                            boundedValue,
+                            tableRange[1] - 0.1
+                          );
                           setTableRange([
-                            safeValue,
+                            parseFloat(safeValue.toFixed(1)),
                             tableRange[1],
                           ]);
                         }}
@@ -1603,11 +1726,19 @@ const Diamond = () => {
                         onChange={(e) => {
                           const value = parseFloat(e.target.value);
                           if (isNaN(value)) return;
+                          // Ensure value is within bounds
+                          const boundedValue = Math.max(
+                            0,
+                            Math.min(value, 100)
+                          );
                           // Ensure max is greater than min
-                          const safeValue = Math.max(value, tableRange[0] + 0.1);
+                          const safeValue = Math.max(
+                            boundedValue,
+                            tableRange[0] + 0.1
+                          );
                           setTableRange([
                             tableRange[0],
-                            safeValue,
+                            parseFloat(safeValue.toFixed(1)),
                           ]);
                         }}
                         className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
@@ -1619,7 +1750,7 @@ const Diamond = () => {
                 {/* L/W Ratio % Filter */}
                 <div className="mb-6">
                   <h3 className="text-base font-medium text-gray-900 mb-3">
-                    L/W Ratio %
+                    L/W Ratio
                   </h3>
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
@@ -1632,10 +1763,15 @@ const Diamond = () => {
                         onChange={(e) => {
                           const value = parseFloat(e.target.value);
                           if (isNaN(value)) return;
+                          // Ensure value is within bounds
+                          const boundedValue = Math.max(0, Math.min(value, 10));
                           // Ensure min doesn't exceed max
-                          const safeValue = Math.min(value, lwRatioRange[1] - 0.01);
+                          const safeValue = Math.min(
+                            boundedValue,
+                            lwRatioRange[1] - 0.01
+                          );
                           setLwRatioRange([
-                            safeValue,
+                            parseFloat(safeValue.toFixed(2)),
                             lwRatioRange[1],
                           ]);
                         }}
@@ -1653,11 +1789,16 @@ const Diamond = () => {
                         onChange={(e) => {
                           const value = parseFloat(e.target.value);
                           if (isNaN(value)) return;
+                          // Ensure value is within bounds
+                          const boundedValue = Math.max(0, Math.min(value, 10));
                           // Ensure max is greater than min
-                          const safeValue = Math.max(value, lwRatioRange[0] + 0.01);
+                          const safeValue = Math.max(
+                            boundedValue,
+                            lwRatioRange[0] + 0.01
+                          );
                           setLwRatioRange([
                             lwRatioRange[0],
-                            safeValue,
+                            parseFloat(safeValue.toFixed(2)),
                           ]);
                         }}
                         className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
@@ -1682,9 +1823,15 @@ const Diamond = () => {
                         onChange={(e) => {
                           const value = parseFloat(e.target.value);
                           if (isNaN(value)) return;
-                          const safeValue = Math.min(value, lengthRange[1] - 0.01);
+                          // Ensure value is within bounds
+                          const boundedValue = Math.max(0, Math.min(value, 30));
+                          // Ensure min doesn't exceed max
+                          const safeValue = Math.min(
+                            boundedValue,
+                            lengthRange[1] - 0.01
+                          );
                           setLengthRange([
-                            safeValue,
+                            parseFloat(safeValue.toFixed(2)),
                             lengthRange[1],
                           ]);
                         }}
@@ -1702,10 +1849,16 @@ const Diamond = () => {
                         onChange={(e) => {
                           const value = parseFloat(e.target.value);
                           if (isNaN(value)) return;
-                          const safeValue = Math.max(value, lengthRange[0] + 0.01);
+                          // Ensure value is within bounds
+                          const boundedValue = Math.max(0, Math.min(value, 30));
+                          // Ensure max is greater than min
+                          const safeValue = Math.max(
+                            boundedValue,
+                            lengthRange[0] + 0.01
+                          );
                           setLengthRange([
                             lengthRange[0],
-                            safeValue,
+                            parseFloat(safeValue.toFixed(2)),
                           ]);
                         }}
                         className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
@@ -1730,9 +1883,15 @@ const Diamond = () => {
                         onChange={(e) => {
                           const value = parseFloat(e.target.value);
                           if (isNaN(value)) return;
-                          const safeValue = Math.min(value, widthRange[1] - 0.01);
+                          // Ensure value is within bounds
+                          const boundedValue = Math.max(0, Math.min(value, 30));
+                          // Ensure min doesn't exceed max
+                          const safeValue = Math.min(
+                            boundedValue,
+                            widthRange[1] - 0.01
+                          );
                           setWidthRange([
-                            safeValue,
+                            parseFloat(safeValue.toFixed(2)),
                             widthRange[1],
                           ]);
                         }}
@@ -1750,10 +1909,16 @@ const Diamond = () => {
                         onChange={(e) => {
                           const value = parseFloat(e.target.value);
                           if (isNaN(value)) return;
-                          const safeValue = Math.max(value, widthRange[0] + 0.01);
+                          // Ensure value is within bounds
+                          const boundedValue = Math.max(0, Math.min(value, 30));
+                          // Ensure max is greater than min
+                          const safeValue = Math.max(
+                            boundedValue,
+                            widthRange[0] + 0.01
+                          );
                           setWidthRange([
                             widthRange[0],
-                            safeValue,
+                            parseFloat(safeValue.toFixed(2)),
                           ]);
                         }}
                         className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
@@ -1778,9 +1943,18 @@ const Diamond = () => {
                         onChange={(e) => {
                           const value = parseFloat(e.target.value);
                           if (isNaN(value)) return;
-                          const safeValue = Math.min(value, depthRange[1] - 0.1);
+                          // Ensure value is within bounds
+                          const boundedValue = Math.max(
+                            0,
+                            Math.min(value, 100)
+                          );
+                          // Ensure min doesn't exceed max
+                          const safeValue = Math.min(
+                            boundedValue,
+                            depthRange[1] - 0.1
+                          );
                           setDepthRange([
-                            safeValue,
+                            parseFloat(safeValue.toFixed(1)),
                             depthRange[1],
                           ]);
                         }}
@@ -1798,10 +1972,19 @@ const Diamond = () => {
                         onChange={(e) => {
                           const value = parseFloat(e.target.value);
                           if (isNaN(value)) return;
-                          const safeValue = Math.max(value, depthRange[0] + 0.1);
+                          // Ensure value is within bounds
+                          const boundedValue = Math.max(
+                            0,
+                            Math.min(value, 100)
+                          );
+                          // Ensure max is greater than min
+                          const safeValue = Math.max(
+                            boundedValue,
+                            depthRange[0] + 0.1
+                          );
                           setDepthRange([
                             depthRange[0],
-                            safeValue,
+                            parseFloat(safeValue.toFixed(1)),
                           ]);
                         }}
                         className="w-full px-3 py-2 border border-gray-300 rounded text-sm"

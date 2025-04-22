@@ -26,7 +26,7 @@ const Footer = () => {
     <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main Footer Content */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 py-16">
           {/* Brand Section */}
           <div className="space-y-6">
             <img src={logo} className="h-12 w-auto" alt="Company Logo" />
@@ -36,25 +36,22 @@ const Footer = () => {
             />
             <div className="flex space-x-4">
               <a
-                href="#"
+                href="https://www.facebook.com/profile.php?id=61562000135409"
+                target="_blank"
                 className="text-gray-400 hover:text-white transition-colors"
               >
                 <FaFacebook className="h-5 w-5" />
               </a>
               <a
-                href="#"
+                href="https://www.instagram.com/diamondcartel_co/"
+                target="_blank"
                 className="text-gray-400 hover:text-white transition-colors"
               >
                 <FaInstagram className="h-5 w-5" />
               </a>
               <a
-                href="#"
-                className="text-gray-400 hover:text-white transition-colors"
-              >
-                <FaTwitter className="h-5 w-5" />
-              </a>
-              <a
-                href="#"
+                href="https://www.pinterest.com/diamondcartelco/"
+                target="_blank"
                 className="text-gray-400 hover:text-white transition-colors"
               >
                 <FaPinterest className="h-5 w-5" />
@@ -82,14 +79,6 @@ const Footer = () => {
                   className="text-gray-300 hover:text-white transition-colors text-sm"
                 >
                   About Us
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/services"
-                  className="text-gray-300 hover:text-white transition-colors text-sm"
-                >
-                  Services
                 </a>
               </li>
               <li>
@@ -135,34 +124,13 @@ const Footer = () => {
           </div>
 
           {/* Newsletter */}
-          <div>
-            <h3 className="text-lg font-semibold mb-6 relative pb-2 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-12 after:h-0.5 after:bg-white">
-              Newsletter
-            </h3>
-            <p className="text-gray-300 text-sm mb-4">
-              Subscribe to our newsletter for the latest updates and offers.
-            </p>
-            <form className="flex flex-col space-y-3">
-              <input
-                type="email"
-                placeholder="Your email address"
-                className="px-4 py-2 bg-gray-800 border border-gray-700 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-white"
-              />
-              <button
-                type="submit"
-                className="px-4 py-2 bg-white text-gray-900 rounded-md text-sm font-medium hover:bg-gray-100 transition-colors"
-              >
-                Subscribe
-              </button>
-            </form>
-          </div>
         </div>
 
         {/* Bottom Bar */}
         <div className="border-t border-gray-800 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <p className="text-gray-400 text-sm">
-              © 2025 Elite Fiesta Rentals. All rights reserved.
+              © 2025 Diamond Cartel. All rights reserved.
             </p>
             <div className="flex space-x-6">
               <a
