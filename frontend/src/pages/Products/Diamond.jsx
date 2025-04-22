@@ -138,6 +138,27 @@ const Diamond = () => {
     priceRange,
   ]);
 
+  // Update URL when selectedCategories change
+  useEffect(() => {
+    if (selectedCategories.length > 0) {
+      const params = new URLSearchParams(location.search);
+      params.set('category', selectedCategories[0]);
+      navigate(`${location.pathname}?${params.toString()}`, { replace: true });
+    } else if (categoryParam) {
+      const params = new URLSearchParams(location.search);
+      params.delete('category');
+      navigate(`${location.pathname}?${params.toString()}`, { replace: true });
+    }
+  }, [selectedCategories, location.search, location.pathname, navigate, categoryParam]);
+
+  // Listen for URL category parameter changes
+  useEffect(() => {
+    const newCategoryParam = searchParams.get("category") || "";
+    if (newCategoryParam && newCategoryParam !== (selectedCategories[0] || "")) {
+      setSelectedCategories(newCategoryParam ? [newCategoryParam] : []);
+    }
+  }, [location.search, searchParams, selectedCategories]);
+
   // Extract unique values for filter options and filter categories
   useEffect(() => {
     if (diamondProducts?.length > 0 && categories?.length > 0) {
@@ -176,14 +197,18 @@ const Diamond = () => {
   useResetSelectedCategories(
     diamondProducts,
     filteredCategories,
-    setSelectedCategories
+    setSelectedCategories,
+    categoryParam
   );
 
   // Clear selected categories if they no longer exist in filtered categories
   useValidatedSelectedCategories(
     filteredCategories,
     selectedCategories,
-    setSelectedCategories
+    setSelectedCategories,
+    navigate,
+    location,
+    categoryParam
   );
 
   // Loading screen
@@ -1103,6 +1128,150 @@ const Diamond = () => {
                         </div>
                       )}
 
+                      {/* Table % Filter */}
+                      <div className="mb-4">
+                        <h4 className="text-sm font-medium text-gray-900 mb-2">
+                          Table %
+                        </h4>
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <input
+                              type="number"
+                              min={0}
+                              max={100}
+                              step={0.1}
+                              placeholder="Min"
+                              className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                            />
+                          </div>
+                          <div className="mx-2 text-gray-400 self-center">to</div>
+                          <div className="flex-1">
+                            <input
+                              type="number"
+                              min={0}
+                              max={100}
+                              step={0.1}
+                              placeholder="Max"
+                              className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* L/W Ratio % Filter */}
+                      <div className="mb-4">
+                        <h4 className="text-sm font-medium text-gray-900 mb-2">
+                          L/W Ratio %
+                        </h4>
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <input
+                              type="number"
+                              min={0}
+                              step={0.01}
+                              placeholder="Min"
+                              className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                            />
+                          </div>
+                          <div className="mx-2 text-gray-400 self-center">to</div>
+                          <div className="flex-1">
+                            <input
+                              type="number"
+                              min={0}
+                              step={0.01}
+                              placeholder="Max"
+                              className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Length (L) in mm Filter */}
+                      <div className="mb-4">
+                        <h4 className="text-sm font-medium text-gray-900 mb-2">
+                          Length (mm)
+                        </h4>
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <input
+                              type="number"
+                              min={0}
+                              step={0.01}
+                              placeholder="Min"
+                              className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                            />
+                          </div>
+                          <div className="mx-2 text-gray-400 self-center">to</div>
+                          <div className="flex-1">
+                            <input
+                              type="number"
+                              min={0}
+                              step={0.01}
+                              placeholder="Max"
+                              className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Width (W) in mm Filter */}
+                      <div className="mb-4">
+                        <h4 className="text-sm font-medium text-gray-900 mb-2">
+                          Width (mm)
+                        </h4>
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <input
+                              type="number"
+                              min={0}
+                              step={0.01}
+                              placeholder="Min"
+                              className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                            />
+                          </div>
+                          <div className="mx-2 text-gray-400 self-center">to</div>
+                          <div className="flex-1">
+                            <input
+                              type="number"
+                              min={0}
+                              step={0.01}
+                              placeholder="Max"
+                              className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Depth % Filter */}
+                      <div className="mb-4">
+                        <h4 className="text-sm font-medium text-gray-900 mb-2">
+                          Depth %
+                        </h4>
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <input
+                              type="number"
+                              min={0}
+                              max={100}
+                              step={0.1}
+                              placeholder="Min"
+                              className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                            />
+                          </div>
+                          <div className="mx-2 text-gray-400 self-center">to</div>
+                          <div className="flex-1">
+                            <input
+                              type="number"
+                              min={0}
+                              max={100}
+                              step={0.1}
+                              placeholder="Max"
+                              className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
                       {/* Certification/Lab Filter */}
                       {uniqueLabs.length > 0 && (
                         <div className="mb-4">
@@ -1341,7 +1510,7 @@ const Diamond = () => {
                         className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                       />
                     </div>
-                    <div className="mx-4 text-gray-400">to</div>
+                    <div className="mx-4 text-gray-400 self-end mb-2">to</div>
                     <div className="flex-1">
                       <input
                         type="number"
@@ -1369,7 +1538,7 @@ const Diamond = () => {
                         className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                       />
                     </div>
-                    <div className="mx-4 text-gray-400">to</div>
+                    <div className="mx-4 text-gray-400 self-center">to</div>
                     <div className="flex-1">
                       <input
                         type="number"
@@ -1398,7 +1567,7 @@ const Diamond = () => {
                         className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                       />
                     </div>
-                    <div className="mx-4 text-gray-400">to</div>
+                    <div className="mx-4 text-gray-400 self-center">to</div>
                     <div className="flex-1">
                       <input
                         type="number"

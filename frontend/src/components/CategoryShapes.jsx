@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FaChevronDown } from "react-icons/fa";
 import axios from "axios";
 import { useContext } from "react";
@@ -7,6 +7,7 @@ import { ShopContext } from "../context/ShopContext";
 
 const CategoryShapes = () => {
   const { products } = useContext(ShopContext);
+  const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
   const [showAllShapes, setShowAllShapes] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -122,6 +123,15 @@ const CategoryShapes = () => {
     );
   }
 
+  // Handle category click
+  const handleCategoryClick = (categoryId, categoryName) => {
+    // Navigate to diamond page with the category parameter
+    navigate({
+      pathname: '/products/diamond',
+      search: `?category=${categoryId}`
+    });
+  };
+
   return (
     <div className="py-12 px-4 sm:px-6 lg:px-8 bg-white">
       <div className="max-w-7xl mx-auto">
@@ -142,8 +152,8 @@ const CategoryShapes = () => {
               key={category._id || `category-${index}`}
               className="flex flex-col items-center"
             >
-              <a
-                href={`/products/diamond?category=${category._id}&shape=${category.name}`}
+              <div
+                onClick={() => handleCategoryClick(category._id, category.name)}
                 className="group cursor-pointer"
               >
                 <div className="bg-gray-50 rounded-lg overflow-hidden h-24 w-full transition-all group-hover:shadow-md flex items-center justify-center">
@@ -195,7 +205,7 @@ const CategoryShapes = () => {
                 <p className="mt-2 text-xs sm:text-sm text-center font-medium text-gray-800">
                   {category.name}
                 </p>
-              </a>
+              </div>
             </div>
           ))}
         </div>
