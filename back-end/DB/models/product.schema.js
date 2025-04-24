@@ -87,17 +87,30 @@ const schema = new Schema(
 );
 
 schema.post("init", function (doc) {
-  if (doc.imageCover)
-    doc.imageCover = `${
-      process.env.BACKEND_URL || "http://localhost:3000"
-    }/uploads/product/${doc.imageCover}`;
-  if (doc.images)
-    doc.images = doc.images.map(
-      (img) =>
-        `${
+  const isExternalUrl = (url) => {
+    return url && (url.startsWith('http://') || url.startsWith('https://'));
+  };
+
+  // Handle imageCover
+  if (doc.imageCover) {
+    if (!isExternalUrl(doc.imageCover)) {
+      doc.imageCover = `${
+        process.env.BACKEND_URL || "http://localhost:3000"
+      }/uploads/product/${doc.imageCover}`;
+    }
+  }
+
+  // Handle images array
+  if (doc.images) {
+    doc.images = doc.images.map((img) => {
+      if (!isExternalUrl(img)) {
+        return `${
           process.env.BACKEND_URL || "http://localhost:3000"
-        }/uploads/product/${img}`
-    );
+        }/uploads/product/${img}`;
+      }
+      return img;
+    });
+  }
 });
 
 export const Product = model("Product", schema);

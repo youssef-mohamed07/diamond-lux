@@ -1,8 +1,12 @@
 // components/GalleryItem.jsx
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { useState } from "react";
+import { getImageUrl, DEFAULT_FALLBACK_IMAGE } from "../../../utils/imageHelper";
 
 const GalleryItem = ({ item, index, price = false, productType }) => {
+  const [imageError, setImageError] = useState(false);
+  
   // Early return if item is null or undefined
   if (!item || !item._id) {
     return null;
@@ -22,13 +26,16 @@ const GalleryItem = ({ item, index, price = false, productType }) => {
             "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
           transition: { duration: 0.3 },
         }}
-        className="group relative bg-white  overflow-hidden"
+        className="group relative bg-white overflow-hidden"
       >
-        <div className="relative overflow-hidden  aspect-square">
+        <div className="relative overflow-hidden aspect-square">
           <img
-            src={item.imageCover || ""}
+            src={imageError ? DEFAULT_FALLBACK_IMAGE : getImageUrl(item.imageCover)}
             alt={item.name || "Product"}
             className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
+            onError={(e) => {
+              setImageError(true);
+            }}
           />
           <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-black opacity-0 group-hover:opacity-60 transition-opacity duration-300"></div>
 

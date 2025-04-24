@@ -23,13 +23,15 @@ import {
   FaCut,
   FaChevronRight,
   FaChevronLeft,
+  FaExclamationTriangle,
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import { extractDiamondFilters } from "../../../utils/Products/Diamond/extractDiamondFilters";
-import useResetSelectedCategories from "../../../hooks/Products/Diamond/useResetSelectedCategories";
 import filterAndSortDiamonds from "../../../utils/Products/Diamond/filterDiamonds";
-import useValidatedSelectedCategories from "../../../hooks/Products/Diamond/useValidatedSelectedCategories";
+import { toast } from "react-toastify";
+import { getImageUrl, getDiamondShapeImageUrl } from "../../../utils/imageHelper";
+
 const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const backendURL_WITHOUT_API = VITE_BACKEND_URL.replace("/api", "");
 
@@ -39,9 +41,16 @@ const Diamond = () => {
   const searchParams = new URLSearchParams(location.search);
   const query = searchParams.get("q") || "";
   const categoryParam = searchParams.get("category") || "";
+  const pageParam = parseInt(searchParams.get("page")) || 1;
 
   // Data store
-  const { diamondProducts } = useContext(ShopContext);
+  const { 
+    diamondProducts, 
+    productsLoading, 
+    diamondPagination, 
+    diamondLoading, 
+    fetchDiamondPage 
+  } = useContext(ShopContext);
 
   // Core filtering states
   const [selectedCategories, setSelectedCategories] = useState(
@@ -51,7 +60,9 @@ const Diamond = () => {
   const [filterProducts, setFilterProducts] = useState([]);
   const [showClearFilter, setShowClearFilter] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [sortType, setSortType] = useState("relevant");
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
   // Additional UI state
   const [showFilter, setShowFilter] = useState(false);
@@ -106,31 +117,98 @@ const Diamond = () => {
     { value: "high-low", label: "Price: High to Low" },
   ];
 
+  // Add this effect to load the correct page on component mount or when URL changes
+  // Place it here to maintain consistent hook order
+  useEffect(() => {
+    // When navigating directly to a page via URL, ensure proper loading
+    const initializePage = async () => {
+      // If no products yet or we're already loading, don't try to load a specific page
+      if (!diamondProducts?.length || diamondLoading) {
+        return;
+      }
+      
+      try {
+        // Only fetch if we have a page parameter and it's different from current page
+        if (pageParam > 1 && pageParam !== diamondPagination.currentPage) {
+          setIsLoading(true);
+          const result = await fetchDiamondPage(pageParam);
+          
+          // If page fetch failed but URL still has the page parameter
+          if (result === null) {
+            console.warn("Failed to load initial page, staying on current page");
+          }
+        }
+      } catch (error) {
+        console.error("Error initializing page:", error);
+        toast.error("Failed to load the requested diamond page");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    initializePage();
+  }, [pageParam, fetchDiamondPage, diamondPagination.currentPage, diamondLoading, diamondProducts]);
+
+  // Initialize the category selection once on component mount
+  useEffect(() => {
+    const initialCategoryParam = searchParams.get("category") || "";
+    if (initialCategoryParam) {
+      setSelectedCategories([initialCategoryParam]);
+    } else {
+      setSelectedCategories([]);
+    }
+  }, []); // Empty dependency array to run only once on mount
+
   // Filter and sort products
   useEffect(() => {
+    if (!diamondProducts) {
+      return;
+    }
+    
     if (diamondProducts && diamondProducts.length > 0) {
-      const filteredProducts = filterAndSortDiamonds({
-        diamondProducts,
-        searchQuery,
-        selectedCategories,
-        shapes,
-        colors,
-        clarities,
-        cuts,
-        polishes,
-        symmetries,
-        fluorescences,
-        labs,
-        caratRange,
-        priceRange,
-        sortType,
-        tableRange,
-        lwRatioRange,
-        lengthRange,
-        widthRange,
-        depthRange,
-      });
-      setFilterProducts(filteredProducts);
+      setIsLoading(true);
+      
+      // Use a debounced or throttled approach for filtering
+      const timeoutId = setTimeout(() => {
+        try {
+          const filteredProducts = filterAndSortDiamonds({
+            diamondProducts,
+            searchQuery,
+            selectedCategories,
+            shapes,
+            colors,
+            clarities,
+            cuts,
+            polishes,
+            symmetries,
+            fluorescences,
+            labs,
+            caratRange,
+            priceRange,
+            sortType,
+            tableRange,
+            lwRatioRange,
+            lengthRange,
+            widthRange,
+            depthRange,
+          });
+          
+          setFilterProducts(filteredProducts);
+          setInitialLoadComplete(true);
+          setIsLoading(false);
+        } catch (err) {
+          console.error("Error filtering products:", err);
+          setError("Failed to filter products. Please try again.");
+          toast.error("Error loading diamond products");
+          setIsLoading(false);
+        }
+      }, 100); // Small delay to batch updates
+      
+      return () => clearTimeout(timeoutId);
+    } else if (diamondProducts && diamondProducts.length === 0) {
+      // Handle case when diamond products array is empty
+      setFilterProducts([]);
+      setInitialLoadComplete(true);
       setIsLoading(false);
     }
   }, [
@@ -155,62 +233,66 @@ const Diamond = () => {
     depthRange,
   ]);
 
-  // Instead, initialize the category selection once on component mount
-  useEffect(() => {
-    const initialCategoryParam = searchParams.get("category") || "";
-    if (initialCategoryParam) {
-      setSelectedCategories([initialCategoryParam]);
-    } else {
-      setSelectedCategories([]);
-    }
-  }, [searchParams]);
-
   // Extract unique values for filter options and filter categories
   useEffect(() => {
     if (diamondProducts?.length > 0 && categories?.length > 0) {
-      const {
-        uniqueShapes,
-        uniqueColors,
-        uniqueClarities,
-        uniqueCuts,
-        uniquePolishes,
-        uniqueSymmetries,
-        uniqueFluorescences,
-        uniqueLabs,
-        filteredCategories,
-      } = extractDiamondFilters(diamondProducts, categories);
-
-      setUniqueShapes(uniqueShapes);
-      setUniqueColors(uniqueColors);
-      setUniqueClarities(uniqueClarities);
-      setUniqueCuts(uniqueCuts);
-      setUniquePolishes(uniquePolishes);
-      setUniqueSymmetries(uniqueSymmetries);
-      setUniqueFluorescences(uniqueFluorescences);
-      setUniqueLabs(uniqueLabs);
-      setFilteredCategories(filteredCategories);
+      try {
+        const filterData = extractDiamondFilters(diamondProducts, categories);
+        
+        setUniqueShapes(filterData.uniqueShapes || []);
+        setUniqueColors(filterData.uniqueColors || []);
+        setUniqueClarities(filterData.uniqueClarities || []);
+        setUniqueCuts(filterData.uniqueCuts || []);
+        setUniquePolishes(filterData.uniquePolishes || []);
+        setUniqueSymmetries(filterData.uniqueSymmetries || []);
+        setUniqueFluorescences(filterData.uniqueFluorescences || []);
+        setUniqueLabs(filterData.uniqueLabs || []);
+        setFilteredCategories(filterData.filteredCategories || []);
+      } catch (err) {
+        console.error("Error extracting diamond filters:", err);
+        setError("Error loading filter options");
+      }
     }
   }, [diamondProducts, categories]);
 
-  useResetSelectedCategories(
-    diamondProducts,
-    filteredCategories,
-    setSelectedCategories,
-    categoryParam
-  );
+  // Replacement for useResetSelectedCategories custom hook
+  // This ensures selected categories are reset if needed
+  useEffect(() => {
+    // Only run when products and categories are loaded and there's a category parameter
+    if (diamondProducts?.length > 0 && filteredCategories?.length > 0 && categoryParam) {
+      // Check if the categoryParam exists in the filtered categories
+      const categoryExists = filteredCategories.some(cat => cat._id === categoryParam);
+      
+      // If not, reset the selected categories
+      if (!categoryExists) {
+        setSelectedCategories([]);
+      }
+    }
+  }, [diamondProducts, filteredCategories, categoryParam]);
 
-  // Clear selected categories if they no longer exist in filtered categories
-  useValidatedSelectedCategories(
-    filteredCategories,
-    selectedCategories,
-    setSelectedCategories,
-    navigate,
-    location,
-    categoryParam
-  );
+  // Replacement for useValidatedSelectedCategories custom hook
+  // This ensures selected categories are valid
+  useEffect(() => {
+    if (filteredCategories?.length > 0 && selectedCategories.length > 0) {
+      // Check if any of the selected categories still exist in the filtered categories
+      const stillExists = selectedCategories.some(selectedId => 
+        filteredCategories.some(cat => cat._id === selectedId)
+      );
+      
+      // If not, reset the selection
+      if (!stillExists) {
+        setSelectedCategories([]);
+        
+        // Update URL to remove the category parameter
+        const params = new URLSearchParams(location.search);
+        params.delete("category");
+        navigate(`${location.pathname}?${params.toString()}`, { replace: true });
+      }
+    }
+  }, [filteredCategories, selectedCategories, location.search, location.pathname, navigate]);
 
-  // Clear all filters function - update to use default values
-  const clearAllFilters = () => {
+  // Clear all filters function - wrap in useCallback to prevent unnecessary re-renders
+  const clearAllFilters = useCallback(() => {
     setSelectedCategories([]);
     setShapes([]);
     setColors([]);
@@ -229,10 +311,10 @@ const Diamond = () => {
     setDepthRange([0, 100]);
     setSearchQuery("");
     navigate({ search: "" }, { replace: true });
-  };
+  }, [maxCarat, maxPrice, navigate]);
 
-  // Toggle category selection
-  const toggleCategorySelection = (categoryId) => {
+  // Toggle category selection - wrap in useCallback
+  const toggleCategorySelection = useCallback((categoryId) => {
     if (selectedCategories.includes(categoryId)) {
       // If this category is already selected, deselect it
       setSelectedCategories([]);
@@ -250,7 +332,47 @@ const Diamond = () => {
       params.set("category", categoryId);
       navigate(`${location.pathname}?${params.toString()}`, { replace: true });
     }
-  };
+  }, [selectedCategories, location.search, location.pathname, navigate]);
+
+  // Wrap handlePageChange with useCallback to maintain reference stability
+  const handlePageChange = useCallback(async (page) => {
+    // Validate the page number is within range
+    if (
+      page < 1 || 
+      page > diamondPagination.totalPages || 
+      isLoading || 
+      diamondLoading || 
+      page === diamondPagination.currentPage
+    ) {
+      return;
+    }
+    
+    try {
+      setIsLoading(true);
+      
+      // Update URL with the page number before attempting to load
+      // This ensures consistent state even if load fails
+      const params = new URLSearchParams(location.search);
+      params.set("page", page);
+      navigate(`${location.pathname}?${params.toString()}`, { replace: true });
+      
+      // Scroll to top when changing pages
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      
+      // Attempt to fetch the page
+      const result = await fetchDiamondPage(page);
+      
+      // If fetch failed (returns null), handle gracefully
+      if (result === null) {
+        console.log("Page change fetch returned null - keeping existing data");
+      }
+    } catch (error) {
+      console.error("Error changing page:", error);
+      toast.error("Failed to load page. Please try refreshing.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [location.search, location.pathname, navigate, fetchDiamondPage, isLoading, diamondLoading, diamondPagination]);
 
   // Loading screen
   if (isLoading) {
@@ -477,7 +599,7 @@ const Diamond = () => {
                                 )}
                                 {category.image ? (
                                   <img
-                                    src={`${backendURL_WITHOUT_API}/uploads/diamond-shapes/${category.image}`}
+                                    src={getDiamondShapeImageUrl(category._id)}
                                     alt={category.name}
                                     className="w-full h-full object-contain"
                                     onError={(e) => {
@@ -862,7 +984,7 @@ const Diamond = () => {
                                       )}
                                       {category.image ? (
                                         <img
-                                          src={`${backendURL_WITHOUT_API}/uploads/diamond-shapes/${category.image}`}
+                                          src={getDiamondShapeImageUrl(category._id)}
                                           alt={category.name}
                                           className="w-full h-full object-contain"
                                           onError={(e) => {
@@ -1047,10 +1169,7 @@ const Diamond = () => {
                                   setCaratRange([
                                     caratRange[0],
                                     parseFloat(
-                                      Math.max(
-                                        value,
-                                        caratRange[0] + 0.001
-                                      ).toFixed(2)
+                                      Math.max(value, caratRange[0] + 0.001).toFixed(2)
                                     ),
                                   ]);
                                 }}
@@ -2211,6 +2330,92 @@ const Diamond = () => {
                       </motion.div>
                     ))}
                   </AnimatePresence>
+                </div>
+              )}
+
+              {/* Pagination */}
+              {filterProducts.length > 0 && diamondPagination.totalPages > 1 && (
+                <div className="flex justify-center mt-12 mb-6">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {/* Previous page button */}
+                    <button 
+                      onClick={() => handlePageChange(diamondPagination.currentPage - 1)}
+                      disabled={diamondPagination.currentPage === 1 || diamondLoading || isLoading}
+                      className={`w-10 h-10 flex items-center justify-center rounded-md border ${
+                        diamondPagination.currentPage === 1 || diamondLoading || isLoading
+                          ? 'border-gray-200 text-gray-400 cursor-not-allowed' 
+                          : 'border-gray-300 text-gray-700 hover:bg-gray-100'
+                      }`}
+                      aria-label="Previous page"
+                    >
+                      <FaChevronLeft className="w-4 h-4" />
+                    </button>
+
+                    {/* Page numbers */}
+                    {Array.from({ length: diamondPagination.totalPages }, (_, i) => i + 1)
+                      .filter(page => {
+                        // Show first page, last page, current page, and pages directly adjacent to current page
+                        return page === 1 || 
+                              page === diamondPagination.totalPages ||
+                              Math.abs(page - diamondPagination.currentPage) <= 1;
+                      })
+                      .map((page, index, array) => {
+                        // Add ellipsis between non-consecutive pages
+                        const showEllipsisBefore = index > 0 && array[index - 1] !== page - 1;
+                        const showEllipsisAfter = index < array.length - 1 && array[index + 1] !== page + 1;
+                        
+                        return (
+                          <React.Fragment key={page}>
+                            {showEllipsisBefore && (
+                              <span className="w-10 h-10 flex items-center justify-center text-gray-500">...</span>
+                            )}
+                            <button
+                              onClick={() => handlePageChange(page)}
+                              disabled={page === diamondPagination.currentPage || diamondLoading || isLoading}
+                              className={`w-10 h-10 flex items-center justify-center rounded-md ${
+                                page === diamondPagination.currentPage
+                                  ? 'bg-gray-900 text-white'
+                                  : diamondLoading || isLoading 
+                                  ? 'text-gray-400 border border-gray-200 cursor-not-allowed' 
+                                  : 'text-gray-700 hover:bg-gray-100 border border-gray-300'
+                              }`}
+                              aria-label={`Page ${page}`}
+                              aria-current={page === diamondPagination.currentPage ? 'page' : undefined}
+                            >
+                              {page}
+                            </button>
+                            {showEllipsisAfter && (
+                              <span className="w-10 h-10 flex items-center justify-center text-gray-500">...</span>
+                            )}
+                          </React.Fragment>
+                        );
+                      })
+                    }
+
+                    {/* Next page button */}
+                    <button 
+                      onClick={() => handlePageChange(diamondPagination.currentPage + 1)}
+                      disabled={diamondPagination.currentPage === diamondPagination.totalPages || diamondLoading || isLoading}
+                      className={`w-10 h-10 flex items-center justify-center rounded-md border ${
+                        diamondPagination.currentPage === diamondPagination.totalPages || diamondLoading || isLoading
+                          ? 'border-gray-200 text-gray-400 cursor-not-allowed' 
+                          : 'border-gray-300 text-gray-700 hover:bg-gray-100'
+                      }`}
+                      aria-label="Next page"
+                    >
+                      <FaChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Loading indicator */}
+              {(diamondLoading || isLoading) && (
+                <div className="flex justify-center mt-6 mb-8">
+                  <div className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg">
+                    <FaSpinner className="animate-spin h-5 w-5 text-gray-600" />
+                    <span className="text-gray-600 font-medium">Loading page {diamondPagination.currentPage}...</span>
+                  </div>
                 </div>
               )}
             </div>
