@@ -16,6 +16,10 @@ How_To_Run_Project.pdf
 .env.test.local
 .env.production.local
 
+
+# Ignore data
+./back-end/data.csv
+
 # Logs
 logs
 *.log
