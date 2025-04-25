@@ -18,7 +18,7 @@ How_To_Run_Project.pdf
 
 
 # Ignore data
-./back-end/data.csv
+data.csv
 
 # Logs
 logs
