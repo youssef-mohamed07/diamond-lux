@@ -43,6 +43,7 @@ const Product = () => {
   useEffect(() => {
     if (products && products.length > 0) {
       const foundProduct = products.find((p) => p._id === productId);
+
       if (foundProduct) {
         setProduct(foundProduct);
         setLoading(false);
@@ -492,9 +493,7 @@ const Product = () => {
               <div className="mb-4 aspect-w-1 aspect-h-1 bg-gray-100 rounded-lg overflow-hidden">
                 <motion.img
                   src={
-                    product.images && product.images.length > 0
-                      ? product.images[activeImage]
-                      : product.imageCover
+                    product.imageCover ? product.imageCover : product.images[0]
                   }
                   alt={product.title}
                   className="w-full h-full object-center object-cover"
@@ -504,7 +503,7 @@ const Product = () => {
                 />
               </div>
 
-              {product.images && product.images.length > 1 && (
+              {product.images && product.images.length > 0 && (
                 <div className="grid grid-cols-5 gap-2">
                   {product.images.map((image, index) => (
                     <button
@@ -516,11 +515,25 @@ const Product = () => {
                           : "ring-1 ring-gray-200"
                       }`}
                     >
-                      <img
-                        src={image}
-                        alt={`${product.title} thumbnail ${index + 1}`}
-                        className="w-full h-full object-center object-cover"
-                      />
+                      {/* Replace img with video element */}
+                      {product.images.length > 0 ? (
+                        <video
+                          muted
+                          loop
+                          autoPlay
+                          playsInline
+                          className="w-full h-full object-center object-cover"
+                        >
+                          <source src={product.images[0]} type="video/mp4" />
+                          Your browser does not support the video tag.
+                        </video>
+                      ) : (
+                        <img
+                          src={image}
+                          alt={`${product.title} thumbnail ${index + 1}`}
+                          className="w-full h-full object-center object-cover"
+                        />
+                      )}
                     </button>
                   ))}
                 </div>
