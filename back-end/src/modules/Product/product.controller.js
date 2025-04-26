@@ -56,39 +56,6 @@ const deleteProduct = catchError(async (req, res, next) => {
   !product || res.status(200).json({ message: " Deleted:..", product });
 });
 
-const getDiamondProducts = catchError(async (req, res, next) => {
-  try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 20;
-    const skip = (page - 1) * limit;
-
-    // Get total count of diamond products
-    const totalCount = await Product.countDocuments({
-      productType: "diamond",
-    });
-
-    // Get paginated products
-    const diamondProducts = await Product.find({
-      productType: "diamond",
-    })
-      .skip(skip)
-      .limit(limit);
-
-    res.status(200).json({
-      message: "Diamond Products:",
-      diamondProducts,
-      pagination: {
-        currentPage: page,
-        totalPages: Math.ceil(totalCount / limit),
-        totalItems: totalCount,
-        hasMore: page * limit < totalCount
-      }
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
 const getJewelryProducts = catchError(async (req, res, next) => {
   try {
     const jewelryProducts = await Product.find({
@@ -142,7 +109,6 @@ export {
   getProduct,
   updateProduct,
   deleteProduct,
-  getDiamondProducts,
   getJewelryProducts,
   getEarrings,
   getBracelets,

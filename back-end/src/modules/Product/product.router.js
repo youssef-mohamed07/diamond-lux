@@ -2,7 +2,6 @@ import { Router } from "express";
 import {
   AddProduct,
   deleteProduct,
-  getDiamondProducts,
   getProduct,
   getProducts,
   updateProduct,
@@ -19,7 +18,6 @@ const ProductRouter = Router();
 
 // Specific routes first
 ProductRouter.get("/jewellery", getJewelryProducts);
-ProductRouter.get("/diamond", getDiamondProducts);
 ProductRouter.get("/jewellery/earrings", getEarrings);
 ProductRouter.get("/jewellery/necklaces", getNecklaces);
 ProductRouter.get("/jewellery/bracelets", getBracelets);
@@ -39,7 +37,7 @@ ProductRouter.route("/")
   )
   .get(getProducts);
 
-ProductRouter.route("/:id")
+ProductRouter.route("/:id([a-fA-F0-9]{24})")
   .get(getProduct)
   .put(
     uploadMixOFFiles(

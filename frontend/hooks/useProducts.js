@@ -1,11 +1,6 @@
 import { useState, useEffect } from "react";
-import {
-  getDiamonds,
-  getProducts,
-  getEarrings,
-  getNecklaces,
-  getBracelets,
-} from "../api/productApi";
+import { getAllDiamondProducts } from "../api/Products/Diamond/diamondApi";
+import { getCategories } from "../api/categoryApi";
 import { toast } from "react-toastify";
 
 export const useProducts = () => {
@@ -15,7 +10,7 @@ export const useProducts = () => {
     currentPage: 1,
     totalPages: 1,
     totalItems: 0,
-    hasMore: false
+    hasMore: false,
   });
   const [diamondLoading, setDiamondLoading] = useState(false);
   const [jewelleryProducts, setJewelleryProducts] = useState([]);
@@ -23,6 +18,7 @@ export const useProducts = () => {
   const [necklaces, setNecklaces] = useState([]);
   const [bracelets, setBracelets] = useState([]);
   const [popularProducts, setPopularProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
 
   // Function to fetch diamond products for a specific page
   const fetchDiamondPage = async (page = 1, retryCount = 0) => {
@@ -34,17 +30,17 @@ export const useProducts = () => {
 
     try {
       setDiamondLoading(true);
-      
+
       // Validate page number to ensure it's positive
       const validPage = Math.max(1, page);
-      
+
       // Add delay between retries
       if (retryCount > 0) {
-        await new Promise(resolve => setTimeout(resolve, retryCount * 1000));
+        await new Promise((resolve) => setTimeout(resolve, retryCount * 1000));
       }
-      
-      const diamondData = await getDiamonds(validPage);
-      
+
+      const diamondData = await getAllDiamondProducts(validPage);
+
       // Only update state if we actually got data back
       if (diamondData && diamondData.diamondProducts) {
         setDiamondProducts(diamondData.diamondProducts);
@@ -52,43 +48,47 @@ export const useProducts = () => {
           currentPage: Number(validPage),
           totalPages: Number(diamondData.pagination.totalPages) || 1,
           totalItems: Number(diamondData.pagination.totalItems) || 0,
-          hasMore: Boolean(diamondData.pagination.hasMore) || false
+          hasMore: Boolean(diamondData.pagination.hasMore) || false,
         });
       } else {
         throw new Error("Invalid diamond data received");
       }
-      
+
       setDiamondLoading(false);
       return diamondData;
     } catch (error) {
       console.error(`Error fetching diamond page ${page}:`, error);
-      
+
       // Determine if this is a network error that might resolve with retry
       const isNetworkError = !error.statusCode || error.isTimeout;
-      
+
       // Retry logic - maximum 3 retries for network errors
       if (isNetworkError && retryCount < 3) {
-        console.log(`Retrying fetch for page ${page}, attempt ${retryCount + 1}`);
-        
+        console.log(
+          `Retrying fetch for page ${page}, attempt ${retryCount + 1}`
+        );
+
         // Clear diamond loading state so next attempt can proceed
         setDiamondLoading(false);
-        
+
         // Wait 1 second before retrying (increasing with each retry)
-        await new Promise(resolve => setTimeout(resolve, (retryCount + 1) * 1000));
+        await new Promise((resolve) =>
+          setTimeout(resolve, (retryCount + 1) * 1000)
+        );
         return fetchDiamondPage(page, retryCount + 1);
       }
-      
+
       // If we've exhausted retries or it's a server error, handle gracefully
       if (retryCount >= 3 || !isNetworkError) {
         // Keep the current pagination info but update current page
-        setDiamondPagination(prev => ({
+        setDiamondPagination((prev) => ({
           ...prev,
           currentPage: Number(page),
         }));
-        
+
         // Keep existing products rather than clearing them
         // This way at least the current page data remains visible
-        
+
         // Show appropriate error message based on error type
         if (error.isTimeout) {
           toast.error(`Server took too long to respond. Try again later.`);
@@ -98,38 +98,24 @@ export const useProducts = () => {
           toast.error(`Could not load diamond page ${page}. Please try again.`);
         }
       }
-      
+
       setDiamondLoading(false);
       return null; // Return null to indicate failure
     }
   };
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchCategories = async () => {
       try {
-        const data = await getProducts();
-        setProducts(data.reverse());
-
-        // Fetch first page of diamonds
-        await fetchDiamondPage(1);
-
-        const earringProducts = await getEarrings();
-        setEarrings(earringProducts.reverse());
-
-        const necklaceProducts = await getNecklaces();
-        setNecklaces(necklaceProducts.reverse());
-
-        const braceletProducts = await getBracelets();
-        setBracelets(braceletProducts.reverse());
-
-        setPopularProducts(data.filter((item) => item.isPopular));
+        // Only fetch categories on initial load
+        const categoryData = await getCategories();
+        setCategories(categoryData);
       } catch (error) {
-        setDiamondLoading(false);
-        toast.error("Failed to fetch products");
+        toast.error("Failed to fetch categories");
       }
     };
 
-    fetchProducts();
+    fetchCategories();
   }, []);
 
   return {
@@ -143,5 +129,6 @@ export const useProducts = () => {
     necklaces,
     bracelets,
     popularProducts,
+    categories,
   };
 };

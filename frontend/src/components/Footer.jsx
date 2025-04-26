@@ -1,6 +1,5 @@
 import { assets } from "../assets/assets";
-import { getUIElement } from "../../api/UIApi";
-import { useState, useEffect } from "react";
+import { useUIContext } from "../context/UIContext";
 import {
   FaFacebook,
   FaInstagram,
@@ -12,15 +11,7 @@ import {
 } from "react-icons/fa";
 
 const Footer = () => {
-  const [logo, setLogo] = useState(null);
-  const [description, setDescription] = useState(null);
-
-  useEffect(() => {
-    getUIElement().then((data) => {
-      setLogo(data.logoImage);
-      setDescription(data.footer.description);
-    });
-  }, []);
+  const { uiElement } = useUIContext();
 
   return (
     <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
@@ -29,11 +20,21 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 py-16">
           {/* Brand Section */}
           <div className="space-y-6">
-            <img src={logo} className="h-12 w-auto" alt="Company Logo" />
-            <p
-              className="text-gray-300 text-sm leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: description }}
-            />
+            {uiElement && (
+              <>
+                <img
+                  src={uiElement.logoImage}
+                  className="h-12 w-auto"
+                  alt="Company Logo"
+                />
+                <p
+                  className="text-gray-300 text-sm leading-relaxed"
+                  dangerouslySetInnerHTML={{
+                    __html: uiElement.footer?.description || "",
+                  }}
+                />
+              </>
+            )}
             <div className="flex space-x-4">
               <a
                 href="https://www.facebook.com/profile.php?id=61562000135409"

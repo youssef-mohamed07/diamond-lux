@@ -34,31 +34,11 @@ const CategoryShapes = () => {
             response.data.categories.length > 0
           ) {
             categoriesData = response.data.categories;
+            setCategories(categoriesData);
           } else {
           }
         } catch (err) {
           lastError = err;
-        }
-
-        // Filter categories based on products (only show categories that have associated products)
-        if (categoriesData && products && products.length > 0) {
-          const usedCategoryIds = [
-            ...new Set(products.map((product) => product.category)),
-          ];
-
-          const filteredCategories = categoriesData.filter((category) =>
-            usedCategoryIds.includes(category._id)
-          );
-
-          // Limit to maximum 8 categories from API
-          setCategories(filteredCategories.slice(0, 8));
-        } else {
-          setCategories([]);
-          setError(
-            lastError
-              ? `API requests failed: ${lastError.message}`
-              : "No categories with products found"
-          );
         }
       } catch (error) {
         console.error("Error in category fetching process:", error);
@@ -75,7 +55,7 @@ const CategoryShapes = () => {
   // Calculate number of items to show
   const visibleCount = showAllShapes
     ? categories.length
-    : Math.min(5, categories.length);
+    : Math.min(8, categories.length);
 
   // Render loading skeleton
   if (loading) {
@@ -128,8 +108,8 @@ const CategoryShapes = () => {
     console.log("Category clicked:", categoryId, categoryName);
     // Navigate to diamond page with the category parameter
     navigate({
-      pathname: '/products/diamond',
-      search: `?category=${categoryId}`
+      pathname: "/products/diamond",
+      search: `?category=${categoryId}`,
     });
   };
 
@@ -147,17 +127,17 @@ const CategoryShapes = () => {
           {error && <p className="mt-2 text-xs text-gray-500">{error}</p>}
         </div>
 
-        <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-5 gap-4 sm:gap-6 mb-4">
+        <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-8 gap-4 sm:gap-6 mb-4">
           {categories.slice(0, visibleCount).map((category, index) => (
             <div
               key={category._id || `category-${index}`}
-              className="flex flex-col items-center"
+              className="flex flex-col items-center "
             >
               <div
                 onClick={() => handleCategoryClick(category._id, category.name)}
-                className="group cursor-pointer"
+                className="group cursor-pointer flex flex-col items-center "
               >
-                <div className="bg-gray-50 rounded-lg overflow-hidden h-24 w-full transition-all group-hover:shadow-md flex items-center justify-center">
+                <div className="bg-gray-50 rounded-lg overflow-hidden h-[70px] w-[70px] text-center transition-all group-hover:shadow-md flex items-center justify-center">
                   {category.image ? (
                     <img
                       src={`${backendURL_WITHOUT_API}/uploads/diamond-shapes/${category.image}`}

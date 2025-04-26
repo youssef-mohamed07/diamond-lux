@@ -1,17 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { getUIElement } from "../../api/UIApi";
+import { useUIContext } from "../context/UIContext";
 
 const Logo = ({ scrolled = false }) => {
   const location = useLocation();
   const isHomePage = location.pathname === "/";
-  const [logo, setLogo] = useState(null);
-
-  useEffect(() => {
-    getUIElement().then((data) => {
-      setLogo(data.logoImage);
-    });
-  }, []);
+  const { uiElement } = useUIContext();
 
   // Determine text color based on scroll state and page
   const textColor =
@@ -23,7 +17,13 @@ const Logo = ({ scrolled = false }) => {
     <Link to="/" className="flex items-center">
       <div className="flex items-center justify-center mr-2">
         {/* Logo Image */}
-        <img src={logo} className={`h-12 w-auto `} alt="Company Logo" />
+        {uiElement && (
+          <img
+            src={uiElement.logoImage}
+            className={`h-12 w-auto `}
+            alt="Company Logo"
+          />
+        )}
       </div>
 
       <span className={`text-xl tracking-tight ${textColor}`}>

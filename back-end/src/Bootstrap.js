@@ -14,10 +14,11 @@ import session from "express-session";
 import UIRouter from "./modules/UI/UI.router.js";
 import { v4 as uuidv4 } from "uuid";
 import FormRouter from "./modules/form/form.router.js";
-import {} from 'dotenv/config'
-import express from 'express';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import {} from "dotenv/config";
+import express from "express";
+import path from "path";
+import { fileURLToPath } from "url";
+import diamondRouter from "./modules/Product/Diamond/diamond.router.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -34,7 +35,7 @@ export const bootstrap = (app) => {
   });
 
   // Serve static files from uploads directory
-  app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+  app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
   app.use(
     session({
@@ -64,6 +65,7 @@ export const bootstrap = (app) => {
   app.use("/api/testimonials", TestimonialRouter);
   app.use("/api/category", CategoryRouter);
   app.use("/api/product", ProductRouter);
+  app.use("/api/product", diamondRouter);
   app.use("/api/event", EventRouter);
   app.use("/api/user", UserRouter);
   app.use("/api/wishlist", wishlistRouter);
@@ -72,7 +74,7 @@ export const bootstrap = (app) => {
   app.use("/api/about", aboutUsRouter);
   app.use("/api/ui", UIRouter);
   app.use("/api/form", FormRouter);
-  
+
   // Add non-/api routes for backward compatibility
   app.use("/category", CategoryRouter);
 };

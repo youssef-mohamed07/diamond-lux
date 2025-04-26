@@ -5,8 +5,16 @@ const DIAMOND_CATEGORIES = [
   { _id: "pear", name: "Pear", image: "pear.webp" },
   { _id: "emerald", name: "Emerald", image: "emerald.webp" },
   { _id: "sq_emerald", name: "Sq. Emerald", image: "sq_emerald.webp" },
-  { _id: "cushion_brilliant", name: "Cushion Brilliant", image: "cushion_brilliant.webp" },
-  { _id: "cushion_modified", name: "Cushion Modified", image: "cushion_modified.webp" },
+  {
+    _id: "cushion_brilliant",
+    name: "Cushion Brilliant",
+    image: "cushion_brilliant.webp",
+  },
+  {
+    _id: "cushion_modified",
+    name: "Cushion Modified",
+    image: "cushion_modified.webp",
+  },
   { _id: "crisscut", name: "Crisscut", image: "crisscut.webp" },
   { _id: "marquise", name: "Marquise", image: "marquise.webp" },
   { _id: "radiant", name: "Radiant", image: "radiant.webp" },
@@ -20,7 +28,7 @@ const DIAMOND_CATEGORIES = [
   { _id: "pentagonal", name: "Pentagonal", image: "pentagonal.webp" },
   { _id: "hexagonal", name: "Hexagonal", image: "hexagonal.webp" },
   { _id: "trapzoid", name: "Trapzoid", image: "trapzoid.webp" },
-  { _id: "traingular", name: "Traingular", image: "traingular.webp" },
+  { _id: "triangular", name: "Triangular", image: "triangular.webp" },
   { _id: "trilliant", name: "Trilliant", image: "trilliant.webp" },
   { _id: "lozenge", name: "Lozenge", image: "lozenge.webp" },
   { _id: "kite", name: "Kite", image: "kite.webp" },
@@ -29,6 +37,20 @@ const DIAMOND_CATEGORIES = [
   { _id: "butterfly", name: "Butterfly", image: "butterfly.webp" },
   { _id: "half_moon", name: "Half Moon", image: "half_moon.webp" },
   { _id: "rose_cut", name: "Rose Cut", image: "rose_cut.webp" },
+  // Adding missing shapes from the list
+  { _id: "square", name: "Square", image: "square.webp" },
+  { _id: "cushion", name: "Cushion", image: "cushion.webp" },
+  {
+    _id: "tapered_baguette",
+    name: "Tapered Baguette",
+    image: "tapered_baguette.webp",
+  },
+  { _id: "bullet", name: "Bullet", image: "bullet.webp" },
+  { _id: "briolette", name: "Briolette", image: "briolette.webp" },
+  { _id: "nonagonal", name: "Nonagonal", image: "nonagonal.webp" },
+  { _id: "heptagonal", name: "Heptagonal", image: "heptagonal.webp" },
+  { _id: "calf", name: "Calf", image: "calf.webp" },
+  { _id: "other", name: "Other", image: "other.webp" },
 ];
 
 export { DIAMOND_CATEGORIES };
