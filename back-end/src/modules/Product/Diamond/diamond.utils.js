@@ -87,6 +87,33 @@ export const buildDiamondFilterQuery = (queryParams) => {
       filterQuery.table.$lte = Number(queryParams.maxTable);
   }
 
+  // L/W Ratio range
+  if (queryParams.minLwRatio || queryParams.maxLwRatio) {
+    filterQuery.lwRatio = {};
+    if (queryParams.minLwRatio)
+      filterQuery.lwRatio.$gte = Number(queryParams.minLwRatio);
+    if (queryParams.maxLwRatio)
+      filterQuery.lwRatio.$lte = Number(queryParams.maxLwRatio);
+  }
+
+  // Length range
+  if (queryParams.minLength || queryParams.maxLength) {
+    filterQuery.length = {};
+    if (queryParams.minLength)
+      filterQuery.length.$gte = Number(queryParams.minLength);
+    if (queryParams.maxLength)
+      filterQuery.length.$lte = Number(queryParams.maxLength);
+  }
+
+  // Width range
+  if (queryParams.minWidth || queryParams.maxWidth) {
+    filterQuery.width = {};
+    if (queryParams.minWidth)
+      filterQuery.width.$gte = Number(queryParams.minWidth);
+    if (queryParams.maxWidth)
+      filterQuery.width.$lte = Number(queryParams.maxWidth);
+  }
+
   // Lab certification filter
   if (queryParams.lab) {
     const labs = queryParams.lab.split(",").map((l) => l.trim());

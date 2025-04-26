@@ -1,187 +1,157 @@
 import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { FaTimes } from "react-icons/fa";
 
 const MobileFilterPanel = ({
   isMobileFilterOpen,
   setIsMobileFilterOpen,
-  selectedCategories,
   categories,
+  selectedCategories,
+  onCategoryChange,
   colors,
-  maxPrice,
+  selectedColors,
+  onColorChange,
   priceRange,
-  maxCarat,
+  onPriceChange,
   caratRange,
+  onCaratChange,
   cuts,
+  selectedCuts,
+  onCutChange,
   clarities,
+  selectedClarities,
+  onClarityChange,
   polishes,
+  selectedPolishes,
+  onPolishChange,
   symmetries,
+  selectedSymmetries,
+  onSymmetryChange,
   labs,
+  selectedLabs,
+  onLabChange,
   fluorescences,
+  selectedFluorescences,
+  onFluorescenceChange,
+  depthRange,
+  onDepthChange,
+  tableRange,
+  onTableChange,
+  lwRatioRange,
+  onLwRatioChange,
+  lengthRange,
+  onLengthChange,
+  widthRange,
+  onWidthChange,
+  onClearFilters
 }) => {
-  let tableRange = [0, 100];
-  let lwRatioRange = [0, 10];
-  let lengthRange = [0, 30];
-  let widthRange = [0, 30];
-  let depthRange = [0, 100];
+  if (!isMobileFilterOpen) return null;
+
+  // Toggle category selection
+  const handleCategoryToggle = (categoryId) => {
+    // Convert category ID to string for consistency
+    const categoryIdStr = String(categoryId);
+    
+    if (selectedCategories.includes(categoryIdStr)) {
+      // If already selected, remove it (deselect) by sending just the single item
+      // This will toggle it off in the Diamond page handler
+      onCategoryChange([categoryIdStr]);
+    } else {
+      // Add to selection
+      onCategoryChange([...selectedCategories, categoryIdStr]);
+    }
+  };
 
   return (
-    <AnimatePresence>
-      {isMobileFilterOpen && (
-        <motion.div
-          initial={{ height: 0, opacity: 0 }}
-          animate={{ height: "auto", opacity: 1 }}
-          exit={{ height: 0, opacity: 0 }}
-          transition={{ duration: 0.3 }}
-          className="lg:hidden overflow-hidden mb-6"
-        >
-          <div className="bg-white p-5 rounded-lg shadow-md">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">
-                All Filters
-              </h2>
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 overflow-hidden flex justify-end lg:hidden">
+      <div className="bg-white w-full max-w-[90%] h-full overflow-y-auto">
+        <div className="p-4 border-b border-gray-200 flex justify-between items-center sticky top-0 bg-white z-10">
+          <h2 className="text-xl font-semibold">Filters</h2>
               <button
                 onClick={() => setIsMobileFilterOpen(false)}
-                className="text-gray-500 hover:text-gray-700"
+            className="p-2 text-gray-500 hover:text-gray-800"
               >
                 <FaTimes />
               </button>
             </div>
 
-            {/* Mobile Quick Filters Section */}
-            <div className="mb-5">
+        <div className="p-4 space-y-6">
               {/* Diamond Shapes */}
-              <div className="mb-6">
-                <h3 className="text-base font-medium text-gray-900 mb-3 flex items-center justify-between">
-                  <span>Diamond Shapes</span>
-                  {selectedCategories.length > 0 && (
-                    <button className="text-xs font-normal text-white bg-gray-900 hover:bg-gray-700 px-2 py-1 rounded-full transition-colors">
-                      Clear
-                    </button>
-                  )}
-                </h3>
-                {categories.length > 0 ? (
-                  <div className="relative group">
-                    {/* Left Arrow Navigation */}
-                    <button className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white/80 hover:bg-white shadow-md rounded-full p-1 flex items-center justify-center -ml-1">
-                      <FaChevronLeft className="text-gray-600 w-3 h-3" />
-                    </button>
-
-                    {/* Right Arrow Navigation */}
-                    <button className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white/80 hover:bg-white shadow-md rounded-full p-1 flex items-center justify-center -mr-1">
-                      <FaChevronRight className="text-gray-600 w-3 h-3" />
-                    </button>
-
-                    {/* Slider Container */}
-                    <div
-                      id="mobile-diamond-shapes-slider"
-                      className="overflow-x-auto scrollbar-hide py-3 px-2"
-                      style={{
-                        scrollbarWidth: "none",
-                        msOverflowStyle: "none",
-                      }}
-                    >
-                      <div className="flex flex-row space-x-3 sm:space-x-4 min-w-max">
-                        {categories.map((category) => (
-                          <div
-                            key={category._id}
-                            className={`cursor-pointer flex flex-col items-center transition-all transform hover:scale-105 active:scale-95 ${
-                              categories.includes(category._id)
-                                ? "scale-105 opacity-100"
-                                : "opacity-80 hover:opacity-100"
-                            }`}
-                          >
-                            <div
-                              className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden mb-2 border-2 shadow-md flex items-center justify-center transition-all ${
-                                selectedCategories.includes(category._id)
-                                  ? "border-gray-900 ring-1 ring-gray-300 hover:bg-gray-100"
-                                  : "border-transparent hover:border-gray-300 hover:bg-gray-50"
-                              }`}
-                            >
-                              {selectedCategories.includes(category._id) && (
-                                <div className="absolute top-0 right-0 w-5 h-5 bg-gray-900 rounded-full flex items-center justify-center">
-                                  <span className="text-white text-xs">✓</span>
-                                </div>
-                              )}
-                              {category.image ? (
-                                <img
-                                  src={getDiamondShapeImageUrl(category._id)}
-                                  alt={category.name}
-                                  className="w-full h-full object-contain"
-                                  onError={(e) => {
-                                    // If image fails to load, show the initial letter
-                                    e.target.style.display = "none";
-                                    e.target.parentNode.querySelector(
-                                      ".fallback-icon"
-                                    ).style.display = "flex";
-                                  }}
-                                />
-                              ) : (
-                                <div className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center bg-gray-200 rounded-full fallback-icon">
-                                  <span className="text-gray-500 text-md sm:text-lg font-medium">
-                                    {category.name
-                                      ? category.name
-                                          .substring(0, 1)
-                                          .toUpperCase()
-                                      : "?"}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                            <span
-                              className={`text-xs text-center max-w-[60px] sm:max-w-[80px] truncate ${
-                                selectedCategories.includes(category._id)
-                                  ? "font-semibold"
-                                  : "font-normal"
-                              }`}
-                            >
-                              {category.name}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="p-4 bg-gray-50 rounded-lg text-center mb-4">
-                    <p className="text-gray-500 text-sm">
-                      No diamond shapes available for the current diamonds.
-                    </p>
-                  </div>
-                )}
+          {categories && categories.length > 0 && (
+            <div className="pb-4 border-b border-gray-200">
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="text-lg font-medium">Diamond Shapes</h3>
               </div>
-
-              {/* Color Filter */}
-              {colors.length > 0 && (
-                <div className="mb-6">
-                  <h3 className="text-base font-medium text-gray-900 mb-3">
-                    Color
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {colors.map((color) => (
-                      <button
-                        key={color}
-                        className={`px-3 py-1 text-xs rounded-full ${
-                          colors.includes(color)
-                            ? "bg-gray-900 text-white"
-                            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+              <div className="overflow-x-auto pb-2" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                <div className="inline-flex space-x-2 min-w-max">
+                  {categories.map((category) => (
+                    <div
+                      key={category._id}
+                      onClick={() => handleCategoryToggle(category._id)}
+                      className={`relative cursor-pointer transition-all transform ${
+                        selectedCategories.includes(String(category._id))
+                          ? "opacity-100 scale-105"
+                          : "opacity-70 hover:opacity-100"
+                      }`}
+                    >
+                      <div
+                        className={`w-16 h-16 rounded-full overflow-hidden flex items-center justify-center transition-all relative ${
+                          selectedCategories.includes(String(category._id))
+                            ? "border-2 border-gray-800 ring-2 ring-gray-300 bg-gray-100 shadow-md"
+                            : "border border-gray-200"
                         }`}
                       >
-                        {color}
-                      </button>
-                    ))}
-                  </div>
+                        {selectedCategories.includes(String(category._id)) && (
+                          <div className="absolute top-0 right-0 w-5 h-5 bg-gray-800 rounded-full flex items-center justify-center">
+                            <span className="text-white text-xs">✓</span>
+                          </div>
+                        )}
+                        {category.image ? (
+                          <img
+                            src={category.image}
+                            alt={category.name}
+                            className="w-full h-full object-contain"
+                            onError={(e) => {
+                              // If image fails to load, replace with a fallback icon
+                              e.target.style.display = 'none';
+                              // Find or create fallback icon
+                              let fallbackIcon = e.target.nextElementSibling;
+                              if (!fallbackIcon || !fallbackIcon.classList.contains('fallback-icon')) {
+                                fallbackIcon = document.createElement('div');
+                                fallbackIcon.className = 'w-12 h-12 flex items-center justify-center bg-gray-200 rounded-full fallback-icon';
+                                
+                                const span = document.createElement('span');
+                                span.className = 'text-gray-600 text-lg font-medium';
+                                span.innerText = category.initial || category.name.charAt(0).toUpperCase();
+                                
+                                fallbackIcon.appendChild(span);
+                                e.target.parentNode.appendChild(fallbackIcon);
+                              }
+                            }}
+                          />
+                        ) : (
+                          <div className="w-12 h-12 flex items-center justify-center bg-gray-200 rounded-full fallback-icon">
+                            <span className="text-gray-600 text-lg font-medium">
+                              {category.initial || category.name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                      <span className={`text-xs text-center block mt-1 ${
+                        selectedCategories.includes(String(category._id))
+                          ? "font-semibold"
+                          : ""
+                      }`}>{category.name}</span>
+                    </div>
+                  ))}
                 </div>
-              )}
+              </div>
+            </div>
+          )}
 
-              {/* 2x2 Grid for Other Quick Filters */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Price Range */}
-                <div className="mb-4">
-                  <h3 className="text-base font-medium text-gray-900 mb-3">
-                    Price Range
-                  </h3>
-                  <div className="flex items-center justify-between">
+          <div className="pb-4 border-b border-gray-200">
+            <h3 className="text-lg font-medium mb-3">Price Range</h3>
+            <div className="flex items-center">
                     <div className="flex-1">
                       <div className="relative">
                         <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
@@ -190,13 +160,18 @@ const MobileFilterPanel = ({
                         <input
                           type="number"
                           min={0}
-                          max={maxPrice}
-                          value={priceRange[0]}
+                    placeholder="Min"
+                    defaultValue={priceRange[0]}
+                    onChange={(e) => {
+                      const min = Number(e.target.value);
+                      const max = priceRange[1];
+                      onPriceChange({ min, max });
+                    }}
                           className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
                         />
                       </div>
                     </div>
-                    <div className="mx-2 text-gray-400 self-center">to</div>
+              <div className="mx-2 text-gray-400">to</div>
                     <div className="flex-1">
                       <div className="relative">
                         <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
@@ -205,8 +180,13 @@ const MobileFilterPanel = ({
                         <input
                           type="number"
                           min={0}
-                          max={maxPrice}
-                          value={priceRange[1]}
+                    placeholder="Max"
+                    defaultValue={priceRange[1] < 100000 ? priceRange[1] : ''}
+                    onChange={(e) => {
+                      const min = priceRange[0];
+                      const max = Number(e.target.value);
+                      onPriceChange({ min, max });
+                    }}
                           className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
                         />
                       </div>
@@ -215,49 +195,100 @@ const MobileFilterPanel = ({
                 </div>
 
                 {/* Carat Range */}
-                <div className="mb-4">
-                  <h3 className="text-base font-medium text-gray-900 mb-3">
-                    Carat Range
-                  </h3>
-                  <div className="flex items-center justify-between">
+          <div className="pb-4 border-b border-gray-200">
+            <h3 className="text-lg font-medium mb-3">Carat Range</h3>
+            <div className="flex items-center">
                     <div className="flex-1">
                       <input
                         type="number"
                         min={0}
-                        max={maxCarat}
                         step="0.01"
-                        value={caratRange[0]}
+                  placeholder="Min"
+                  defaultValue={caratRange[0]}
+                  onChange={(e) => {
+                    const min = Number(e.target.value);
+                    const max = caratRange[1];
+                    onCaratChange({ min, max });
+                  }}
                         className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                       />
                     </div>
-                    <div className="mx-4 text-gray-400 self-end mb-2">to</div>
+              <div className="mx-2 text-gray-400">to</div>
                     <div className="flex-1">
                       <input
                         type="number"
                         min={0}
-                        max={maxCarat}
                         step="0.01"
-                        value={caratRange[1]}
+                  placeholder="Max"
+                  defaultValue={caratRange[1] < 10 ? caratRange[1] : ''}
+                  onChange={(e) => {
+                    const min = caratRange[0];
+                    const max = Number(e.target.value);
+                    onCaratChange({ min, max });
+                  }}
                         className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                       />
                     </div>
                   </div>
                 </div>
 
-                {/* Cut Filter */}
-                {cuts.length > 0 && (
-                  <div className="mb-4">
-                    <h3 className="text-base font-medium text-gray-900 mb-3">
-                      Cut
-                    </h3>
+          {/* Colors */}
+          {colors && colors.length > 0 && (
+            <div className="pb-4 border-b border-gray-200">
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="text-lg font-medium">Color</h3>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {colors.map((color) => (
+                  <button
+                    key={color}
+                    onClick={() => {
+                      if (selectedColors.includes(color)) {
+                        // If already selected, remove it (deselect) by sending just the single item
+                        // This will toggle it off in the Diamond page handler
+                        onColorChange([color]);
+                      } else {
+                        // Add to selection
+                        onColorChange([...selectedColors, color]);
+                      }
+                    }}
+                    className={`px-3 py-1 text-xs rounded-full ${
+                      selectedColors.includes(color)
+                        ? "bg-gray-900 text-white"
+                        : "bg-gray-100 text-gray-800"
+                    }`}
+                  >
+                    {color}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Cuts */}
+          {cuts && cuts.length > 0 && (
+            <div className="pb-4 border-b border-gray-200">
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="text-lg font-medium">Cut</h3>
+              </div>
                     <div className="flex flex-wrap gap-2">
-                      {uniqueCuts.map((cut) => (
+                {cuts.map((cut) => (
                         <button
                           key={cut}
+                    onClick={() => {
+                      if (selectedCuts.includes(cut)) {
+                        // If already selected, remove it (deselect) by sending just the single item
+                        // This will toggle it off in the Diamond page handler
+                        onCutChange([cut]);
+                      } else {
+                        // Add to selection
+                        onCutChange([...selectedCuts, cut]);
+                      }
+                    }}
                           className={`px-3 py-1 text-xs rounded-full ${
-                            cuts.includes(cut)
+                      selectedCuts.includes(cut)
                               ? "bg-gray-900 text-white"
-                              : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                        : "bg-gray-100 text-gray-800"
                           }`}
                         >
                           {cut}
@@ -267,20 +298,30 @@ const MobileFilterPanel = ({
                   </div>
                 )}
 
-                {/* Clarity Filter */}
-                {clarities.length > 0 && (
-                  <div className="mb-4">
-                    <h3 className="text-base font-medium text-gray-900 mb-3">
-                      Clarity
-                    </h3>
+          {/* Clarities */}
+          {clarities && clarities.length > 0 && (
+            <div className="pb-4 border-b border-gray-200">
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="text-lg font-medium">Clarity</h3>
+              </div>
                     <div className="flex flex-wrap gap-2">
-                      {uniqueClarities.map((clarity) => (
+                {clarities.map((clarity) => (
                         <button
                           key={clarity}
+                    onClick={() => {
+                      if (selectedClarities.includes(clarity)) {
+                        // If already selected, remove it (deselect) by sending just the single item
+                        // This will toggle it off in the Diamond page handler
+                        onClarityChange([clarity]);
+                      } else {
+                        // Add to selection
+                        onClarityChange([...selectedClarities, clarity]);
+                      }
+                    }}
                           className={`px-3 py-1 text-xs rounded-full ${
-                            clarities.includes(clarity)
+                      selectedClarities.includes(clarity)
                               ? "bg-gray-900 text-white"
-                              : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                        : "bg-gray-100 text-gray-800"
                           }`}
                         >
                           {clarity}
@@ -289,29 +330,35 @@ const MobileFilterPanel = ({
                     </div>
                   </div>
                 )}
-              </div>
-            </div>
 
-            {/* Mobile Advanced Filters Section */}
-            <div className="border-t border-gray-200 pt-5 mt-5">
-              <h3 className="text-base font-medium text-gray-900 mb-4">
-                Advanced Filters
-              </h3>
+          {/* Advanced Filters Section */}
+          <div className="pb-4">
+            <h3 className="text-lg font-medium mb-3">Advanced Filters</h3>
 
-              {/* Polish Filter */}
-              {polishes.length > 0 && (
+            {/* Polish */}
+            {polishes && polishes.length > 0 && (
                 <div className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-900 mb-2">
-                    Polish
-                  </h4>
+                <div className="flex justify-between items-center mb-2">
+                  <h4 className="text-sm font-medium">Polish</h4>
+                </div>
                   <div className="flex flex-wrap gap-2">
                     {polishes.map((polish) => (
                       <button
                         key={polish}
+                      onClick={() => {
+                        if (selectedPolishes.includes(polish)) {
+                          // If already selected, remove it (deselect) by sending just the single item
+                          // This will toggle it off in the Diamond page handler
+                          onPolishChange([polish]);
+                        } else {
+                          // Add to selection
+                          onPolishChange([...selectedPolishes, polish]);
+                        }
+                      }}
                         className={`px-3 py-1 text-xs rounded-full ${
-                          polishes.includes(polish)
+                        selectedPolishes.includes(polish)
                             ? "bg-gray-900 text-white"
-                            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                          : "bg-gray-100 text-gray-800"
                         }`}
                       >
                         {polish}
@@ -321,20 +368,30 @@ const MobileFilterPanel = ({
                 </div>
               )}
 
-              {/* Symmetry Filter */}
-              {symmetries.length > 0 && (
+            {/* Symmetry */}
+            {symmetries && symmetries.length > 0 && (
                 <div className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-900 mb-2">
-                    Symmetry
-                  </h4>
+                <div className="flex justify-between items-center mb-2">
+                  <h4 className="text-sm font-medium">Symmetry</h4>
+                </div>
                   <div className="flex flex-wrap gap-2">
                     {symmetries.map((symmetry) => (
                       <button
                         key={symmetry}
+                      onClick={() => {
+                        if (selectedSymmetries.includes(symmetry)) {
+                          // If already selected, remove it (deselect) by sending just the single item
+                          // This will toggle it off in the Diamond page handler
+                          onSymmetryChange([symmetry]);
+                        } else {
+                          // Add to selection
+                          onSymmetryChange([...selectedSymmetries, symmetry]);
+                        }
+                      }}
                         className={`px-3 py-1 text-xs rounded-full ${
-                          symmetries.includes(symmetry)
+                        selectedSymmetries.includes(symmetry)
                             ? "bg-gray-900 text-white"
-                            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                          : "bg-gray-100 text-gray-800"
                         }`}
                       >
                         {symmetry}
@@ -344,170 +401,230 @@ const MobileFilterPanel = ({
                 </div>
               )}
 
-              {/* Table % Filter */}
-              <div className="mb-6">
-                <h3 className="text-base font-medium text-gray-900 mb-3">
-                  Table %
-                </h3>
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <input
-                      type="number"
-                      min={0}
-                      max={100}
-                      step="0.1"
-                      value={tableRange[0]}
-                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                    />
-                  </div>
-                  <div className="mx-4 text-gray-400">to</div>
-                  <div className="flex-1">
-                    <input
-                      type="number"
-                      min={0}
-                      max={100}
-                      step="0.1"
-                      value={tableRange[1]}
-                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                    />
-                  </div>
+            {/* Table % */}
+            <div className="mb-4">
+              <h4 className="text-sm font-medium mb-2">Table %</h4>
+              <div className="flex items-center">
+                <div className="flex-1">
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    step="0.1"
+                    placeholder="Min"
+                    defaultValue={tableRange[0]}
+                    onChange={(e) => {
+                      const min = Number(e.target.value);
+                      const max = tableRange[1];
+                      onTableChange && onTableChange({ min, max });
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                  />
+                </div>
+                <div className="mx-2 text-gray-400">to</div>
+                <div className="flex-1">
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    step="0.1"
+                    placeholder="Max"
+                    defaultValue={tableRange[1] < 100 ? tableRange[1] : ''}
+                    onChange={(e) => {
+                      const min = tableRange[0];
+                      const max = Number(e.target.value);
+                      onTableChange && onTableChange({ min, max });
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                  />
                 </div>
               </div>
+            </div>
 
-              {/* L/W Ratio % Filter */}
-              <div className="mb-6">
-                <h3 className="text-base font-medium text-gray-900 mb-3">
-                  L/W Ratio
-                </h3>
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <input
-                      type="number"
-                      min={0}
-                      max={10}
-                      step="0.01"
-                      value={lwRatioRange[0]}
-                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                    />
-                  </div>
-                  <div className="mx-4 text-gray-400">to</div>
-                  <div className="flex-1">
-                    <input
-                      type="number"
-                      min={0}
-                      max={10}
-                      step="0.01"
-                      value={lwRatioRange[1]}
-                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                    />
-                  </div>
+            {/* L/W Ratio */}
+            <div className="mb-4">
+              <h4 className="text-sm font-medium mb-2">L/W Ratio</h4>
+              <div className="flex items-center">
+                <div className="flex-1">
+                  <input
+                    type="number"
+                    min={0}
+                    max={10}
+                    step="0.01"
+                    placeholder="Min"
+                    defaultValue={lwRatioRange[0]}
+                    onChange={(e) => {
+                      const min = Number(e.target.value);
+                      const max = lwRatioRange[1];
+                      onLwRatioChange && onLwRatioChange({ min, max });
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                  />
+                </div>
+                <div className="mx-2 text-gray-400">to</div>
+                <div className="flex-1">
+                  <input
+                    type="number"
+                    min={0}
+                    max={10}
+                    step="0.01"
+                    placeholder="Max"
+                    defaultValue={lwRatioRange[1] < 10 ? lwRatioRange[1] : ''}
+                    onChange={(e) => {
+                      const min = lwRatioRange[0];
+                      const max = Number(e.target.value);
+                      onLwRatioChange && onLwRatioChange({ min, max });
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                  />
                 </div>
               </div>
+            </div>
 
-              {/* Length (L) in mm Filter */}
-              <div className="mb-6">
-                <h3 className="text-base font-medium text-gray-900 mb-3">
-                  Length (mm)
-                </h3>
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <input
-                      type="number"
-                      min={0}
-                      max={30}
-                      step="0.01"
-                      value={lengthRange[0]}
-                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                    />
-                  </div>
-                  <div className="mx-4 text-gray-400 self-end mb-2">to</div>
-                  <div className="flex-1">
-                    <input
-                      type="number"
-                      min={0}
-                      max={30}
-                      step="0.01"
-                      value={lengthRange[1]}
-                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                    />
-                  </div>
+            {/* Length */}
+            <div className="mb-4">
+              <h4 className="text-sm font-medium mb-2">Length (mm)</h4>
+              <div className="flex items-center">
+                <div className="flex-1">
+                  <input
+                    type="number"
+                    min={0}
+                    max={30}
+                    step="0.01"
+                    placeholder="Min"
+                    defaultValue={lengthRange[0]}
+                    onChange={(e) => {
+                      const min = Number(e.target.value);
+                      const max = lengthRange[1];
+                      onLengthChange && onLengthChange({ min, max });
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                  />
+                </div>
+                <div className="mx-2 text-gray-400">to</div>
+                <div className="flex-1">
+                  <input
+                    type="number"
+                    min={0}
+                    max={30}
+                    step="0.01"
+                    placeholder="Max"
+                    defaultValue={lengthRange[1] < 30 ? lengthRange[1] : ''}
+                    onChange={(e) => {
+                      const min = lengthRange[0];
+                      const max = Number(e.target.value);
+                      onLengthChange && onLengthChange({ min, max });
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                  />
                 </div>
               </div>
+            </div>
 
-              {/* Width (W) in mm Filter */}
-              <div className="mb-6">
-                <h3 className="text-base font-medium text-gray-900 mb-3">
-                  Width (mm)
-                </h3>
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <input
-                      type="number"
-                      min={0}
-                      max={30}
-                      step="0.01"
-                      value={widthRange[0]}
-                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                    />
-                  </div>
-                  <div className="mx-4 text-gray-400 self-center">to</div>
-                  <div className="flex-1">
-                    <input
-                      type="number"
-                      min={0}
-                      max={30}
-                      step="0.01"
-                      value={widthRange[1]}
-                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                    />
-                  </div>
+            {/* Width */}
+            <div className="mb-4">
+              <h4 className="text-sm font-medium mb-2">Width (mm)</h4>
+              <div className="flex items-center">
+                <div className="flex-1">
+                  <input
+                    type="number"
+                    min={0}
+                    max={30}
+                    step="0.01"
+                    placeholder="Min"
+                    defaultValue={widthRange[0]}
+                    onChange={(e) => {
+                      const min = Number(e.target.value);
+                      const max = widthRange[1];
+                      onWidthChange && onWidthChange({ min, max });
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                  />
+                </div>
+                <div className="mx-2 text-gray-400">to</div>
+                <div className="flex-1">
+                  <input
+                    type="number"
+                    min={0}
+                    max={30}
+                    step="0.01"
+                    placeholder="Max"
+                    defaultValue={widthRange[1] < 30 ? widthRange[1] : ''}
+                    onChange={(e) => {
+                      const min = widthRange[0];
+                      const max = Number(e.target.value);
+                      onWidthChange && onWidthChange({ min, max });
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                  />
                 </div>
               </div>
+            </div>
 
-              {/* Depth % Filter */}
-              <div className="mb-6">
-                <h3 className="text-base font-medium text-gray-900 mb-3">
-                  Depth %
-                </h3>
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <input
-                      type="number"
-                      min={0}
-                      max={100}
-                      step="0.1"
-                      value={depthRange[0]}
-                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                    />
-                  </div>
-                  <div className="mx-4 text-gray-400 self-center">to</div>
-                  <div className="flex-1">
-                    <input
-                      type="number"
-                      min={0}
-                      max={100}
-                      step="0.1"
-                      value={depthRange[1]}
-                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                    />
-                  </div>
+            {/* Depth % */}
+            <div className="mb-4">
+              <h4 className="text-sm font-medium mb-2">Depth %</h4>
+              <div className="flex items-center">
+                <div className="flex-1">
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    step="0.1"
+                    placeholder="Min"
+                    defaultValue={depthRange[0]}
+                    onChange={(e) => {
+                      const min = Number(e.target.value);
+                      const max = depthRange[1];
+                      onDepthChange && onDepthChange({ min, max });
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                  />
+                </div>
+                <div className="mx-2 text-gray-400">to</div>
+                <div className="flex-1">
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    step="0.1"
+                    placeholder="Max"
+                    defaultValue={depthRange[1] < 100 ? depthRange[1] : ''}
+                    onChange={(e) => {
+                      const min = depthRange[0];
+                      const max = Number(e.target.value);
+                      onDepthChange && onDepthChange({ min, max });
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                  />
                 </div>
               </div>
+            </div>
 
-              {/* Certification/Lab Filter */}
-              {labs.length > 0 && (
-                <div className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-900 mb-2">
-                    Certification
-                  </h4>
+            {/* Lab */}
+            {labs && labs.length > 0 && (
+              <div className="mb-4">
+                <div className="flex justify-between items-center mb-2">
+                  <h4 className="text-sm font-medium">Certification</h4>
+                </div>
                   <div className="flex flex-wrap gap-2">
                     {labs.map((lab) => (
                       <button
                         key={lab}
+                      onClick={() => {
+                        if (selectedLabs.includes(lab)) {
+                          // If already selected, remove it (deselect) by sending just the single item
+                          // This will toggle it off in the Diamond page handler
+                          onLabChange([lab]);
+                        } else {
+                          // Add to selection
+                          onLabChange([...selectedLabs, lab]);
+                        }
+                      }}
                         className={`px-3 py-1 text-xs rounded-full ${
-                          labs.includes(lab)
+                        selectedLabs.includes(lab)
                             ? "bg-gray-900 text-white"
-                            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                          : "bg-gray-100 text-gray-800"
                         }`}
                       >
                         {lab}
@@ -517,20 +634,30 @@ const MobileFilterPanel = ({
                 </div>
               )}
 
-              {/* Fluorescence Filter */}
-              {fluorescences.length > 0 && (
+            {/* Fluorescence */}
+            {fluorescences && fluorescences.length > 0 && (
                 <div className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-900 mb-2">
-                    Fluorescence
-                  </h4>
+                <div className="flex justify-between items-center mb-2">
+                  <h4 className="text-sm font-medium">Fluorescence</h4>
+                </div>
                   <div className="flex flex-wrap gap-2">
                     {fluorescences.map((fluorescence) => (
                       <button
                         key={fluorescence}
+                      onClick={() => {
+                        if (selectedFluorescences.includes(fluorescence)) {
+                          // If already selected, remove it (deselect) by sending just the single item
+                          // This will toggle it off in the Diamond page handler
+                          onFluorescenceChange([fluorescence]);
+                        } else {
+                          // Add to selection
+                          onFluorescenceChange([...selectedFluorescences, fluorescence]);
+                        }
+                      }}
                         className={`px-3 py-1 text-xs rounded-full ${
-                          fluorescences.includes(fluorescence)
+                        selectedFluorescences.includes(fluorescence)
                             ? "bg-gray-900 text-white"
-                            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                          : "bg-gray-100 text-gray-800"
                         }`}
                       >
                         {fluorescence}
@@ -541,14 +668,34 @@ const MobileFilterPanel = ({
               )}
             </div>
 
-            {/* Clear All Filters Button */}
-            <button className="w-full py-2 bg-black text-white rounded-lg text-sm font-medium">
+          {/* Clear Filters Button */}
+          <div className="sticky bottom-0 bg-white p-4 border-t border-gray-200">
+            <button
+              onClick={() => {
+                if (onClearFilters) {
+                  // Call clear filters first
+                  onClearFilters();
+                  
+                  // Use a longer timeout to ensure filters are cleared before closing panel
+                  setTimeout(() => {
+                    setIsMobileFilterOpen(false);
+                  }, 500);
+                }
+              }}
+              className="w-full py-2 bg-gray-900 text-white rounded-lg text-sm font-medium"
+            >
               Clear All Filters
             </button>
+            <button
+              onClick={() => setIsMobileFilterOpen(false)}
+              className="w-full py-2 mt-2 border border-gray-300 text-gray-800 rounded-lg text-sm font-medium"
+            >
+              Apply Filters
+            </button>
           </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+        </div>
+      </div>
+    </div>
   );
 };
 

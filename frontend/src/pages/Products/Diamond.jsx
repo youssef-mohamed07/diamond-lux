@@ -9,19 +9,638 @@ import ProductsPanel from "../../components/Products/ProductsPanel";
 import AdvancedFilters from "../../components/Products/Diamond/AdvancedFilters";
 import { useDiamonds } from "../../../hooks/Products/Diamond/useDiamonds";
 import Pagination from "../../components/Products/Pagination";
+import SortDropdown from "../../components/Products/SortDropdown";
 
 const Diamond = () => {
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [isProductsLoading, setIsProductsLoading] = useState(true);
   const [paginationKey, setPaginationKey] = useState(0); // Key to force pagination component refresh
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const { diamonds, pagination, loading, error, changePage, changeLimit } =
-    useDiamonds();
+  // Get data and functions from useDiamonds hook
+  const { 
+    diamonds, 
+    pagination, 
+    loading, 
+    error, 
+    filters,
+    sortOption,
+    diamondShapes,
+    shapesLoading,
+    changePage, 
+    changeLimit,
+    updateFilters,
+    updateSortOption,
+    clearFilters,
+    searchDiamonds
+  } = useDiamonds();
+
+  // Define filter options data
+  const colorOptions = ['D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M'];
+  const cutOptions = ['EX', 'VG', 'G', 'F', 'P']; // EX=Excellent, VG=Very Good, G=Good, F=Fair, P=Poor
+  const clarityOptions = ['FL', 'IF', 'VVS1', 'VVS2', 'VS1', 'VS2', 'SI1', 'SI2', 'I1', 'I2', 'I3'];
+  const polishOptions = ['EX', 'VG', 'G', 'F', 'P']; 
+  const symmetryOptions = ['EX', 'VG', 'G', 'F', 'P'];
+  const labOptions = ['GIA', 'IGI', 'AGS', 'HRD', 'GSI', 'GCAL'];
+  const fluorescenceOptions = ['NON', 'FNT', 'MED', 'STG', 'VSTG']; // None, Faint, Medium, Strong, Very Strong
+
+  // Sort options
+  const sortOptions = [
+    { value: 'price:asc', label: 'Price: Low to High' },
+    { value: 'price:desc', label: 'Price: High to Low' },
+    { value: 'carats:asc', label: 'Carat: Low to High' },
+    { value: 'carats:desc', label: 'Carat: High to Low' }
+  ];
+
+  // Filter handlers
+  const handleShapeChange = (selectedShapes) => {
+    console.log('Shape selection requested:', selectedShapes, 'Current shapes:', filters.shape);
+    
+    if (selectedShapes.length === 0) {
+      // If empty array is passed, remove the filter
+      const updatedFilters = { ...filters };
+      delete updatedFilters.shape;
+      console.log('Removing shape filter completely');
+      updateFilters(updatedFilters);
+    } else if (selectedShapes.length === 1) {
+      // Check if this is a toggle operation on an already selected shape
+      const shapeId = String(selectedShapes[0]);
+      
+      // Create an array from the current shape filter for consistent handling
+      const currentShapes = Array.isArray(filters.shape) ? 
+        filters.shape.map(String) : 
+        (filters.shape ? [String(filters.shape)] : []);
+      
+      console.log('Current shapes array:', currentShapes, 'Selected shape:', shapeId);
+      
+      if (currentShapes.includes(shapeId)) {
+        // If the shape is already selected and it's the only one, remove the filter
+        if (currentShapes.length === 1) {
+          const updatedFilters = { ...filters };
+          delete updatedFilters.shape;
+          console.log('Removing solo shape:', shapeId);
+          updateFilters(updatedFilters);
+        } else {
+          // If multiple shapes are selected, remove just this one
+          const newShapes = currentShapes.filter(shape => shape !== shapeId);
+          console.log('Removing shape from multiple:', shapeId, 'New shapes:', newShapes);
+          updateFilters({ ...filters, shape: newShapes });
+        }
+      } else {
+        // If it's a new shape, add it to existing selections
+        const newShapes = [...currentShapes, shapeId];
+        console.log('Adding new shape:', shapeId, 'New shapes:', newShapes);
+        updateFilters({ ...filters, shape: newShapes });
+      }
+    } else {
+      // Multiple shapes were passed, use as is
+      console.log('Setting multiple shape filters:', selectedShapes.map(String));
+      updateFilters({ ...filters, shape: selectedShapes.map(String) });
+    }
+  };
+
+  const handleColorChange = (selectedColors) => {
+    console.log('Color selection requested:', selectedColors, 'Current colors:', filters.col);
+    
+    if (selectedColors.length === 0) {
+      // If empty array is passed, remove the filter
+      const updatedFilters = { ...filters };
+      delete updatedFilters.col;
+      console.log('Removing color filter completely');
+      updateFilters(updatedFilters);
+    } else if (selectedColors.length === 1) {
+      // Check if this is a toggle operation on an already selected color
+      const colorValue = selectedColors[0];
+      
+      // Create an array from the current color filter for consistent handling
+      const currentColors = Array.isArray(filters.col) ? 
+        filters.col : 
+        (filters.col ? filters.col.split(',') : []);
+      
+      console.log('Current colors array:', currentColors, 'Selected color:', colorValue);
+      
+      if (currentColors.includes(colorValue)) {
+        // If the color is already selected and it's the only one, remove the filter
+        if (currentColors.length === 1) {
+          const updatedFilters = { ...filters };
+          delete updatedFilters.col;
+          console.log('Removing solo color:', colorValue);
+          updateFilters(updatedFilters);
+        } else {
+          // If multiple colors are selected, remove just this one
+          const newColors = currentColors.filter(color => color !== colorValue);
+          console.log('Removing color from multiple:', colorValue, 'New colors:', newColors);
+          updateFilters({ ...filters, col: newColors });
+        }
+      } else {
+        // If it's a new color, add it to existing selections
+        const newColors = [...currentColors, colorValue];
+        console.log('Adding new color:', colorValue, 'New colors:', newColors);
+        updateFilters({ ...filters, col: newColors });
+      }
+    } else {
+      // Multiple colors were passed, use as is
+      console.log('Setting multiple color filters:', selectedColors);
+      updateFilters({ ...filters, col: selectedColors });
+    }
+  };
+
+  const handleCutChange = (selectedCuts) => {
+    console.log('Cut selection requested:', selectedCuts, 'Current cuts:', filters.cut);
+    
+    if (selectedCuts.length === 0) {
+      // If empty array is passed, remove the filter
+      const updatedFilters = { ...filters };
+      delete updatedFilters.cut;
+      console.log('Removing cut filter completely');
+      updateFilters(updatedFilters);
+    } else if (selectedCuts.length === 1) {
+      // Check if this is a toggle operation on an already selected cut
+      const cutValue = selectedCuts[0];
+      
+      // Create an array from the current cut filter for consistent handling
+      const currentCuts = Array.isArray(filters.cut) ? 
+        filters.cut : 
+        (filters.cut ? filters.cut.split(',') : []);
+      
+      console.log('Current cuts array:', currentCuts, 'Selected cut:', cutValue);
+      
+      if (currentCuts.includes(cutValue)) {
+        // If the cut is already selected and it's the only one, remove the filter
+        if (currentCuts.length === 1) {
+          const updatedFilters = { ...filters };
+          delete updatedFilters.cut;
+          console.log('Removing solo cut:', cutValue);
+          updateFilters(updatedFilters);
+        } else {
+          // If multiple cuts are selected, remove just this one
+          const newCuts = currentCuts.filter(cut => cut !== cutValue);
+          console.log('Removing cut from multiple:', cutValue, 'New cuts:', newCuts);
+          updateFilters({ ...filters, cut: newCuts });
+        }
+      } else {
+        // If it's a new cut, add it to existing selections
+        const newCuts = [...currentCuts, cutValue];
+        console.log('Adding new cut:', cutValue, 'New cuts:', newCuts);
+        updateFilters({ ...filters, cut: newCuts });
+      }
+    } else {
+      // Multiple cuts were passed, use as is
+      console.log('Setting multiple cut filters:', selectedCuts);
+      updateFilters({ ...filters, cut: selectedCuts });
+    }
+  };
+
+  const handleClarityChange = (selectedClarities) => {
+    console.log('Clarity selection requested:', selectedClarities, 'Current clarities:', filters.clar);
+    
+    if (selectedClarities.length === 0) {
+      // If empty array is passed, remove the filter
+      const updatedFilters = { ...filters };
+      delete updatedFilters.clar;
+      console.log('Removing clarity filter completely');
+      updateFilters(updatedFilters);
+    } else if (selectedClarities.length === 1) {
+      // Check if this is a toggle operation on an already selected clarity
+      const clarityValue = selectedClarities[0];
+      
+      // Create an array from the current clarity filter for consistent handling
+      const currentClarities = Array.isArray(filters.clar) ? 
+        filters.clar : 
+        (filters.clar ? filters.clar.split(',') : []);
+      
+      console.log('Current clarities array:', currentClarities, 'Selected clarity:', clarityValue);
+      
+      if (currentClarities.includes(clarityValue)) {
+        // If the clarity is already selected and it's the only one, remove the filter
+        if (currentClarities.length === 1) {
+          const updatedFilters = { ...filters };
+          delete updatedFilters.clar;
+          console.log('Removing solo clarity:', clarityValue);
+          updateFilters(updatedFilters);
+        } else {
+          // If multiple clarities are selected, remove just this one
+          const newClarities = currentClarities.filter(clarity => clarity !== clarityValue);
+          console.log('Removing clarity from multiple:', clarityValue, 'New clarities:', newClarities);
+          updateFilters({ ...filters, clar: newClarities });
+        }
+      } else {
+        // If it's a new clarity, add it to existing selections
+        const newClarities = [...currentClarities, clarityValue];
+        console.log('Adding new clarity:', clarityValue, 'New clarities:', newClarities);
+        updateFilters({ ...filters, clar: newClarities });
+      }
+    } else {
+      // Multiple clarities were passed, use as is
+      console.log('Setting multiple clarity filters:', selectedClarities);
+      updateFilters({ ...filters, clar: selectedClarities });
+    }
+  };
+
+  const handlePriceChange = ({ min, max }) => {
+    const updatedFilters = { ...filters };
+    
+    if (min > 0) {
+      updatedFilters.minPrice = min;
+    } else {
+      delete updatedFilters.minPrice;
+    }
+    
+    if (max < 100000) {
+      updatedFilters.maxPrice = max;
+    } else {
+      delete updatedFilters.maxPrice;
+    }
+    
+    updateFilters(updatedFilters);
+  };
+
+  const handleCaratChange = ({ min, max }) => {
+    const updatedFilters = { ...filters };
+    
+    if (min > 0) {
+      updatedFilters.minCarat = min;
+    } else {
+      delete updatedFilters.minCarat;
+    }
+    
+    if (max < 10) {
+      updatedFilters.maxCarat = max;
+    } else {
+      delete updatedFilters.maxCarat;
+    }
+    
+    updateFilters(updatedFilters);
+  };
+
+  const handlePolishChange = (selectedPolishes) => {
+    console.log('Polish selection requested:', selectedPolishes, 'Current polishes:', filters.pol);
+    
+    if (selectedPolishes.length === 0) {
+      // If empty array is passed, remove the filter
+      const updatedFilters = { ...filters };
+      delete updatedFilters.pol;
+      console.log('Removing polish filter completely');
+      updateFilters(updatedFilters);
+    } else if (selectedPolishes.length === 1) {
+      // Check if this is a toggle operation on an already selected polish
+      const polishValue = selectedPolishes[0];
+      
+      // Create an array from the current polish filter for consistent handling
+      const currentPolishes = Array.isArray(filters.pol) ? 
+        filters.pol : 
+        (filters.pol ? filters.pol.split(',') : []);
+      
+      console.log('Current polishes array:', currentPolishes, 'Selected polish:', polishValue);
+      
+      if (currentPolishes.includes(polishValue)) {
+        // If the polish is already selected and it's the only one, remove the filter
+        if (currentPolishes.length === 1) {
+          const updatedFilters = { ...filters };
+          delete updatedFilters.pol;
+          console.log('Removing solo polish:', polishValue);
+          updateFilters(updatedFilters);
+        } else {
+          // If multiple polishes are selected, remove just this one
+          const newPolishes = currentPolishes.filter(polish => polish !== polishValue);
+          console.log('Removing polish from multiple:', polishValue, 'New polishes:', newPolishes);
+          updateFilters({ ...filters, pol: newPolishes });
+        }
+      } else {
+        // If it's a new polish, add it to existing selections
+        const newPolishes = [...currentPolishes, polishValue];
+        console.log('Adding new polish:', polishValue, 'New polishes:', newPolishes);
+        updateFilters({ ...filters, pol: newPolishes });
+      }
+    } else {
+      // Multiple polishes were passed, use as is
+      console.log('Setting multiple polish filters:', selectedPolishes);
+      updateFilters({ ...filters, pol: selectedPolishes });
+    }
+  };
+
+  const handleSymmetryChange = (selectedSymmetries) => {
+    console.log('Symmetry selection requested:', selectedSymmetries, 'Current symmetries:', filters.sym);
+    
+    if (selectedSymmetries.length === 0) {
+      // If empty array is passed, remove the filter
+      const updatedFilters = { ...filters };
+      delete updatedFilters.sym;
+      console.log('Removing symmetry filter completely');
+      updateFilters(updatedFilters);
+    } else if (selectedSymmetries.length === 1) {
+      // Check if this is a toggle operation on an already selected symmetry
+      const symmetryValue = selectedSymmetries[0];
+      
+      // Create an array from the current symmetry filter for consistent handling
+      const currentSymmetries = Array.isArray(filters.sym) ? 
+        filters.sym : 
+        (filters.sym ? filters.sym.split(',') : []);
+      
+      console.log('Current symmetries array:', currentSymmetries, 'Selected symmetry:', symmetryValue);
+      
+      if (currentSymmetries.includes(symmetryValue)) {
+        // If the symmetry is already selected and it's the only one, remove the filter
+        if (currentSymmetries.length === 1) {
+          const updatedFilters = { ...filters };
+          delete updatedFilters.sym;
+          console.log('Removing solo symmetry:', symmetryValue);
+          updateFilters(updatedFilters);
+        } else {
+          // If multiple symmetries are selected, remove just this one
+          const newSymmetries = currentSymmetries.filter(symmetry => symmetry !== symmetryValue);
+          console.log('Removing symmetry from multiple:', symmetryValue, 'New symmetries:', newSymmetries);
+          updateFilters({ ...filters, sym: newSymmetries });
+        }
+      } else {
+        // If it's a new symmetry, add it to existing selections
+        const newSymmetries = [...currentSymmetries, symmetryValue];
+        console.log('Adding new symmetry:', symmetryValue, 'New symmetries:', newSymmetries);
+        updateFilters({ ...filters, sym: newSymmetries });
+      }
+    } else {
+      // Multiple symmetries were passed, use as is
+      console.log('Setting multiple symmetry filters:', selectedSymmetries);
+      updateFilters({ ...filters, sym: selectedSymmetries });
+    }
+  };
+
+  const handleLabChange = (selectedLabs) => {
+    console.log('Lab selection requested:', selectedLabs, 'Current labs:', filters.lab);
+    
+    if (selectedLabs.length === 0) {
+      // If empty array is passed, remove the filter
+      const updatedFilters = { ...filters };
+      delete updatedFilters.lab;
+      console.log('Removing lab filter completely');
+      updateFilters(updatedFilters);
+    } else if (selectedLabs.length === 1) {
+      // Check if this is a toggle operation on an already selected lab
+      const labValue = selectedLabs[0];
+      
+      // Create an array from the current lab filter for consistent handling
+      const currentLabs = Array.isArray(filters.lab) ? 
+        filters.lab : 
+        (filters.lab ? filters.lab.split(',') : []);
+      
+      console.log('Current labs array:', currentLabs, 'Selected lab:', labValue);
+      
+      if (currentLabs.includes(labValue)) {
+        // If the lab is already selected and it's the only one, remove the filter
+        if (currentLabs.length === 1) {
+          const updatedFilters = { ...filters };
+          delete updatedFilters.lab;
+          console.log('Removing solo lab:', labValue);
+          updateFilters(updatedFilters);
+        } else {
+          // If multiple labs are selected, remove just this one
+          const newLabs = currentLabs.filter(lab => lab !== labValue);
+          console.log('Removing lab from multiple:', labValue, 'New labs:', newLabs);
+          updateFilters({ ...filters, lab: newLabs });
+        }
+      } else {
+        // If it's a new lab, add it to existing selections
+        const newLabs = [...currentLabs, labValue];
+        console.log('Adding new lab:', labValue, 'New labs:', newLabs);
+        updateFilters({ ...filters, lab: newLabs });
+      }
+    } else {
+      // Multiple labs were passed, use as is
+      console.log('Setting multiple lab filters:', selectedLabs);
+      updateFilters({ ...filters, lab: selectedLabs });
+    }
+  };
+
+  const handleFluorescenceChange = (selectedFluorescences) => {
+    console.log('Fluorescence selection requested:', selectedFluorescences, 'Current fluorescences:', filters.flu);
+    
+    if (selectedFluorescences.length === 0) {
+      // If empty array is passed, remove the filter
+      const updatedFilters = { ...filters };
+      delete updatedFilters.flu;
+      console.log('Removing fluorescence filter completely');
+      updateFilters(updatedFilters);
+    } else if (selectedFluorescences.length === 1) {
+      // Check if this is a toggle operation on an already selected fluorescence
+      const fluorescenceValue = selectedFluorescences[0];
+      
+      // Create an array from the current fluorescence filter for consistent handling
+      const currentFluorescences = Array.isArray(filters.flu) ? 
+        filters.flu : 
+        (filters.flu ? filters.flu.split(',') : []);
+      
+      console.log('Current fluorescences array:', currentFluorescences, 'Selected fluorescence:', fluorescenceValue);
+      
+      if (currentFluorescences.includes(fluorescenceValue)) {
+        // If the fluorescence is already selected and it's the only one, remove the filter
+        if (currentFluorescences.length === 1) {
+          const updatedFilters = { ...filters };
+          delete updatedFilters.flu;
+          console.log('Removing solo fluorescence:', fluorescenceValue);
+          updateFilters(updatedFilters);
+        } else {
+          // If multiple fluorescences are selected, remove just this one
+          const newFluorescences = currentFluorescences.filter(fluorescence => fluorescence !== fluorescenceValue);
+          console.log('Removing fluorescence from multiple:', fluorescenceValue, 'New fluorescences:', newFluorescences);
+          updateFilters({ ...filters, flu: newFluorescences });
+        }
+      } else {
+        // If it's a new fluorescence, add it to existing selections
+        const newFluorescences = [...currentFluorescences, fluorescenceValue];
+        console.log('Adding new fluorescence:', fluorescenceValue, 'New fluorescences:', newFluorescences);
+        updateFilters({ ...filters, flu: newFluorescences });
+      }
+    } else {
+      // Multiple fluorescences were passed, use as is
+      console.log('Setting multiple fluorescence filters:', selectedFluorescences);
+      updateFilters({ ...filters, flu: selectedFluorescences });
+    }
+  };
+
+  const handleDepthChange = ({ min, max }) => {
+    const updatedFilters = { ...filters };
+    
+    if (min > 0) {
+      updatedFilters.minDepth = min;
+    } else {
+      delete updatedFilters.minDepth;
+    }
+    
+    if (max < 100) {
+      updatedFilters.maxDepth = max;
+    } else {
+      delete updatedFilters.maxDepth;
+    }
+    
+    updateFilters(updatedFilters);
+  };
+
+  const handleTableChange = ({ min, max }) => {
+    const updatedFilters = { ...filters };
+    
+    if (min > 0) {
+      updatedFilters.minTable = min;
+    } else {
+      delete updatedFilters.minTable;
+    }
+    
+    if (max < 100) {
+      updatedFilters.maxTable = max;
+    } else {
+      delete updatedFilters.maxTable;
+    }
+    
+    updateFilters(updatedFilters);
+  };
+
+  const handleLwRatioChange = ({ min, max }) => {
+    const updatedFilters = { ...filters };
+    
+    if (min > 0) {
+      updatedFilters.minLwRatio = min;
+    } else {
+      delete updatedFilters.minLwRatio;
+    }
+    
+    if (max < 10) {
+      updatedFilters.maxLwRatio = max;
+    } else {
+      delete updatedFilters.maxLwRatio;
+    }
+    
+    updateFilters(updatedFilters);
+  };
+
+  const handleLengthChange = ({ min, max }) => {
+    const updatedFilters = { ...filters };
+    
+    if (min > 0) {
+      updatedFilters.minLength = min;
+    } else {
+      delete updatedFilters.minLength;
+    }
+    
+    if (max < 30) {
+      updatedFilters.maxLength = max;
+    } else {
+      delete updatedFilters.maxLength;
+    }
+    
+    updateFilters(updatedFilters);
+  };
+
+  const handleWidthChange = ({ min, max }) => {
+    const updatedFilters = { ...filters };
+    
+    if (min > 0) {
+      updatedFilters.minWidth = min;
+    } else {
+      delete updatedFilters.minWidth;
+    }
+    
+    if (max < 30) {
+      updatedFilters.maxWidth = max;
+    } else {
+      delete updatedFilters.maxWidth;
+    }
+    
+    updateFilters(updatedFilters);
+  };
+
+  const handleSortChange = (newSortValue) => {
+    updateSortOption(newSortValue);
+  };
+
+  const handleClearFilters = () => {
+    console.log('Clearing all filters from Diamond component');
+    
+    // Clear search term state
+    setSearchTerm("");
+    
+    // Show loading state immediately
+    setIsProductsLoading(true);
+    
+    // Force delay to ensure state is updated before clearing filters
+    setTimeout(() => {
+      // Call the clearFilters function from the hook
+      clearFilters();
+      
+      // Force refresh the pagination component
+      setPaginationKey(prevKey => prevKey + 1);
+      
+      // Scroll to top of the page for better UX
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 100); // Increased timeout for better reliability
+  };
+
+  const handleSearch = (term) => {
+    console.log('Searching for diamonds with term:', term);
+    setSearchTerm(term);
+    
+    // Update filters with search term
+    const updatedFilters = { ...filters, searchTerm: term };
+    
+    // If search term is empty, remove it from filters
+    if (!term) {
+      delete updatedFilters.searchTerm;
+    }
+    
+    // Reset to first page when searching
+    updateFilters(updatedFilters);
+    
+    // Update URL with search parameter
+    const url = new URL(window.location);
+    if (term) {
+      url.searchParams.set("search", term);
+    } else {
+      url.searchParams.delete("search");
+    }
+    url.searchParams.set("page", "1");
+    window.history.pushState({}, "", url);
+  };
 
   // This effect reads the page from URL when component mounts
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const page = parseInt(params.get("page")) || 1;
+    const categoryId = params.get("category");
+    const search = params.get("search");
+
+    // If there's a search term in the URL, set it
+    if (search) {
+      console.log('Search term from URL:', search);
+      setSearchTerm(search);
+      
+      // Update filters with search term
+      const newFilters = { ...filters, searchTerm: search };
+      updateFilters(newFilters);
+    }
+
+    // If there's a category ID in the URL, select that shape
+    if (categoryId) {
+      console.log('Category ID from URL:', categoryId);
+      
+      // Make sure we have a valid ID
+      if (typeof categoryId === 'string' && categoryId.trim() !== '') {
+        // Reset other filters when selecting a shape directly from homepage
+        const newFilters = { shape: [categoryId] };
+        
+        // Preserve search term if exists
+        if (search) {
+          newFilters.searchTerm = search;
+        }
+        
+        console.log('Setting shape filter from URL parameter:', newFilters);
+        updateFilters(newFilters);
+        
+        // Add this category ID to browser history for correct back navigation
+        const url = new URL(window.location);
+        url.searchParams.set("category", categoryId);
+        url.searchParams.set("page", page);
+        window.history.replaceState({}, "", url);
+      }
+    }
+
     changePage(page);
     // Only run this once on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -61,22 +680,65 @@ const Diamond = () => {
     [changePage]
   );
 
-  let categories = [];
-  let selectedCategories = [];
+  // Calculate filter values for QuickFilters component
+  const selectedShapes = Array.isArray(filters.shape) ? filters.shape.map(String) : 
+    (filters.shape ? filters.shape.split(',').map(String) : []);
+  
+  const selectedColors = Array.isArray(filters.col) ? filters.col : 
+    (filters.col ? filters.col.split(',') : []);
+  
+  const selectedCuts = Array.isArray(filters.cut) ? filters.cut : 
+    (filters.cut ? filters.cut.split(',') : []);
+  
+  const selectedClarities = Array.isArray(filters.clar) ? filters.clar : 
+    (filters.clar ? filters.clar.split(',') : []);
+  
+  const priceRange = [
+    filters.minPrice || 0,
+    filters.maxPrice || 100000
+  ];
+  
+  const caratRange = [
+    filters.minCarat || 0,
+    filters.maxCarat || 10
+  ];
+  
+  const selectedPolishes = Array.isArray(filters.pol) ? filters.pol : 
+    (filters.pol ? filters.pol.split(',') : []);
+  
+  const selectedSymmetries = Array.isArray(filters.sym) ? filters.sym : 
+    (filters.sym ? filters.sym.split(',') : []);
+  
+  const selectedLabs = Array.isArray(filters.lab) ? filters.lab : 
+    (filters.lab ? filters.lab.split(',') : []);
+  
+  const selectedFluorescences = Array.isArray(filters.flu) ? filters.flu : 
+    (filters.flu ? filters.flu.split(',') : []);
+  
+  const tableRange = [
+    filters.minTable || 0,
+    filters.maxTable || 100
+  ];
+  
+  const depthRange = [
+    filters.minDepth || 0,
+    filters.maxDepth || 100
+  ];
 
-  let maxPrice = 100;
-  let priceRange = [0, maxPrice];
+  const lwRatioRange = [
+    filters.minLwRatio || 0,
+    filters.maxLwRatio || 10
+  ];
 
-  let maxCarat = 1;
-  let caratRange = [0, maxCarat];
+  const lengthRange = [
+    filters.minLength || 0,
+    filters.maxLength || 30
+  ];
 
-  let colors = [];
-  let cuts = [];
-  let clarities = [];
-  let polishes = [];
-  let symmetries = [];
-  let labs = [];
-  let fluorescences = [];
+  const widthRange = [
+    filters.minWidth || 0,
+    filters.maxWidth || 30
+  ];
 
   return (
     <div className="bg-white min-h-screen">
@@ -88,21 +750,30 @@ const Diamond = () => {
         {/* Below Hero Section Text*/}
         <SubBannerSection productsType={"diamond"} />
         {/* Search bar */}
-        <SearchBar />
+        <SearchBar onSearch={handleSearch} initialSearchTerm={searchTerm} />
 
         {/* Main Layout - Three Section Design */}
         <div className="flex flex-col w-full">
           {/* SECTION 1: Quick filters - Full Width on All Screens (hidden on mobile) */}
           <QuickFilters
-            categories={categories}
-            selectedCategories={selectedCategories}
-            colors={colors}
-            maxPrice={maxPrice}
+            categories={diamondShapes}
+            selectedCategories={selectedShapes}
+            onCategoryChange={handleShapeChange}
+            colors={colorOptions}
+            selectedColors={selectedColors}
+            onColorChange={handleColorChange}
             priceRange={priceRange}
-            maxCarat={maxCarat}
+            onPriceChange={handlePriceChange}
             caratRange={caratRange}
-            cuts={cuts}
-            clarities={clarities}
+            onCaratChange={handleCaratChange}
+            cuts={cutOptions}
+            selectedCuts={selectedCuts}
+            onCutChange={handleCutChange}
+            clarities={clarityOptions}
+            selectedClarities={selectedClarities}
+            onClarityChange={handleClarityChange}
+            onClearFilters={handleClearFilters}
+            isLoading={shapesLoading}
           />
 
           {/* SECTION 2 & 3: Main Content Area with Left Sidebar and Product Grid */}
@@ -115,6 +786,12 @@ const Diamond = () => {
               >
                 <FaFilter />
                 <span>{isMobileFilterOpen ? "Hide Filters" : "Filters"}</span>
+                {/* Add filter count badge */}
+                {Object.keys(filters).length > 0 && (
+                  <span className="bg-white text-gray-900 text-xs rounded-full px-2 py-0.5 ml-2">
+                    {Object.keys(filters).length}
+                  </span>
+                )}
               </button>
             </div>
 
@@ -122,31 +799,104 @@ const Diamond = () => {
             <MobileFilterPanel
               isMobileFilterOpen={isMobileFilterOpen}
               setIsMobileFilterOpen={setIsMobileFilterOpen}
-              selectedCategories={selectedCategories}
-              categories={categories}
-              colors={colors}
-              maxPrice={maxPrice}
+              selectedCategories={selectedShapes}
+              onCategoryChange={handleShapeChange}
+              categories={diamondShapes}
+              colors={colorOptions}
+              selectedColors={selectedColors}
+              onColorChange={handleColorChange}
               priceRange={priceRange}
-              maxCarat={maxCarat}
+              onPriceChange={handlePriceChange}
               caratRange={caratRange}
-              cuts={cuts}
-              clarities={clarities}
-              polishes={polishes}
-              symmetries={symmetries}
-              labs={labs}
-              fluorescences={fluorescences}
+              onCaratChange={handleCaratChange}
+              cuts={cutOptions}
+              selectedCuts={selectedCuts}
+              onCutChange={handleCutChange}
+              clarities={clarityOptions}
+              selectedClarities={selectedClarities}
+              onClarityChange={handleClarityChange}
+              polishes={polishOptions}
+              selectedPolishes={selectedPolishes}
+              onPolishChange={handlePolishChange}
+              symmetries={symmetryOptions}
+              selectedSymmetries={selectedSymmetries}
+              onSymmetryChange={handleSymmetryChange}
+              labs={labOptions}
+              selectedLabs={selectedLabs}
+              onLabChange={handleLabChange}
+              fluorescences={fluorescenceOptions}
+              selectedFluorescences={selectedFluorescences}
+              onFluorescenceChange={handleFluorescenceChange}
+              depthRange={depthRange}
+              onDepthChange={handleDepthChange}
+              tableRange={tableRange}
+              onTableChange={handleTableChange}
+              lwRatioRange={lwRatioRange}
+              onLwRatioChange={handleLwRatioChange}
+              lengthRange={lengthRange}
+              onLengthChange={handleLengthChange}
+              widthRange={widthRange}
+              onWidthChange={handleWidthChange}
+              onClearFilters={handleClearFilters}
             />
 
             {/* Advanced Filters */}
             <AdvancedFilters
-              polishes={polishes}
-              symmetries={symmetries}
-              labs={labs}
-              fluorescences={fluorescences}
+              polishes={polishOptions}
+              selectedPolishes={selectedPolishes}
+              onPolishChange={handlePolishChange}
+              symmetries={symmetryOptions}
+              selectedSymmetries={selectedSymmetries}
+              onSymmetryChange={handleSymmetryChange}
+              labs={labOptions}
+              selectedLabs={selectedLabs}
+              onLabChange={handleLabChange}
+              fluorescences={fluorescenceOptions}
+              selectedFluorescences={selectedFluorescences}
+              onFluorescenceChange={handleFluorescenceChange}
+              depthRange={depthRange}
+              onDepthChange={handleDepthChange}
+              tableRange={tableRange}
+              onTableChange={handleTableChange}
+              lwRatioRange={lwRatioRange}
+              onLwRatioChange={handleLwRatioChange}
+              lengthRange={lengthRange}
+              onLengthChange={handleLengthChange}
+              widthRange={widthRange}
+              onWidthChange={handleWidthChange}
+              onClearFilters={handleClearFilters}
             />
 
             {/* Products panel */}
             <div className="flex-1 flex flex-col">
+              {/* Sort and Count Information */}
+              <div className="flex justify-between items-center mb-4">
+                <div className="text-sm text-gray-500">
+                  {!isProductsLoading && pagination.totalCount > 0 && (
+                    <span>Showing {diamonds.length} of {pagination.totalCount} diamonds</span>
+                  )}
+                </div>
+                <div className="flex items-center space-x-3">
+                  {/* Clear All Filters Button */}
+                  {Object.keys(filters).length > 0 && (
+                    <button
+                      onClick={handleClearFilters}
+                      className="text-xs px-3 py-1.5 bg-gray-800 text-white rounded-full hover:bg-gray-700 transition-colors font-medium flex items-center"
+                    >
+                      <span className="mr-1">Clear All Filters</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3 h-3">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
+                  <SortDropdown 
+                    options={sortOptions}
+                    value={sortOption}
+                    onChange={handleSortChange}
+                  />
+                </div>
+              </div>
+
               {error && (
                 <div className="text-red-500 p-4 mb-4 bg-red-50 rounded">
                   Error loading diamonds: {error}

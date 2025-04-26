@@ -20,14 +20,17 @@ import {
   FaStar,
   FaCrown,
   FaRulerHorizontal,
+  FaExclamationTriangle,
 } from "react-icons/fa";
 import ScrollToTop from "../components/ScrollToTop";
+import { getDiamondProductById } from "../../api/Products/Diamond/diamondApi.js";
 
 const Product = () => {
   const { productId } = useParams();
   const navigate = useNavigate();
   const {
     products,
+    diamondProducts,
     currency,
     addToFavorites,
     removeFromFavorites,
@@ -39,20 +42,63 @@ const Product = () => {
   const [activeImage, setActiveImage] = useState(0);
   const [isImageTransitioning, setIsImageTransitioning] = useState(false);
   const [activeTab, setActiveTab] = useState("details");
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (products && products.length > 0) {
-      const foundProduct = products.find((p) => p._id === productId);
+    const fetchProduct = async () => {
+      setLoading(true);
+      setError(null);
+      
+      try {
+        // First check if the product exists in the main products array
+        let foundProduct = products && products.length > 0 
+          ? products.find((p) => p._id === productId)
+          : null;
+          
+        // If not found in main products, check diamond products
+        if (!foundProduct && diamondProducts && diamondProducts.length > 0) {
+          foundProduct = diamondProducts.find((p) => p._id === productId);
+        }
+        
+        // If still not found, try to fetch it directly from the API
+        if (!foundProduct) {
+          console.log('Product not found in context, fetching from API...');
+          try {
+            const data = await getDiamondProductById(productId);
+            if (data && data.product) {
+              foundProduct = data.product;
+            } else if (data) {
+              foundProduct = data;
+            }
+          } catch (apiError) {
+            console.error('Error fetching product from API:', apiError);
+            // Continue with the flow, we'll handle the case if foundProduct is still null
+          }
+        }
 
-      if (foundProduct) {
-        setProduct(foundProduct);
+        if (foundProduct) {
+          setProduct(foundProduct);
+          setLoading(false);
+        } else {
+          setError('Product not found');
+          setLoading(false);
+          toast.error("Product not found");
+        }
+      } catch (err) {
+        console.error('Error loading product:', err);
+        setError('Failed to load product');
         setLoading(false);
-      } else {
-        navigate("/products");
-        toast.error("Product not found");
+        toast.error("Failed to load product details");
       }
+    };
+
+    if (productId) {
+      fetchProduct();
     }
-  }, [products, productId, navigate]);
+    
+    // Reset scroll position
+    window.scrollTo(0, 0);
+  }, [productId, products, diamondProducts]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -84,13 +130,30 @@ const Product = () => {
     );
   }
 
-  if (!product) {
+  if (error || !product) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen">
-        <h2 className="text-2xl font-bold mb-4">Product Not Found</h2>
-        <Link to="/products" className="text-blue-600 hover:underline">
-          Back to Products
-        </Link>
+      <div className="flex flex-col items-center justify-center h-screen bg-gray-50 px-4">
+        <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full text-center">
+          <FaExclamationTriangle className="text-yellow-500 text-5xl mx-auto mb-4" />
+          <h2 className="text-2xl font-bold mb-2 text-gray-900">Product Not Found</h2>
+          <p className="text-gray-600 mb-6">
+            {error || "This product doesn't exist or has been removed."}
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Link 
+              to="/products/diamond" 
+              className="bg-gray-900 text-white px-6 py-2 rounded-md hover:bg-gray-800 transition-colors"
+            >
+              Browse Diamonds
+            </Link>
+            <Link 
+              to="/" 
+              className="border border-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-50 transition-colors"
+            >
+              Return Home
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }

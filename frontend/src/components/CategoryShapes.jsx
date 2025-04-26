@@ -106,10 +106,23 @@ const CategoryShapes = () => {
   // Handle category click
   const handleCategoryClick = (categoryId, categoryName) => {
     console.log("Category clicked:", categoryId, categoryName);
-    // Navigate to diamond page with the category parameter
+    
+    // Make sure we have a valid category ID
+    if (!categoryId) {
+      console.error("Invalid category ID", categoryId);
+      return;
+    }
+    
+    // Navigate to diamond page with the category parameter and reset page to 1
+    const searchParams = new URLSearchParams();
+    searchParams.set("category", categoryId);
+    searchParams.set("page", "1");
+    
+    console.log(`Navigating to /products/diamond with params: ${searchParams.toString()}`);
+    
     navigate({
       pathname: "/products/diamond",
-      search: `?category=${categoryId}`,
+      search: searchParams.toString(),
     });
   };
 
