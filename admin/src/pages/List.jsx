@@ -4,32 +4,113 @@ import { toast } from "react-toastify";
 import { useCategories } from "../hooks/useCategories";
 import { updateProductIsPopular } from "../api/productApi";
 import axiosInstance from "../utils/axios";
+import Loading from "../components/Loading";
 
 const List = ({ token }) => {
   const [diamondProducts, setDiamondProducts] = useState([]);
   const [jewelryProducts, setJewelryProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [diamondPage, setDiamondPage] = useState(1);
+  const [jewelryPage, setJewelryPage] = useState(1);
+  const [hasMoreDiamonds, setHasMoreDiamonds] = useState(true);
+  const [hasMoreJewelry, setHasMoreJewelry] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const categories = useCategories();
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (reset = false) => {
     try {
-      const response = await axiosInstance.get("/product");
+      setIsLoading(true);
+      const fetcheDiamondProducts = await axiosInstance.get(
+        "/product/diamonds",
+        { params: { page: 1 } }
+      );
+      console.log(fetcheDiamondProducts);
+      const fetchedJeweleryProducts = await axiosInstance.get(
+        "/product/jewellery",
+        { params: { page: 1 } }
+      );
+      if (fetcheDiamondProducts.data && fetchedJeweleryProducts.data) {
+        // Extract products from the nested data structure
+        setDiamondProducts(fetcheDiamondProducts.data.products || []);
+        setJewelryProducts(fetchedJeweleryProducts.data.jewelryProducts || []);
 
-      if (response.data) {
-        const allProducts = response.data.Products;
+        // Check if there are more pages
+        setHasMoreDiamonds(
+          fetcheDiamondProducts.data.currentPage <
+            fetcheDiamondProducts.data.totalPages
+        );
+        setHasMoreJewelry(
+          fetchedJeweleryProducts.data.currentPage <
+            fetchedJeweleryProducts.data.totalPages
+        );
 
-        // Split products by type
-        setDiamondProducts(
-          allProducts.filter((product) => product.productType === "diamond")
-        );
-        setJewelryProducts(
-          allProducts.filter((product) => product.productType === "jewelry")
-        );
+        // Reset page counters if needed
+        if (reset) {
+          setDiamondPage(1);
+          setJewelryPage(1);
+        }
+
+        setIsLoading(false);
       } else {
-        toast.error(response.data.message);
+        toast.error(
+          fetcheDiamondProducts?.message || fetchedJeweleryProducts?.message
+        );
       }
     } catch (error) {
       console.log(error);
       toast.error(error.message);
+      setIsLoading(false);
+    }
+  };
+
+  const loadMoreDiamonds = async () => {
+    try {
+      setLoadingMore(true);
+      const nextPage = diamondPage + 1;
+      const response = await axiosInstance.get("/product/diamonds", {
+        params: { page: nextPage },
+      });
+
+      if (response.data && response.data.products) {
+        setDiamondProducts([...diamondProducts, ...response.data.products]);
+        setDiamondPage(nextPage);
+        setHasMoreDiamonds(
+          response.data.currentPage < response.data.totalPages
+        );
+      } else {
+        toast.error("Failed to load more diamond products");
+      }
+      setLoadingMore(false);
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+      setLoadingMore(false);
+    }
+  };
+
+  const loadMoreJewelry = async () => {
+    try {
+      setLoadingMore(true);
+      const nextPage = jewelryPage + 1;
+      const response = await axiosInstance.get("/product/jewellery", {
+        params: { page: nextPage },
+      });
+
+      if (response.data && response.data.jewelryProducts) {
+        setJewelryProducts([
+          ...jewelryProducts,
+          ...response.data.jewelryProducts,
+        ]);
+        setJewelryPage(nextPage);
+        setHasMoreJewelry(response.data.currentPage < response.data.totalPages);
+      } else {
+        toast.error("Failed to load more jewelry products");
+      }
+      setLoadingMore(false);
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+      setLoadingMore(false);
     }
   };
 
@@ -39,7 +120,7 @@ const List = ({ token }) => {
 
       if (response.data) {
         toast.success(response.data.message);
-        await fetchProducts();
+        await fetchProducts(true);
       } else {
         toast.error(response.data.message);
       }
@@ -125,28 +206,16 @@ const List = ({ token }) => {
               Fluorescence
             </th>
             <th className="px-2 py-3 text-left text-xs md:text-sm font-medium text-gray-500">
-              Flu. Color
+              Dept
             </th>
             <th className="px-2 py-3 text-left text-xs md:text-sm font-medium text-gray-500">
-              Depth %
-            </th>
-            <th className="px-2 py-3 text-left text-xs md:text-sm font-medium text-gray-500">
-              Table %
+              Table
             </th>
             <th className="px-2 py-3 text-left text-xs md:text-sm font-medium text-gray-500">
               Dimensions
             </th>
             <th className="px-2 py-3 text-left text-xs md:text-sm font-medium text-gray-500">
               Lab
-            </th>
-            <th className="px-2 py-3 text-left text-xs md:text-sm font-medium text-gray-500">
-              Girdle
-            </th>
-            <th className="px-2 py-3 text-left text-xs md:text-sm font-medium text-gray-500">
-              Culet
-            </th>
-            <th className="px-2 py-3 text-left text-xs md:text-sm font-medium text-gray-500">
-              Eye Clean
             </th>
             <th className="px-2 py-3 text-left text-xs md:text-sm font-medium text-gray-500">
               Brown
@@ -206,13 +275,10 @@ const List = ({ token }) => {
                     {item.flo || "-"}
                   </td>
                   <td className="px-2 py-2 text-xs md:text-sm">
-                    {item.floCol || "-"}
+                    {item.depth || "-"}%
                   </td>
                   <td className="px-2 py-2 text-xs md:text-sm">
-                    {item.depth || "-"}
-                  </td>
-                  <td className="px-2 py-2 text-xs md:text-sm">
-                    {item.table || "-"}
+                    {item.table || "-"}%
                   </td>
                   <td className="px-2 py-2 text-xs md:text-sm">
                     {item.length && item.width && item.height
@@ -221,15 +287,6 @@ const List = ({ token }) => {
                   </td>
                   <td className="px-2 py-2 text-xs md:text-sm">
                     {item.lab || "-"}
-                  </td>
-                  <td className="px-2 py-2 text-xs md:text-sm">
-                    {item.girdle || "-"}
-                  </td>
-                  <td className="px-2 py-2 text-xs md:text-sm">
-                    {item.culet || "-"}
-                  </td>
-                  <td className="px-2 py-2 text-xs md:text-sm">
-                    {item.eyeClean || "-"}
                   </td>
                   <td className="px-2 py-2 text-xs md:text-sm">
                     {item.brown || "-"}
@@ -269,6 +326,17 @@ const List = ({ token }) => {
           )}
         </tbody>
       </table>
+      {hasMoreDiamonds && (
+        <div className="mt-4 text-center">
+          <button
+            onClick={loadMoreDiamonds}
+            disabled={loadingMore}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-blue-300"
+          >
+            {loadingMore ? "Loading..." : "Load More"}
+          </button>
+        </div>
+      )}
     </div>
   );
 
@@ -364,6 +432,17 @@ const List = ({ token }) => {
           )}
         </tbody>
       </table>
+      {hasMoreJewelry && (
+        <div className="mt-4 text-center">
+          <button
+            onClick={loadMoreJewelry}
+            disabled={loadingMore}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-blue-300"
+          >
+            {loadingMore ? "Loading..." : "Load More"}
+          </button>
+        </div>
+      )}
     </div>
   );
 
@@ -373,8 +452,14 @@ const List = ({ token }) => {
         Products Management
       </p>
 
-      <DiamondTable />
-      <JewelryTable />
+      {isLoading ? (
+        <Loading />
+      ) : (
+        <>
+          <DiamondTable />
+          <JewelryTable />
+        </>
+      )}
     </div>
   );
 };

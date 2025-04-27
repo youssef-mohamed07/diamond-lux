@@ -88,7 +88,7 @@ const schema = new Schema(
 
 schema.post("init", function (doc) {
   const isExternalUrl = (url) => {
-    return url && (url.startsWith('http://') || url.startsWith('https://'));
+    return url && (url.startsWith("http://") || url.startsWith("https://"));
   };
 
   // Handle imageCover

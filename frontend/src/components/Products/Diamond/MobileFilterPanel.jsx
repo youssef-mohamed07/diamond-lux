@@ -42,7 +42,7 @@ const MobileFilterPanel = ({
   onLengthChange,
   widthRange,
   onWidthChange,
-  onClearFilters
+  onClearFilters,
 }) => {
   if (!isMobileFilterOpen) return null;
 
@@ -50,7 +50,7 @@ const MobileFilterPanel = ({
   const handleCategoryToggle = (categoryId) => {
     // Convert category ID to string for consistency
     const categoryIdStr = String(categoryId);
-    
+
     if (selectedCategories.includes(categoryIdStr)) {
       // If already selected, remove it (deselect) by sending just the single item
       // This will toggle it off in the Diamond page handler
@@ -62,26 +62,29 @@ const MobileFilterPanel = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 overflow-hidden flex justify-end lg:hidden">
-      <div className="bg-white w-full max-w-[90%] h-full overflow-y-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 overflow-hidden flex justify-center lg:hidden">
+      <div className="bg-white w-full max-w-[90%] h-full overflow-y-auto ">
         <div className="p-4 border-b border-gray-200 flex justify-between items-center sticky top-0 bg-white z-10">
           <h2 className="text-xl font-semibold">Filters</h2>
-              <button
-                onClick={() => setIsMobileFilterOpen(false)}
+          <button
+            onClick={() => setIsMobileFilterOpen(false)}
             className="p-2 text-gray-500 hover:text-gray-800"
-              >
-                <FaTimes />
-              </button>
-            </div>
+          >
+            <FaTimes />
+          </button>
+        </div>
 
         <div className="p-4 space-y-6">
-              {/* Diamond Shapes */}
+          {/* Diamond Shapes */}
           {categories && categories.length > 0 && (
             <div className="pb-4 border-b border-gray-200">
               <div className="flex justify-between items-center mb-3">
                 <h3 className="text-lg font-medium">Diamond Shapes</h3>
               </div>
-              <div className="overflow-x-auto pb-2" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+              <div
+                className="overflow-x-auto pb-2"
+                style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+              >
                 <div className="inline-flex space-x-2 min-w-max">
                   {categories.map((category) => (
                     <div
@@ -112,17 +115,26 @@ const MobileFilterPanel = ({
                             className="w-full h-full object-contain"
                             onError={(e) => {
                               // If image fails to load, replace with a fallback icon
-                              e.target.style.display = 'none';
+                              e.target.style.display = "none";
                               // Find or create fallback icon
                               let fallbackIcon = e.target.nextElementSibling;
-                              if (!fallbackIcon || !fallbackIcon.classList.contains('fallback-icon')) {
-                                fallbackIcon = document.createElement('div');
-                                fallbackIcon.className = 'w-12 h-12 flex items-center justify-center bg-gray-200 rounded-full fallback-icon';
-                                
-                                const span = document.createElement('span');
-                                span.className = 'text-gray-600 text-lg font-medium';
-                                span.innerText = category.initial || category.name.charAt(0).toUpperCase();
-                                
+                              if (
+                                !fallbackIcon ||
+                                !fallbackIcon.classList.contains(
+                                  "fallback-icon"
+                                )
+                              ) {
+                                fallbackIcon = document.createElement("div");
+                                fallbackIcon.className =
+                                  "w-12 h-12 flex items-center justify-center bg-gray-200 rounded-full fallback-icon";
+
+                                const span = document.createElement("span");
+                                span.className =
+                                  "text-gray-600 text-lg font-medium";
+                                span.innerText =
+                                  category.initial ||
+                                  category.name.charAt(0).toUpperCase();
+
                                 fallbackIcon.appendChild(span);
                                 e.target.parentNode.appendChild(fallbackIcon);
                               }
@@ -131,16 +143,21 @@ const MobileFilterPanel = ({
                         ) : (
                           <div className="w-12 h-12 flex items-center justify-center bg-gray-200 rounded-full fallback-icon">
                             <span className="text-gray-600 text-lg font-medium">
-                              {category.initial || category.name.charAt(0).toUpperCase()}
+                              {category.initial ||
+                                category.name.charAt(0).toUpperCase()}
                             </span>
                           </div>
                         )}
                       </div>
-                      <span className={`text-xs text-center block mt-1 ${
-                        selectedCategories.includes(String(category._id))
-                          ? "font-semibold"
-                          : ""
-                      }`}>{category.name}</span>
+                      <span
+                        className={`text-xs text-center block mt-1 ${
+                          selectedCategories.includes(String(category._id))
+                            ? "font-semibold"
+                            : ""
+                        }`}
+                      >
+                        {category.name}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -148,18 +165,18 @@ const MobileFilterPanel = ({
             </div>
           )}
 
-                {/* Price Range */}
+          {/* Price Range */}
           <div className="pb-4 border-b border-gray-200">
             <h3 className="text-lg font-medium mb-3">Price Range</h3>
             <div className="flex items-center">
-                    <div className="flex-1">
-                      <div className="relative">
-                        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                          $
-                        </span>
-                        <input
-                          type="number"
-                          min={0}
+              <div className="flex-1">
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                    $
+                  </span>
+                  <input
+                    type="number"
+                    min={0}
                     placeholder="Min"
                     defaultValue={priceRange[0]}
                     onChange={(e) => {
@@ -167,42 +184,42 @@ const MobileFilterPanel = ({
                       const max = priceRange[1];
                       onPriceChange({ min, max });
                     }}
-                          className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
-                        />
-                      </div>
-                    </div>
+                    className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
+                  />
+                </div>
+              </div>
               <div className="mx-2 text-gray-400">to</div>
-                    <div className="flex-1">
-                      <div className="relative">
-                        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                          $
-                        </span>
-                        <input
-                          type="number"
-                          min={0}
+              <div className="flex-1">
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                    $
+                  </span>
+                  <input
+                    type="number"
+                    min={0}
                     placeholder="Max"
-                    defaultValue={priceRange[1] < 100000 ? priceRange[1] : ''}
+                    defaultValue={priceRange[1] < 100000 ? priceRange[1] : ""}
                     onChange={(e) => {
                       const min = priceRange[0];
                       const max = Number(e.target.value);
                       onPriceChange({ min, max });
                     }}
-                          className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
-                        />
-                      </div>
-                    </div>
-                  </div>
+                    className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
+                  />
                 </div>
+              </div>
+            </div>
+          </div>
 
-                {/* Carat Range */}
+          {/* Carat Range */}
           <div className="pb-4 border-b border-gray-200">
             <h3 className="text-lg font-medium mb-3">Carat Range</h3>
             <div className="flex items-center">
-                    <div className="flex-1">
-                      <input
-                        type="number"
-                        min={0}
-                        step="0.01"
+              <div className="flex-1">
+                <input
+                  type="number"
+                  min={0}
+                  step="0.01"
                   placeholder="Min"
                   defaultValue={caratRange[0]}
                   onChange={(e) => {
@@ -210,27 +227,27 @@ const MobileFilterPanel = ({
                     const max = caratRange[1];
                     onCaratChange({ min, max });
                   }}
-                        className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                      />
-                    </div>
+                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                />
+              </div>
               <div className="mx-2 text-gray-400">to</div>
-                    <div className="flex-1">
-                      <input
-                        type="number"
-                        min={0}
-                        step="0.01"
+              <div className="flex-1">
+                <input
+                  type="number"
+                  min={0}
+                  step="0.01"
                   placeholder="Max"
-                  defaultValue={caratRange[1] < 10 ? caratRange[1] : ''}
+                  defaultValue={caratRange[1] < 10 ? caratRange[1] : ""}
                   onChange={(e) => {
                     const min = caratRange[0];
                     const max = Number(e.target.value);
                     onCaratChange({ min, max });
                   }}
-                        className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                      />
-                    </div>
-                  </div>
-                </div>
+                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                />
+              </div>
+            </div>
+          </div>
 
           {/* Colors */}
           {colors && colors.length > 0 && (
@@ -271,10 +288,10 @@ const MobileFilterPanel = ({
               <div className="flex justify-between items-center mb-3">
                 <h3 className="text-lg font-medium">Cut</h3>
               </div>
-                    <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2">
                 {cuts.map((cut) => (
-                        <button
-                          key={cut}
+                  <button
+                    key={cut}
                     onClick={() => {
                       if (selectedCuts.includes(cut)) {
                         // If already selected, remove it (deselect) by sending just the single item
@@ -285,18 +302,18 @@ const MobileFilterPanel = ({
                         onCutChange([...selectedCuts, cut]);
                       }
                     }}
-                          className={`px-3 py-1 text-xs rounded-full ${
+                    className={`px-3 py-1 text-xs rounded-full ${
                       selectedCuts.includes(cut)
-                              ? "bg-gray-900 text-white"
+                        ? "bg-gray-900 text-white"
                         : "bg-gray-100 text-gray-800"
-                          }`}
-                        >
-                          {cut}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                    }`}
+                  >
+                    {cut}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Clarities */}
           {clarities && clarities.length > 0 && (
@@ -304,10 +321,10 @@ const MobileFilterPanel = ({
               <div className="flex justify-between items-center mb-3">
                 <h3 className="text-lg font-medium">Clarity</h3>
               </div>
-                    <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2">
                 {clarities.map((clarity) => (
-                        <button
-                          key={clarity}
+                  <button
+                    key={clarity}
                     onClick={() => {
                       if (selectedClarities.includes(clarity)) {
                         // If already selected, remove it (deselect) by sending just the single item
@@ -318,18 +335,18 @@ const MobileFilterPanel = ({
                         onClarityChange([...selectedClarities, clarity]);
                       }
                     }}
-                          className={`px-3 py-1 text-xs rounded-full ${
+                    className={`px-3 py-1 text-xs rounded-full ${
                       selectedClarities.includes(clarity)
-                              ? "bg-gray-900 text-white"
+                        ? "bg-gray-900 text-white"
                         : "bg-gray-100 text-gray-800"
-                          }`}
-                        >
-                          {clarity}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                    }`}
+                  >
+                    {clarity}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Advanced Filters Section */}
           <div className="pb-4">
@@ -337,14 +354,14 @@ const MobileFilterPanel = ({
 
             {/* Polish */}
             {polishes && polishes.length > 0 && (
-                <div className="mb-4">
+              <div className="mb-4">
                 <div className="flex justify-between items-center mb-2">
                   <h4 className="text-sm font-medium">Polish</h4>
                 </div>
-                  <div className="flex flex-wrap gap-2">
-                    {polishes.map((polish) => (
-                      <button
-                        key={polish}
+                <div className="flex flex-wrap gap-2">
+                  {polishes.map((polish) => (
+                    <button
+                      key={polish}
                       onClick={() => {
                         if (selectedPolishes.includes(polish)) {
                           // If already selected, remove it (deselect) by sending just the single item
@@ -355,29 +372,29 @@ const MobileFilterPanel = ({
                           onPolishChange([...selectedPolishes, polish]);
                         }
                       }}
-                        className={`px-3 py-1 text-xs rounded-full ${
+                      className={`px-3 py-1 text-xs rounded-full ${
                         selectedPolishes.includes(polish)
-                            ? "bg-gray-900 text-white"
+                          ? "bg-gray-900 text-white"
                           : "bg-gray-100 text-gray-800"
-                        }`}
-                      >
-                        {polish}
-                      </button>
-                    ))}
-                  </div>
+                      }`}
+                    >
+                      {polish}
+                    </button>
+                  ))}
                 </div>
-              )}
+              </div>
+            )}
 
             {/* Symmetry */}
             {symmetries && symmetries.length > 0 && (
-                <div className="mb-4">
+              <div className="mb-4">
                 <div className="flex justify-between items-center mb-2">
                   <h4 className="text-sm font-medium">Symmetry</h4>
                 </div>
-                  <div className="flex flex-wrap gap-2">
-                    {symmetries.map((symmetry) => (
-                      <button
-                        key={symmetry}
+                <div className="flex flex-wrap gap-2">
+                  {symmetries.map((symmetry) => (
+                    <button
+                      key={symmetry}
                       onClick={() => {
                         if (selectedSymmetries.includes(symmetry)) {
                           // If already selected, remove it (deselect) by sending just the single item
@@ -388,18 +405,18 @@ const MobileFilterPanel = ({
                           onSymmetryChange([...selectedSymmetries, symmetry]);
                         }
                       }}
-                        className={`px-3 py-1 text-xs rounded-full ${
+                      className={`px-3 py-1 text-xs rounded-full ${
                         selectedSymmetries.includes(symmetry)
-                            ? "bg-gray-900 text-white"
+                          ? "bg-gray-900 text-white"
                           : "bg-gray-100 text-gray-800"
-                        }`}
-                      >
-                        {symmetry}
-                      </button>
-                    ))}
-                  </div>
+                      }`}
+                    >
+                      {symmetry}
+                    </button>
+                  ))}
                 </div>
-              )}
+              </div>
+            )}
 
             {/* Table % */}
             <div className="mb-4">
@@ -429,7 +446,7 @@ const MobileFilterPanel = ({
                     max={100}
                     step="0.1"
                     placeholder="Max"
-                    defaultValue={tableRange[1] < 100 ? tableRange[1] : ''}
+                    defaultValue={tableRange[1] < 100 ? tableRange[1] : ""}
                     onChange={(e) => {
                       const min = tableRange[0];
                       const max = Number(e.target.value);
@@ -469,7 +486,7 @@ const MobileFilterPanel = ({
                     max={10}
                     step="0.01"
                     placeholder="Max"
-                    defaultValue={lwRatioRange[1] < 10 ? lwRatioRange[1] : ''}
+                    defaultValue={lwRatioRange[1] < 10 ? lwRatioRange[1] : ""}
                     onChange={(e) => {
                       const min = lwRatioRange[0];
                       const max = Number(e.target.value);
@@ -509,7 +526,7 @@ const MobileFilterPanel = ({
                     max={30}
                     step="0.01"
                     placeholder="Max"
-                    defaultValue={lengthRange[1] < 30 ? lengthRange[1] : ''}
+                    defaultValue={lengthRange[1] < 30 ? lengthRange[1] : ""}
                     onChange={(e) => {
                       const min = lengthRange[0];
                       const max = Number(e.target.value);
@@ -549,7 +566,7 @@ const MobileFilterPanel = ({
                     max={30}
                     step="0.01"
                     placeholder="Max"
-                    defaultValue={widthRange[1] < 30 ? widthRange[1] : ''}
+                    defaultValue={widthRange[1] < 30 ? widthRange[1] : ""}
                     onChange={(e) => {
                       const min = widthRange[0];
                       const max = Number(e.target.value);
@@ -589,7 +606,7 @@ const MobileFilterPanel = ({
                     max={100}
                     step="0.1"
                     placeholder="Max"
-                    defaultValue={depthRange[1] < 100 ? depthRange[1] : ''}
+                    defaultValue={depthRange[1] < 100 ? depthRange[1] : ""}
                     onChange={(e) => {
                       const min = depthRange[0];
                       const max = Number(e.target.value);
@@ -607,10 +624,10 @@ const MobileFilterPanel = ({
                 <div className="flex justify-between items-center mb-2">
                   <h4 className="text-sm font-medium">Certification</h4>
                 </div>
-                  <div className="flex flex-wrap gap-2">
-                    {labs.map((lab) => (
-                      <button
-                        key={lab}
+                <div className="flex flex-wrap gap-2">
+                  {labs.map((lab) => (
+                    <button
+                      key={lab}
                       onClick={() => {
                         if (selectedLabs.includes(lab)) {
                           // If already selected, remove it (deselect) by sending just the single item
@@ -621,29 +638,29 @@ const MobileFilterPanel = ({
                           onLabChange([...selectedLabs, lab]);
                         }
                       }}
-                        className={`px-3 py-1 text-xs rounded-full ${
+                      className={`px-3 py-1 text-xs rounded-full ${
                         selectedLabs.includes(lab)
-                            ? "bg-gray-900 text-white"
+                          ? "bg-gray-900 text-white"
                           : "bg-gray-100 text-gray-800"
-                        }`}
-                      >
-                        {lab}
-                      </button>
-                    ))}
-                  </div>
+                      }`}
+                    >
+                      {lab}
+                    </button>
+                  ))}
                 </div>
-              )}
+              </div>
+            )}
 
             {/* Fluorescence */}
             {fluorescences && fluorescences.length > 0 && (
-                <div className="mb-4">
+              <div className="mb-4">
                 <div className="flex justify-between items-center mb-2">
                   <h4 className="text-sm font-medium">Fluorescence</h4>
                 </div>
-                  <div className="flex flex-wrap gap-2">
-                    {fluorescences.map((fluorescence) => (
-                      <button
-                        key={fluorescence}
+                <div className="flex flex-wrap gap-2">
+                  {fluorescences.map((fluorescence) => (
+                    <button
+                      key={fluorescence}
                       onClick={() => {
                         if (selectedFluorescences.includes(fluorescence)) {
                           // If already selected, remove it (deselect) by sending just the single item
@@ -651,22 +668,25 @@ const MobileFilterPanel = ({
                           onFluorescenceChange([fluorescence]);
                         } else {
                           // Add to selection
-                          onFluorescenceChange([...selectedFluorescences, fluorescence]);
+                          onFluorescenceChange([
+                            ...selectedFluorescences,
+                            fluorescence,
+                          ]);
                         }
                       }}
-                        className={`px-3 py-1 text-xs rounded-full ${
+                      className={`px-3 py-1 text-xs rounded-full ${
                         selectedFluorescences.includes(fluorescence)
-                            ? "bg-gray-900 text-white"
+                          ? "bg-gray-900 text-white"
                           : "bg-gray-100 text-gray-800"
-                        }`}
-                      >
-                        {fluorescence}
-                      </button>
-                    ))}
-                  </div>
+                      }`}
+                    >
+                      {fluorescence}
+                    </button>
+                  ))}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
+          </div>
 
           {/* Clear Filters Button */}
           <div className="sticky bottom-0 bg-white p-4 border-t border-gray-200">
@@ -675,7 +695,7 @@ const MobileFilterPanel = ({
                 if (onClearFilters) {
                   // Call clear filters first
                   onClearFilters();
-                  
+
                   // Use a longer timeout to ensure filters are cleared before closing panel
                   setTimeout(() => {
                     setIsMobileFilterOpen(false);

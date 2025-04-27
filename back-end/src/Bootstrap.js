@@ -19,6 +19,9 @@ import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
 import diamondRouter from "./modules/Product/Diamond/diamond.router.js";
+import earringRouter from "./modules/Product/Jewelry/Earrings/earring.router.js";
+import necklaceRouter from "./modules/Product/Jewelry/Necklaces/necklace.router.js";
+import braceletRouter from "./modules/Product/Jewelry/Bracelets/bracelet.router.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -64,8 +67,13 @@ export const bootstrap = (app) => {
   app.use("/api/quote", QuoteRouter);
   app.use("/api/testimonials", TestimonialRouter);
   app.use("/api/category", CategoryRouter);
+
   app.use("/api/product", ProductRouter);
   app.use("/api/product", diamondRouter);
+  app.use("/api/product", earringRouter);
+  app.use("/api/product", necklaceRouter);
+  app.use("/api/product", braceletRouter);
+
   app.use("/api/event", EventRouter);
   app.use("/api/user", UserRouter);
   app.use("/api/wishlist", wishlistRouter);

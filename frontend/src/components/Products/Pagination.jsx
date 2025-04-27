@@ -1,5 +1,4 @@
-// Paste this in a new file called Pagination.jsx in your components folder
-
+import { IoMdArrowDropright } from "react-icons/io";
 import React, { useState } from "react";
 
 const Pagination = ({ currentPage, totalPages, onPageChange, loading }) => {
@@ -53,7 +52,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange, loading }) => {
             onClick={() => onPageChange(page)}
             className={`w-10 h-10 flex items-center justify-center rounded-md ${
               validCurrentPage === page
-                ? "bg-blue-600 text-white"
+                ? "bg-black text-white"
                 : "bg-white text-gray-700 hover:bg-gray-100"
             }`}
             disabled={loading || validCurrentPage === page}
@@ -74,7 +73,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange, loading }) => {
         onClick={() => onPageChange(1)}
         className={`w-10 h-10 flex items-center justify-center rounded-md ${
           validCurrentPage === 1
-            ? "bg-blue-600 text-white"
+            ? "bg-black text-white"
             : "bg-white text-gray-700 hover:bg-gray-100"
         }`}
         disabled={loading || validCurrentPage === 1}
@@ -101,7 +100,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange, loading }) => {
             onClick={() => onPageChange(page)}
             className={`w-10 h-10 flex items-center justify-center rounded-md ${
               validCurrentPage === page
-                ? "bg-blue-600 text-white"
+                ? "bg-black text-white"
                 : "bg-white text-gray-700 hover:bg-gray-100"
             }`}
             disabled={loading || validCurrentPage === page}
@@ -139,7 +138,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange, loading }) => {
             onClick={() => onPageChange(page)}
             className={`w-10 h-10 flex items-center justify-center rounded-md ${
               validCurrentPage === page
-                ? "bg-blue-600 text-white"
+                ? "bg-black text-white"
                 : "bg-white text-gray-700 hover:bg-gray-100"
             }`}
             disabled={loading || validCurrentPage === page}
@@ -170,7 +169,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange, loading }) => {
             onClick={() => onPageChange(page)}
             className={`w-10 h-10 flex items-center justify-center rounded-md ${
               validCurrentPage === page
-                ? "bg-blue-600 text-white"
+                ? "bg-black text-white"
                 : "bg-white text-gray-700 hover:bg-gray-100"
             }`}
             disabled={loading || validCurrentPage === page}
@@ -194,7 +193,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange, loading }) => {
         onClick={() => onPageChange(validTotalPages)}
         className={`w-10 h-10 flex items-center justify-center rounded-md ${
           validCurrentPage === validTotalPages
-            ? "bg-blue-600 text-white"
+            ? "bg-black text-white"
             : "bg-white text-gray-700 hover:bg-gray-100"
         }`}
         disabled={loading || validCurrentPage === validTotalPages}
@@ -228,17 +227,17 @@ const Pagination = ({ currentPage, totalPages, onPageChange, loading }) => {
             value={pageInputValue}
             onChange={handleInputChange}
             placeholder={validCurrentPage.toString()}
-            className={`w-16 h-10 px-2 border rounded-md text-center ${
+            className={`w-16 h-10 px-2 py-2 border rounded-md text-center ${
               inputError ? "border-red-500" : "border-gray-300"
             }`}
             disabled={loading}
           />
           <button
             type="submit"
-            className="ml-2 px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-300"
+            className="ml-2 w-16 h-10 px-2 py-2 flex justify-center items-center text-2xl bg-black text-white rounded-md hover:bg-gray-600 transition-all duration-300 disabled:bg-gray-400"
             disabled={loading || pageInputValue === ""}
           >
-            Go
+            <IoMdArrowDropright />
           </button>
         </form>
         {inputError && (

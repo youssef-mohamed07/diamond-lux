@@ -29,7 +29,7 @@ export const useDiamonds = () => {
   const [sortOption, setSortOption] = useState("price:asc");
   const [diamondShapes, setDiamondShapes] = useState([]);
   const [shapesLoading, setShapesLoading] = useState(false);
-  
+
   // Add filters state
   const [filters, setFilters] = useState({});
 
@@ -54,42 +54,91 @@ export const useDiamonds = () => {
     try {
       setShapesLoading(true);
       const data = await getDiamondShapes();
-      
+
       // Process the shapes data based on the API response format
       let shapes = [];
-      
+
       if (data && data.categories && Array.isArray(data.categories)) {
-        shapes = data.categories.map(shape => ({
+        shapes = data.categories.map((shape) => ({
           _id: shape._id || shape.name,
           name: shape.name,
           image: getDiamondShapeImage(shape),
-          initial: getCategoryInitial(shape.name)
+          initial: getCategoryInitial(shape.name),
         }));
       } else if (Array.isArray(data)) {
-        shapes = data.map(shape => ({
+        shapes = data.map((shape) => ({
           _id: shape._id || shape.name,
           name: shape.name,
           image: getDiamondShapeImage(shape),
-          initial: getCategoryInitial(shape.name)
+          initial: getCategoryInitial(shape.name),
         }));
       }
-      
-      console.log('Processed diamond shapes:', shapes);
+
       setDiamondShapes(shapes);
     } catch (err) {
-      console.error('Error fetching diamond shapes:', err);
+      console.error("Error fetching diamond shapes:", err);
       // Provide fallback shapes if API fails
       const fallbackShapes = [
-        { _id: 'round', name: 'Round', image: '/diamond-shapes/round.png', initial: 'R' },
-        { _id: 'princess', name: 'Princess', image: '/diamond-shapes/princess.png', initial: 'P' },
-        { _id: 'cushion', name: 'Cushion', image: '/diamond-shapes/cushion.png', initial: 'C' },
-        { _id: 'oval', name: 'Oval', image: '/diamond-shapes/oval.png', initial: 'O' },
-        { _id: 'emerald', name: 'Emerald', image: '/diamond-shapes/emerald.png', initial: 'E' },
-        { _id: 'pear', name: 'Pear', image: '/diamond-shapes/pear.png', initial: 'P' },
-        { _id: 'marquise', name: 'Marquise', image: '/diamond-shapes/marquise.png', initial: 'M' },
-        { _id: 'radiant', name: 'Radiant', image: '/diamond-shapes/radiant.png', initial: 'R' },
-        { _id: 'heart', name: 'Heart', image: '/diamond-shapes/heart.png', initial: 'H' },
-        { _id: 'asscher', name: 'Asscher', image: '/diamond-shapes/asscher.png', initial: 'A' }
+        {
+          _id: "round",
+          name: "Round",
+          image: "/diamond-shapes/round.png",
+          initial: "R",
+        },
+        {
+          _id: "princess",
+          name: "Princess",
+          image: "/diamond-shapes/princess.png",
+          initial: "P",
+        },
+        {
+          _id: "cushion",
+          name: "Cushion",
+          image: "/diamond-shapes/cushion.png",
+          initial: "C",
+        },
+        {
+          _id: "oval",
+          name: "Oval",
+          image: "/diamond-shapes/oval.png",
+          initial: "O",
+        },
+        {
+          _id: "emerald",
+          name: "Emerald",
+          image: "/diamond-shapes/emerald.png",
+          initial: "E",
+        },
+        {
+          _id: "pear",
+          name: "Pear",
+          image: "/diamond-shapes/pear.png",
+          initial: "P",
+        },
+        {
+          _id: "marquise",
+          name: "Marquise",
+          image: "/diamond-shapes/marquise.png",
+          initial: "M",
+        },
+        {
+          _id: "radiant",
+          name: "Radiant",
+          image: "/diamond-shapes/radiant.png",
+          initial: "R",
+        },
+        {
+          _id: "heart",
+          name: "Heart",
+          image: "/diamond-shapes/heart.png",
+          initial: "H",
+        },
+        {
+          _id: "asscher",
+          name: "Asscher",
+          image: "/diamond-shapes/asscher.png",
+          initial: "A",
+        },
       ];
       setDiamondShapes(fallbackShapes);
     } finally {
@@ -97,124 +146,134 @@ export const useDiamonds = () => {
     }
   }, []);
 
-  const fetchDiamonds = useCallback(async (page = 1, limit = 12, filterParams = null, sortParam = null) => {
-    // Ensure page and limit are valid numbers
-    const validPage = Math.max(1, parseInt(page) || 1);
-    const validLimit = Math.max(1, parseInt(limit) || 12);
+  const fetchDiamonds = useCallback(
+    async (page = 1, limit = 12, filterParams = null, sortParam = null) => {
+      // Ensure page and limit are valid numbers
+      const validPage = Math.max(1, parseInt(page) || 1);
+      const validLimit = Math.max(1, parseInt(limit) || 12);
 
-    // Use provided filters or current state from the ref
-    const currentFilters = filterParams || filtersRef.current;
-    // Use provided sort or current state from the ref
-    const currentSort = sortParam || sortRef.current;
+      // Use provided filters or current state from the ref
+      const currentFilters = filterParams || filtersRef.current;
+      // Use provided sort or current state from the ref
+      const currentSort = sortParam || sortRef.current;
 
-    setLoading(true);
-    setError(null);
+      setLoading(true);
+      setError(null);
 
-    // Generate a unique request ID to track the latest request
-    const requestId = Date.now();
-    lastRequestIdRef.current = requestId;
+      // Generate a unique request ID to track the latest request
+      const requestId = Date.now();
+      lastRequestIdRef.current = requestId;
 
-    try {
-      console.log('Fetching diamonds with filters:', currentFilters);
-      console.log('Using sort option:', currentSort);
-      
-      const data = await getAllDiamondProducts(validPage, validLimit, currentFilters, currentSort);
+      try {
+        const data = await getAllDiamondProducts(
+          validPage,
+          validLimit,
+          currentFilters,
+          currentSort
+        );
 
-      // Only update state if this is still the latest request
-      if (requestId === lastRequestIdRef.current) {
-        if (Array.isArray(data.products)) {
-          setDiamonds(data.products);
-        } else {
-          console.error("Products data is not an array:", data.products);
-          setDiamonds([]);
+        // Only update state if this is still the latest request
+        if (requestId === lastRequestIdRef.current) {
+          if (Array.isArray(data.products)) {
+            setDiamonds(data.products);
+          } else {
+            console.error("Products data is not an array:", data.products);
+            setDiamonds([]);
+          }
+
+          setPagination({
+            currentPage: validPage,
+            totalPages: data.pagination.totalPages || 1,
+            totalCount: data.pagination.totalCount || 0,
+            limit: validLimit,
+          });
+
+          setLoading(false);
         }
 
-        setPagination({
-          currentPage: validPage,
-          totalPages: data.pagination.totalPages || 1,
-          totalCount: data.pagination.totalCount || 0,
-          limit: validLimit,
+        return data;
+      } catch (err) {
+        // Only update error state if this is still the latest request
+        if (requestId === lastRequestIdRef.current) {
+          console.error(`[useDiamonds] Error in request ${requestId}:`, err);
+          setError(err.message || "Failed to fetch diamonds");
+          setLoading(false);
+        }
+        return null;
+      }
+    },
+    []
+  ); // Remove filters dependency to avoid dependency cycle
+
+  const updateFilters = useCallback(
+    (newFilters) => {
+      setFilters((prevFilters) => {
+        const updatedFilters = { ...prevFilters };
+
+        // Handle all filters including shape
+        Object.entries(newFilters).forEach(([key, value]) => {
+          // Handle empty values - delete those filters
+          if (
+            value === undefined ||
+            value === null ||
+            (Array.isArray(value) && value.length === 0) ||
+            (typeof value === "object" &&
+              !Array.isArray(value) &&
+              Object.keys(value).length === 0)
+          ) {
+            delete updatedFilters[key];
+          }
+          // Handle array filter types (categories, attributes)
+          else if (Array.isArray(value)) {
+            // Simply replace the current value with the new array
+            updatedFilters[key] = value;
+          }
+          // Handle all other filter types
+          else {
+            updatedFilters[key] = value;
+          }
         });
 
-        setLoading(false);
-      }
+        // Use setTimeout to ensure this runs after the state update
+        setTimeout(() => {
+          fetchDiamonds(1, pagination.limit, updatedFilters);
+        }, 0);
 
-      return data;
-    } catch (err) {
-      // Only update error state if this is still the latest request
-      if (requestId === lastRequestIdRef.current) {
-        console.error(`[useDiamonds] Error in request ${requestId}:`, err);
-        setError(err.message || "Failed to fetch diamonds");
-        setLoading(false);
-      }
-      return null;
-    }
-  }, []); // Remove filters dependency to avoid dependency cycle
-
-  const updateFilters = useCallback((newFilters) => {
-    console.log('Updating filters with:', newFilters);
-    
-    setFilters(prevFilters => {
-      const updatedFilters = { ...prevFilters };
-      
-      // Handle all filters including shape
-      Object.entries(newFilters).forEach(([key, value]) => {
-        // Handle empty values - delete those filters
-        if (value === undefined || value === null || 
-            (Array.isArray(value) && value.length === 0) || 
-            (typeof value === 'object' && !Array.isArray(value) && Object.keys(value).length === 0)) {
-          console.log(`Removing empty filter: ${key}`);
-          delete updatedFilters[key];
-        } 
-        // Handle array filter types (categories, attributes)
-        else if (Array.isArray(value)) {
-          console.log(`Setting array filter ${key} to:`, value);
-          // Simply replace the current value with the new array
-          updatedFilters[key] = value;
-        } 
-        // Handle all other filter types
-        else {
-          console.log(`Setting regular filter ${key} to:`, value);
-          updatedFilters[key] = value;
-        }
+        return updatedFilters;
       });
-      
-      console.log('Final filters after cleanup:', updatedFilters);
-      
-      // Use setTimeout to ensure this runs after the state update
-      setTimeout(() => {
-        fetchDiamonds(1, pagination.limit, updatedFilters);
-      }, 0);
-      
-      return updatedFilters;
-    });
-  }, [fetchDiamonds, pagination.limit]);
+    },
+    [fetchDiamonds, pagination.limit]
+  );
 
-  const updateSortOption = useCallback((newSortOption) => {
-    console.log('Updating sort option to:', newSortOption);
-    setSortOption(newSortOption);
-    // Fetch with the updated sort option
-    fetchDiamonds(pagination.currentPage, pagination.limit, filtersRef.current, newSortOption);
-  }, [fetchDiamonds, pagination.currentPage, pagination.limit]);
+  const updateSortOption = useCallback(
+    (newSortOption) => {
+      setSortOption(newSortOption);
+      // Fetch with the updated sort option
+      fetchDiamonds(
+        pagination.currentPage,
+        pagination.limit,
+        filtersRef.current,
+        newSortOption
+      );
+    },
+    [fetchDiamonds, pagination.currentPage, pagination.limit]
+  );
 
   const clearFilters = useCallback(() => {
-    console.log('Clearing all filters completely');
-    
     // Immediately reset the filters state to an empty object
     setFilters({});
-    
+
     // Reset pagination to first page
-    setPagination(prev => ({
+    setPagination((prev) => ({
       ...prev,
-      currentPage: 1
+      currentPage: 1,
     }));
-    
+
     // Create a new clean request to fetch data with no filters
     try {
       // Make direct API call with empty filters object
       getAllDiamondProducts(1, pagination.limit, {}, sortRef.current)
-        .then(data => {
-          console.log('Fetched data after clearing filters:', data);
+        .then((data) => {
           if (Array.isArray(data.products)) {
             setDiamonds(data.products);
           } else {
@@ -223,26 +282,28 @@ export const useDiamonds = () => {
           }
           setLoading(false);
         })
-        .catch(err => {
+        .catch((err) => {
           console.error("Error fetching after filter clear:", err);
-          setError(err.message || "Failed to fetch diamonds after clearing filters");
+          setError(
+            err.message || "Failed to fetch diamonds after clearing filters"
+          );
           setLoading(false);
         });
-      
+
       // Set loading to true for immediate feedback
       setLoading(true);
-      
+
       // Clear URL parameters except page
       const url = new URL(window.location);
-      Array.from(url.searchParams.keys()).forEach(key => {
-        if (key !== 'page') {
+      Array.from(url.searchParams.keys()).forEach((key) => {
+        if (key !== "page") {
           url.searchParams.delete(key);
         }
       });
-      url.searchParams.set('page', '1');
-      window.history.pushState({}, '', url);
+      url.searchParams.set("page", "1");
+      window.history.pushState({}, "", url);
     } catch (e) {
-      console.error('Error in clearFilters function:', e);
+      console.error("Error in clearFilters function:", e);
     }
   }, [pagination.limit, getAllDiamondProducts]);
 
@@ -294,34 +355,36 @@ export const useDiamonds = () => {
     [fetchDiamonds]
   );
 
-  const searchDiamonds = useCallback((searchTerm) => {
-    if (!searchTerm) {
-      // If search term is empty, simply remove the search filter
-      const updatedFilters = { ...filters };
-      delete updatedFilters.searchTerm;
-      updateFilters(updatedFilters);
-      return;
-    }
+  const searchDiamonds = useCallback(
+    (searchTerm) => {
+      if (!searchTerm) {
+        // If search term is empty, simply remove the search filter
+        const updatedFilters = { ...filters };
+        delete updatedFilters.searchTerm;
+        updateFilters(updatedFilters);
+        return;
+      }
 
-    // Create updated filters with the search term
-    const searchFilters = {
-      ...filters,
-      searchTerm: searchTerm,
-    };
-    
-    // Set loading state for better UX
-    setLoading(true);
-    
-    // Update filters state which will trigger a fetch automatically
-    console.log('Searching diamonds with term:', searchTerm);
-    updateFilters(searchFilters);
-    
-    // Reset to page 1 when performing a search
-    setPagination(prev => ({
-      ...prev,
-      currentPage: 1
-    }));
-  }, [filters, updateFilters]);
+      // Create updated filters with the search term
+      const searchFilters = {
+        ...filters,
+        searchTerm: searchTerm,
+      };
+
+      // Set loading state for better UX
+      setLoading(true);
+
+      // Update filters state which will trigger a fetch automatically
+      updateFilters(searchFilters);
+
+      // Reset to page 1 when performing a search
+      setPagination((prev) => ({
+        ...prev,
+        currentPage: 1,
+      }));
+    },
+    [filters, updateFilters]
+  );
 
   // Initial load effect
   useEffect(() => {
@@ -348,6 +411,6 @@ export const useDiamonds = () => {
     updateFilters,
     updateSortOption,
     clearFilters,
-    searchDiamonds
+    searchDiamonds,
   };
 };

@@ -6,7 +6,6 @@ import {
   getProducts,
   updateProduct,
   getJewelryProducts,
-  getEarrings,
   getBracelets,
   getNecklaces,
 } from "./product.controller.js";
@@ -17,10 +16,7 @@ import { Validate } from "../../MiddleWares/validate.js";
 const ProductRouter = Router();
 
 // Specific routes first
-ProductRouter.get("/jewellery", getJewelryProducts);
-ProductRouter.get("/jewellery/earrings", getEarrings);
-ProductRouter.get("/jewellery/necklaces", getNecklaces);
-ProductRouter.get("/jewellery/bracelets", getBracelets);
+ProductRouter.get("/jewelery", getJewelryProducts);
 
 // Generic routes after specific ones
 ProductRouter.route("/")

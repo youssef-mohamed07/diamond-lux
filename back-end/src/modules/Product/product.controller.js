@@ -67,18 +67,6 @@ const getJewelryProducts = catchError(async (req, res, next) => {
   }
 });
 
-const getEarrings = catchError(async (req, res, next) => {
-  try {
-    const earrings = await Product.find({
-      productType: "jewelry",
-      jewelryType: "earrings",
-    });
-    res.status(200).json({ message: "Earrings:", earrings });
-  } catch (error) {
-    next(error);
-  }
-});
-
 const getBracelets = catchError(async (req, res, next) => {
   try {
     const bracelets = await Product.find({
@@ -110,7 +98,6 @@ export {
   updateProduct,
   deleteProduct,
   getJewelryProducts,
-  getEarrings,
   getBracelets,
   getNecklaces,
 };

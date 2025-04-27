@@ -2,11 +2,14 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import { getImageUrl, DEFAULT_FALLBACK_IMAGE } from "../../../utils/imageHelper";
+import {
+  getImageUrl,
+  DEFAULT_FALLBACK_IMAGE,
+} from "../../../utils/imageHelper";
 
 const GalleryItem = ({ item, index, price = false, productType }) => {
   const [imageError, setImageError] = useState(false);
-  
+
   // Early return if item is null or undefined
   if (!item || !item._id) {
     return null;
@@ -30,7 +33,9 @@ const GalleryItem = ({ item, index, price = false, productType }) => {
       >
         <div className="relative overflow-hidden aspect-square">
           <img
-            src={imageError ? DEFAULT_FALLBACK_IMAGE : getImageUrl(item.imageCover)}
+            src={
+              imageError ? DEFAULT_FALLBACK_IMAGE : getImageUrl(item.imageCover)
+            }
             alt={item.name || "Product"}
             className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
             onError={(e) => {
@@ -94,7 +99,7 @@ const GalleryItem = ({ item, index, price = false, productType }) => {
           <h3 className="text-lg font-medium text-gray-900 group-hover:text-gray-600 transition-colors duration-300">
             {item.title}
           </h3>
-          {price && (
+          {item.price && (
             <p className="text-gray-900 font-semibold mt-2">
               ${item.price.toLocaleString()}
             </p>
