@@ -5,6 +5,7 @@ import { ShopContext } from "../context/ShopContext";
 import { toast } from "react-toastify";
 import NewsletterBox from "../components/NewsletterBox";
 import { motion } from "framer-motion";
+import { getImageUrl } from "../../utils/imageHelper";
 import {
   FaHeart,
   FaRegHeart,
@@ -48,21 +49,22 @@ const Product = () => {
     const fetchProduct = async () => {
       setLoading(true);
       setError(null);
-      
+
       try {
         // First check if the product exists in the main products array
-        let foundProduct = products && products.length > 0 
-          ? products.find((p) => p._id === productId)
-          : null;
-          
+        let foundProduct =
+          products && products.length > 0
+            ? products.find((p) => p._id === productId)
+            : null;
+
         // If not found in main products, check diamond products
         if (!foundProduct && diamondProducts && diamondProducts.length > 0) {
           foundProduct = diamondProducts.find((p) => p._id === productId);
         }
-        
+
         // If still not found, try to fetch it directly from the API
         if (!foundProduct) {
-          console.log('Product not found in context, fetching from API...');
+          console.log("Product not found in context, fetching from API...");
           try {
             const data = await getDiamondProductById(productId);
             if (data && data.product) {
@@ -71,7 +73,7 @@ const Product = () => {
               foundProduct = data;
             }
           } catch (apiError) {
-            console.error('Error fetching product from API:', apiError);
+            console.error("Error fetching product from API:", apiError);
             // Continue with the flow, we'll handle the case if foundProduct is still null
           }
         }
@@ -80,13 +82,13 @@ const Product = () => {
           setProduct(foundProduct);
           setLoading(false);
         } else {
-          setError('Product not found');
+          setError("Product not found");
           setLoading(false);
           toast.error("Product not found");
         }
       } catch (err) {
-        console.error('Error loading product:', err);
-        setError('Failed to load product');
+        console.error("Error loading product:", err);
+        setError("Failed to load product");
         setLoading(false);
         toast.error("Failed to load product details");
       }
@@ -95,7 +97,7 @@ const Product = () => {
     if (productId) {
       fetchProduct();
     }
-    
+
     // Reset scroll position
     window.scrollTo(0, 0);
   }, [productId, products, diamondProducts]);
@@ -135,19 +137,21 @@ const Product = () => {
       <div className="flex flex-col items-center justify-center h-screen bg-gray-50 px-4">
         <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full text-center">
           <FaExclamationTriangle className="text-yellow-500 text-5xl mx-auto mb-4" />
-          <h2 className="text-2xl font-bold mb-2 text-gray-900">Product Not Found</h2>
+          <h2 className="text-2xl font-bold mb-2 text-gray-900">
+            Product Not Found
+          </h2>
           <p className="text-gray-600 mb-6">
             {error || "This product doesn't exist or has been removed."}
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link 
-              to="/products/diamond" 
+            <Link
+              to="/products/diamond"
               className="bg-gray-900 text-white px-6 py-2 rounded-md hover:bg-gray-800 transition-colors"
             >
               Browse Diamonds
             </Link>
-            <Link 
-              to="/" 
+            <Link
+              to="/"
               className="border border-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-50 transition-colors"
             >
               Return Home
@@ -555,9 +559,9 @@ const Product = () => {
             <div>
               <div className="mb-4 aspect-w-1 aspect-h-1 bg-gray-100 rounded-lg overflow-hidden">
                 <motion.img
-                  src={
+                  src={getImageUrl(
                     product.imageCover ? product.imageCover : product.images[0]
-                  }
+                  )}
                   alt={product.title}
                   className="w-full h-full object-center object-cover"
                   initial={{ opacity: 0 }}
@@ -587,12 +591,15 @@ const Product = () => {
                           playsInline
                           className="w-full h-full object-center object-cover"
                         >
-                          <source src={product.images[0]} type="video/mp4" />
+                          <source
+                            src={getImageUrl(product.images[0])}
+                            type="video/mp4"
+                          />
                           Your browser does not support the video tag.
                         </video>
                       ) : (
                         <img
-                          src={image}
+                          src={getImageUrl(image)}
                           alt={`${product.title} thumbnail ${index + 1}`}
                           className="w-full h-full object-center object-cover"
                         />

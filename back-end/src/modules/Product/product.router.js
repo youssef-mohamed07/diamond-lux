@@ -6,8 +6,6 @@ import {
   getProducts,
   updateProduct,
   getJewelryProducts,
-  getBracelets,
-  getNecklaces,
 } from "./product.controller.js";
 import { uploadMixOFFiles } from "../../fileUpload/fileUpload.js";
 import { AddProductVal } from "./product.validation.js";

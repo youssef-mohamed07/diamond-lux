@@ -12,6 +12,14 @@ export const buildJeweleryFilterQuery = (queryParams) => {
       filterQuery.price.$lte = Number(queryParams.maxPrice);
   }
 
+  // Jewelry Type
+  if (queryParams.jewelryType) {
+    const jewelryTypes = queryParams.jewelryType
+      .split(",")
+      .map((jt) => jt.trim());
+    filterQuery.jewelryType = { $in: jewelryTypes };
+  }
+
   // Diamond Type
   if (queryParams.diamondType) {
     const diamondTypes = queryParams.diamondType

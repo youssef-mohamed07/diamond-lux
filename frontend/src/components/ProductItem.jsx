@@ -2,7 +2,7 @@ import { useContext } from "react";
 import PropTypes from "prop-types";
 import { ShopContext } from "../context/ShopContext";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { getImageUrl } from "../../utils/imageHelper";
 
 const ProductItem = ({
   _id,
@@ -41,7 +41,7 @@ const ProductItem = ({
         <div className="overflow-hidden max-w-[500px] max-h-[500px]">
           <img
             className="w-full h-full object-cover"
-            src={productImage}
+            src={getImageUrl(productImage)}
             alt={title}
             draggable={false}
           />
