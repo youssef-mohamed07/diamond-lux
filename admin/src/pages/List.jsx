@@ -5,6 +5,7 @@ import { useCategories } from "../hooks/useCategories";
 import { updateProductIsPopular } from "../api/productApi";
 import axiosInstance from "../utils/axios";
 import Loading from "../components/Loading";
+import { getImageUrl } from "../../utils/imageHelper";
 
 const List = ({ token }) => {
   const [diamondProducts, setDiamondProducts] = useState([]);
@@ -26,13 +27,14 @@ const List = ({ token }) => {
       );
       console.log(fetcheDiamondProducts);
       const fetchedJeweleryProducts = await axiosInstance.get(
-        "/product/jewellery",
+        "/product/jewelery",
         { params: { page: 1 } }
       );
+      console.log(fetchedJeweleryProducts.data.products);
       if (fetcheDiamondProducts.data && fetchedJeweleryProducts.data) {
         // Extract products from the nested data structure
         setDiamondProducts(fetcheDiamondProducts.data.products || []);
-        setJewelryProducts(fetchedJeweleryProducts.data.jewelryProducts || []);
+        setJewelryProducts(fetchedJeweleryProducts.data.products || []);
 
         // Check if there are more pages
         setHasMoreDiamonds(
@@ -92,15 +94,12 @@ const List = ({ token }) => {
     try {
       setLoadingMore(true);
       const nextPage = jewelryPage + 1;
-      const response = await axiosInstance.get("/product/jewellery", {
+      const response = await axiosInstance.get("/product/jewelery", {
         params: { page: nextPage },
       });
 
-      if (response.data && response.data.jewelryProducts) {
-        setJewelryProducts([
-          ...jewelryProducts,
-          ...response.data.jewelryProducts,
-        ]);
+      if (response.data && response.data.products) {
+        setJewelryProducts([...jewelryProducts, ...response.data.products]);
         setJewelryPage(nextPage);
         setHasMoreJewelry(response.data.currentPage < response.data.totalPages);
       } else {
@@ -242,7 +241,7 @@ const List = ({ token }) => {
                   <td className="px-2 py-2 whitespace-nowrap">
                     <img
                       className="w-10 md:w-12 h-10 md:h-12 object-cover rounded"
-                      src={item.imageCover}
+                      src={getImageUrl(item.imageCover)}
                       alt="cover-img"
                     />
                   </td>
@@ -383,7 +382,7 @@ const List = ({ token }) => {
                   <td className="px-2 py-2 whitespace-nowrap">
                     <img
                       className="w-10 md:w-12 h-10 md:h-12 object-cover rounded"
-                      src={item.imageCover}
+                      src={getImageUrl(item.imageCover)}
                       alt="cover-img"
                     />
                   </td>

@@ -1,5 +1,12 @@
-import React from "react";
-import { FaTimes } from "react-icons/fa";
+import React, { useEffect, useState } from "react";
+import {
+  FaTimes,
+  FaCheck,
+  FaFilter,
+  FaChevronUp,
+  FaChevronDown,
+} from "react-icons/fa";
+import { getImageUrl } from "../../../../utils/imageHelper";
 
 const MobileFilterPanel = ({
   isMobileFilterOpen,
@@ -110,7 +117,7 @@ const MobileFilterPanel = ({
                         )}
                         {category.image ? (
                           <img
-                            src={category.image}
+                            src={getImageUrl(category.image)}
                             alt={category.name}
                             className="w-full h-full object-contain"
                             onError={(e) => {

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { getImageUrl } from "../../../../utils/imageHelper";
 
 const QuickFilters = ({
   categories,
@@ -43,21 +44,28 @@ const QuickFilters = ({
 
   // Scroll selected category into view when component mounts or selection changes
   useEffect(() => {
-    if (selectedCategoryRef.current && sliderRef.current && selectedCategories.length > 0) {
+    if (
+      selectedCategoryRef.current &&
+      sliderRef.current &&
+      selectedCategories.length > 0
+    ) {
       // Use a small timeout to ensure DOM is fully rendered
       setTimeout(() => {
         const selectedElement = selectedCategoryRef.current;
         const sliderElement = sliderRef.current;
-        
+
         // Fix: Check if selectedElement is not null before accessing its properties
         if (selectedElement && sliderElement) {
           // Calculate scroll position to center the element
-          const scrollLeft = selectedElement.offsetLeft - (sliderElement.offsetWidth / 2) + (selectedElement.offsetWidth / 2);
-          
+          const scrollLeft =
+            selectedElement.offsetLeft -
+            sliderElement.offsetWidth / 2 +
+            selectedElement.offsetWidth / 2;
+
           // Scroll the slider smoothly
           sliderElement.scrollTo({
             left: scrollLeft,
-            behavior: 'smooth'
+            behavior: "smooth",
           });
         }
       }, 300);
@@ -68,12 +76,12 @@ const QuickFilters = ({
   const handlePriceChange = (min, max) => {
     setMinPrice(min);
     setMaxPrice(max);
-    
+
     // Use setTimeout to debounce the API call
     const timer = setTimeout(() => {
       onPriceChange({ min, max });
     }, 500); // 500ms debounce
-    
+
     return () => clearTimeout(timer);
   };
 
@@ -81,12 +89,12 @@ const QuickFilters = ({
   const handleCaratChange = (min, max) => {
     setMinCarat(min);
     setMaxCarat(max);
-    
+
     // Use setTimeout to debounce the API call
     const timer = setTimeout(() => {
       onCaratChange({ min, max });
     }, 500); // 500ms debounce
-    
+
     return () => clearTimeout(timer);
   };
 
@@ -94,7 +102,7 @@ const QuickFilters = ({
   const handleCategoryToggle = (categoryId) => {
     // Convert category name to string for consistency
     const categoryIdStr = String(categoryId);
-    
+
     // Check if already selected
     if (selectedCategories.includes(categoryIdStr)) {
       // If already selected, remove it (deselect) by sending just the single item
@@ -158,30 +166,32 @@ const QuickFilters = ({
             {categories.length > 0 ? (
               <div className="relative group">
                 {/* Left Arrow Navigation */}
-                <button 
+                <button
                   onClick={() => {
                     if (sliderRef.current) {
                       sliderRef.current.scrollBy({
                         left: -200,
-                        behavior: 'smooth'
+                        behavior: "smooth",
                       });
                     }
                   }}
-                  className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white/80 hover:bg-white shadow-md rounded-full p-2 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity -ml-2">
+                  className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white/80 hover:bg-white shadow-md rounded-full p-2 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity -ml-2"
+                >
                   <FaChevronLeft className="text-gray-600 w-4 h-4" />
                 </button>
 
                 {/* Right Arrow Navigation */}
-                <button 
+                <button
                   onClick={() => {
                     if (sliderRef.current) {
                       sliderRef.current.scrollBy({
                         left: 200,
-                        behavior: 'smooth'
+                        behavior: "smooth",
                       });
                     }
                   }}
-                  className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white/80 hover:bg-white shadow-md rounded-full p-2 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity -mr-2">
+                  className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white/80 hover:bg-white shadow-md rounded-full p-2 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity -mr-2"
+                >
                   <FaChevronRight className="text-gray-600 w-4 h-4" />
                 </button>
 
@@ -199,7 +209,11 @@ const QuickFilters = ({
                     {categories.map((category) => (
                       <div
                         key={category._id}
-                        ref={selectedCategories.includes(String(category._id)) ? selectedCategoryRef : null}
+                        ref={
+                          selectedCategories.includes(String(category._id))
+                            ? selectedCategoryRef
+                            : null
+                        }
                         onClick={() => handleCategoryToggle(category._id)}
                         className={`cursor-pointer flex flex-col items-center transition-all transform hover:scale-105 active:scale-95 ${
                           selectedCategories.includes(String(category._id))
@@ -214,29 +228,40 @@ const QuickFilters = ({
                               : "border-transparent hover:border-gray-300 hover:bg-gray-50 shadow-md"
                           }`}
                         >
-                          {selectedCategories.includes(String(category._id)) && (
+                          {selectedCategories.includes(
+                            String(category._id)
+                          ) && (
                             <div className="absolute top-0 right-0 w-6 h-6 bg-gray-900 rounded-full flex items-center justify-center shadow-md">
                               <span className="text-white text-xs">✓</span>
                             </div>
                           )}
                           {category.image ? (
                             <img
-                              src={category.image}
+                              src={getImageUrl(category.image)}
                               alt={category.name}
                               className="w-full h-full object-contain"
                               onError={(e) => {
                                 // If image fails to load, replace with a fallback icon
-                                e.target.style.display = 'none';
+                                e.target.style.display = "none";
                                 // Find or create fallback icon
                                 let fallbackIcon = e.target.nextElementSibling;
-                                if (!fallbackIcon || !fallbackIcon.classList.contains('fallback-icon')) {
-                                  fallbackIcon = document.createElement('div');
-                                  fallbackIcon.className = 'w-14 h-14 flex items-center justify-center bg-gray-200 rounded-full fallback-icon';
-                                  
-                                  const span = document.createElement('span');
-                                  span.className = 'text-gray-600 text-lg font-medium';
-                                  span.innerText = category.initial || category.name.charAt(0).toUpperCase();
-                                  
+                                if (
+                                  !fallbackIcon ||
+                                  !fallbackIcon.classList.contains(
+                                    "fallback-icon"
+                                  )
+                                ) {
+                                  fallbackIcon = document.createElement("div");
+                                  fallbackIcon.className =
+                                    "w-14 h-14 flex items-center justify-center bg-gray-200 rounded-full fallback-icon";
+
+                                  const span = document.createElement("span");
+                                  span.className =
+                                    "text-gray-600 text-lg font-medium";
+                                  span.innerText =
+                                    category.initial ||
+                                    category.name.charAt(0).toUpperCase();
+
                                   fallbackIcon.appendChild(span);
                                   e.target.parentNode.appendChild(fallbackIcon);
                                 }
@@ -245,16 +270,19 @@ const QuickFilters = ({
                           ) : (
                             <div className="w-14 h-14 flex items-center justify-center bg-gray-200 rounded-full fallback-icon">
                               <span className="text-gray-600 text-lg font-medium">
-                                {category.initial || category.name.charAt(0).toUpperCase()}
+                                {category.initial ||
+                                  category.name.charAt(0).toUpperCase()}
                               </span>
                             </div>
                           )}
                         </div>
-                        <p className={`text-xs sm:text-sm text-center font-medium ${
-                          selectedCategories.includes(String(category._id))
-                            ? "text-gray-900 font-semibold"
-                            : "text-gray-700"
-                        }`}>
+                        <p
+                          className={`text-xs sm:text-sm text-center font-medium ${
+                            selectedCategories.includes(String(category._id))
+                              ? "text-gray-900 font-semibold"
+                              : "text-gray-700"
+                          }`}
+                        >
                           {category.name}
                         </p>
                       </div>
@@ -319,7 +347,9 @@ const QuickFilters = ({
                     type="number"
                     min={0}
                     value={minPrice}
-                    onChange={(e) => handlePriceChange(Number(e.target.value), maxPrice)}
+                    onChange={(e) =>
+                      handlePriceChange(Number(e.target.value), maxPrice)
+                    }
                     className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
                   />
                 </div>
@@ -334,7 +364,9 @@ const QuickFilters = ({
                     type="number"
                     min={0}
                     value={maxPrice}
-                    onChange={(e) => handlePriceChange(minPrice, Number(e.target.value))}
+                    onChange={(e) =>
+                      handlePriceChange(minPrice, Number(e.target.value))
+                    }
                     className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
                   />
                 </div>
@@ -354,7 +386,9 @@ const QuickFilters = ({
                   min={0}
                   step="0.01"
                   value={minCarat}
-                  onChange={(e) => handleCaratChange(Number(e.target.value), maxCarat)}
+                  onChange={(e) =>
+                    handleCaratChange(Number(e.target.value), maxCarat)
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                 />
               </div>
@@ -365,7 +399,9 @@ const QuickFilters = ({
                   min={0}
                   step="0.01"
                   value={maxCarat}
-                  onChange={(e) => handleCaratChange(minCarat, Number(e.target.value))}
+                  onChange={(e) =>
+                    handleCaratChange(minCarat, Number(e.target.value))
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                 />
               </div>
@@ -420,13 +456,18 @@ const QuickFilters = ({
             </div>
           )}
         </div>
-        
+
         {/* Clear All Filters */}
-        {(selectedCategories.length > 0 || selectedColors.length > 0 || 
-          selectedCuts.length > 0 || selectedClarities.length > 0 ||
-          minPrice > 0 || maxPrice < 100000 || minCarat > 0 || maxCarat < 10) && (
+        {(selectedCategories.length > 0 ||
+          selectedColors.length > 0 ||
+          selectedCuts.length > 0 ||
+          selectedClarities.length > 0 ||
+          minPrice > 0 ||
+          maxPrice < 100000 ||
+          minCarat > 0 ||
+          maxCarat < 10) && (
           <div className="mt-6 text-center">
-            <button 
+            <button
               onClick={() => {
                 // Reset local state
                 setMinPrice(0);

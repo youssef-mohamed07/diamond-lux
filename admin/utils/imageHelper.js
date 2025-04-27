@@ -1,5 +1,5 @@
 /**
- * Utility functions for handling image URLs
+ * Utility functions for handling image URLs in the admin panel
  */
 
 // Default fallback image
@@ -47,22 +47,4 @@ export const getImageUrl = (imageUrl, fallbackUrl = DEFAULT_FALLBACK_IMAGE) => {
 
   // Otherwise, it's a local path, return as is (likely a static asset)
   return imageUrl;
-};
-
-/**
- * Gets a URL for a diamond shape image
- * @param {string} shapeName The name or ID of the diamond shape
- * @returns {string} The diamond shape image URL
- */
-export const getDiamondShapeImageUrl = (shapeName) => {
-  if (!shapeName) {
-    return DEFAULT_FALLBACK_IMAGE;
-  }
-
-  // Handle both shape name and shape ID
-  const shapeId = shapeName.includes("_")
-    ? shapeName
-    : shapeName.toLowerCase().replace(/\s+/g, "_");
-
-  return `${BACKEND_URL_WITHOUT_API}/uploads/diamond-shapes/${shapeId}.webp`;
 };
