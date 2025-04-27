@@ -27,6 +27,8 @@ import {
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { useLocation, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { debounce } from "lodash";
 
 const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const backendURL_WITHOUT_API = VITE_BACKEND_URL.replace("/api", "");
@@ -38,18 +40,22 @@ const Bracelets = () => {
   const query = searchParams.get("q") || "";
   const categoryParam = searchParams.get("category") || "";
 
-  // Data store
-  const { bracelets } = useContext(ShopContext);
-
   // Core filtering states
   const [selectedCategories, setSelectedCategories] = useState(
     categoryParam ? [categoryParam] : []
   );
   const [searchQuery, setSearchQuery] = useState(query || "");
+  const [products, setProducts] = useState([]);
   const [filterProducts, setFilterProducts] = useState([]);
   const [showClearFilter, setShowClearFilter] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [sortType, setSortType] = useState("relevant");
+  
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [limit, setLimit] = useState(12);
 
   // Additional UI state
   const [showFilter, setShowFilter] = useState(false);
@@ -69,11 +75,6 @@ const Bracelets = () => {
   const [maxCarat, setMaxCarat] = useState(20);
   const [maxPrice, setMaxPrice] = useState(100000);
 
-  // Selected filter states
-  const [selectedDiamondTypes, setSelectedDiamondTypes] = useState([]);
-  const [selectedMetals, setSelectedMetals] = useState([]);
-  const [selectedMetalColors, setSelectedMetalColors] = useState([]);
-
   // Unique values for filter options
   const [uniqueDiamondTypes, setUniqueDiamondTypes] = useState([]);
   const [uniqueMetals, setUniqueMetals] = useState([]);
@@ -86,9 +87,178 @@ const Bracelets = () => {
   // Define sort options
   const sortOptions = [
     { value: "relevant", label: "Relevance" },
-    { value: "low-high", label: "Price: Low to High" },
-    { value: "high-low", label: "Price: High to Low" },
+    { value: "price:asc", label: "Price: Low to High" },
+    { value: "price:desc", label: "Price: High to Low" },
   ];
+
+  // Data store
+  const { bracelets } = useContext(ShopContext);
+
+  // Fetch products from the API
+  const fetchProducts = useCallback(async () => {
+    // Save current scroll position before loading
+    const scrollPosition = window.scrollY;
+    
+    setIsLoading(true);
+    try {
+      // Prepare query parameters
+      const params = new URLSearchParams();
+      
+      // Pagination
+      params.append('page', currentPage);
+      params.append('limit', limit);
+      
+      // Search query
+      if (searchQuery) {
+        params.append('search', searchQuery);
+      }
+      
+      // Category
+      if (selectedCategories.length > 0) {
+        params.append('category', selectedCategories.join(','));
+      }
+      
+      // Diamond Types
+      if (diamondTypes.length > 0) {
+        params.append('diamondType', diamondTypes.join(','));
+      }
+      
+      // Metals
+      if (metals.length > 0) {
+        params.append('metal', metals.join(','));
+      }
+      
+      // Metal Colors
+      if (metalColors.length > 0) {
+        params.append('metalColor', metalColors.join(','));
+      }
+      
+      // Carat Range
+      if (caratRange[0] > 0) {
+        params.append('minCarat', caratRange[0]);
+      }
+      if (caratRange[1] < maxCarat) {
+        params.append('maxCarat', caratRange[1]);
+      }
+      
+      // Price Range
+      if (priceRange[0] > 0) {
+        params.append('minPrice', priceRange[0]);
+      }
+      if (priceRange[1] < maxPrice) {
+        params.append('maxPrice', priceRange[1]);
+      }
+      
+      // Sort
+      if (sortType !== 'relevant') {
+        params.append('sort', sortType);
+      }
+      
+      const response = await axios.get(`${VITE_BACKEND_URL}/product/jewelery/bracelets`, { params });
+      
+      // Update state with the response data
+      setProducts(response.data.products);
+      setFilterProducts(response.data.products);
+      setTotalCount(response.data.totalProductsCount);
+      setTotalPages(response.data.totalPages);
+      setCurrentPage(response.data.currentPage);
+      
+      // Extract unique filter values from the products
+      extractUniqueFilterValues(response.data.products);
+    } catch (error) {
+      console.error("Error fetching bracelet products:", error);
+    } finally {
+      setIsLoading(false);
+      
+      // Restore scroll position after loading completes
+      setTimeout(() => {
+        window.scrollTo({
+          top: scrollPosition,
+          behavior: 'auto' // Use 'auto' instead of 'smooth' to prevent visible scrolling
+        });
+      }, 0);
+    }
+  }, [
+    currentPage, 
+    limit, 
+    searchQuery, 
+    selectedCategories, 
+    diamondTypes, 
+    metals, 
+    metalColors, 
+    caratRange, 
+    priceRange, 
+    sortType,
+    maxCarat, 
+    maxPrice
+  ]);
+
+  // Function to extract unique filter values from products
+  const extractUniqueFilterValues = useCallback((products) => {
+    if (!products || products.length === 0) return;
+    
+    // Extract unique diamond types
+    const uniqueDiamondTypesSet = new Set();
+    products.forEach(product => {
+      if (product.diamondType) uniqueDiamondTypesSet.add(product.diamondType);
+    });
+    setUniqueDiamondTypes(Array.from(uniqueDiamondTypesSet));
+    
+    // Extract unique metals
+    const uniqueMetalsSet = new Set();
+    products.forEach(product => {
+      if (product.metal) uniqueMetalsSet.add(product.metal);
+    });
+    setUniqueMetals(Array.from(uniqueMetalsSet));
+    
+    // Extract unique metal colors
+    const uniqueMetalColorsSet = new Set();
+    products.forEach(product => {
+      if (product.metalColor) uniqueMetalColorsSet.add(product.metalColor);
+    });
+    setUniqueMetalColors(Array.from(uniqueMetalColorsSet));
+    
+    // Find max price and carat for ranges
+    const maxProductPrice = Math.max(...products.map(p => p.price || 0));
+    const maxProductCarat = Math.max(...products.map(p => p.carats || 0));
+    
+    // Ensure reasonable default values
+    const defaultMaxPrice = maxProductPrice > 0 ? maxProductPrice : 100000;
+    const defaultMaxCarat = maxProductCarat > 0 ? maxProductCarat : 20;
+    
+    setMaxPrice(defaultMaxPrice);
+    setMaxCarat(defaultMaxCarat);
+    
+    // Only set the range values if they haven't been manually changed
+    if (priceRange[0] === 0 && priceRange[1] === 100000) {
+      setPriceRange([0, defaultMaxPrice]);
+    }
+    
+    if (caratRange[0] === 0 && caratRange[1] === 20) {
+      setCaratRange([0, defaultMaxCarat]);
+    }
+    
+    // Filter categories to only include those with associated products
+    if (categories && categories.length > 0) {
+      const usedCategoryIds = new Set(products.map(p => p.category));
+      setFilteredCategories(
+        categories.filter(category => usedCategoryIds.has(category._id))
+      );
+    }
+  }, [categories, priceRange, caratRange]);
+  
+  // Create debounced fetch function for range inputs
+  const debouncedFetch = useCallback(
+    debounce(() => {
+      fetchProducts();
+    }, 500),
+    [fetchProducts]
+  );
+
+  // Initial fetch on component mount
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
   const toggleCategory = (e) => {
     const categoryId = e.target.value;
@@ -103,12 +273,53 @@ const Bracelets = () => {
 
   // Toggle function for diamond property filters
   const toggleFilter = (value, currentValues, setterFunction) => {
+    // Save scroll position
+    const scrollPosition = window.scrollY;
+    
+    // Update filter values
     if (currentValues.includes(value)) {
       setterFunction((prev) => prev.filter((item) => item !== value));
     } else {
       setterFunction((prev) => [...prev, value]);
     }
+    
+    // Reset to page 1 when filtering
+    setCurrentPage(1);
   };
+
+  // Apply filters immediately when they change
+  useEffect(() => {
+    // Don't fetch on initial mount, as it will be handled by the main useEffect
+    if (!isLoading) {
+      // Use a short timeout to avoid multiple rapid fetches when multiple filters change together
+      const timer = setTimeout(() => {
+        fetchProducts();
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [diamondTypes, metals, metalColors, selectedCategories, sortType]);
+
+  // Update URL with current filter state for shareable links
+  useEffect(() => {
+    const params = new URLSearchParams();
+    
+    if (searchQuery) {
+      params.append('q', searchQuery);
+    }
+    
+    if (selectedCategories.length > 0) {
+      params.append('category', selectedCategories.join(','));
+    }
+    
+    // Only update URL if we have filter parameters
+    if (params.toString()) {
+      navigate(`${location.pathname}?${params.toString()}`, { replace: true });
+    } else if (location.search) {
+      // Clear search parameters if we don't have any
+      navigate(location.pathname, { replace: true });
+    }
+  }, [searchQuery, selectedCategories, navigate, location.pathname]);
 
   // Function to reset all filters
   const resetFilters = () => {
@@ -127,6 +338,8 @@ const Bracelets = () => {
     setCaratRange([0, maxCarat]);
     setPriceRange([0, maxPrice]);
     setSearchQuery("");
+    setSortType("relevant");
+    setCurrentPage(1);
   };
 
   // Search and filter handlers
@@ -143,166 +356,37 @@ const Bracelets = () => {
     setSearchQuery("");
     setIsSearching(false);
   };
-
-  // Filter and sort bracelets
-  useEffect(() => {
-    let filteredProducts = [...bracelets];
-
-    // Apply search filter
-    if (searchQuery) {
-      filteredProducts = filteredProducts.filter((bracelet) =>
-        bracelet.title.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-
-    // Apply category filter
-    if (selectedCategories.length > 0) {
-      filteredProducts = filteredProducts.filter((bracelet) =>
-        selectedCategories.includes(bracelet.category)
-      );
-    }
-
-    // Apply diamond type filter
-    if (diamondTypes.length > 0) {
-      filteredProducts = filteredProducts.filter(
-        (bracelet) =>
-          bracelet.diamondType && diamondTypes.includes(bracelet.diamondType)
-      );
-    }
-
-    // Apply metal filter
-    if (metals.length > 0) {
-      filteredProducts = filteredProducts.filter(
-        (bracelet) => bracelet.metal && metals.includes(bracelet.metal)
-      );
-    }
-
-    // Apply metal color filter
-    if (metalColors.length > 0) {
-      filteredProducts = filteredProducts.filter(
-        (bracelet) =>
-          bracelet.metalColor && metalColors.includes(bracelet.metalColor)
-      );
-    }
-
-    // Carat range filter - handle missing or invalid values
-    filteredProducts = filteredProducts.filter((bracelet) => {
-      // Skip this filter if the product doesn't have carats info
-      if (bracelet.carats === undefined || bracelet.carats === null)
-        return true;
-
-      // Convert to number and ensure valid
-      const caratValue = parseFloat(bracelet.carats);
-      if (isNaN(caratValue)) return true;
-
-      // Apply the range filter
-      return caratValue >= caratRange[0] && caratValue <= caratRange[1];
+  
+  // Handle search submission
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    setCurrentPage(1); // Reset to page 1 when searching
+    fetchProducts();
+  };
+  
+  // Handle page change
+  const handlePageChange = (newPage) => {
+    // Save current scroll position
+    const scrollPosition = window.scrollY;
+    
+    // Update page number
+    setCurrentPage(newPage);
+    
+    // Fetch new data
+    fetchProducts().then(() => {
+      // After fetching, scroll to products section instead of top
+      const productsSection = document.querySelector('.products-grid-section');
+      if (productsSection) {
+        productsSection.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        // If products section not found, maintain current position
+        window.scrollTo({
+          top: scrollPosition,
+          behavior: 'auto'
+        });
+      }
     });
-
-    // Price range filter - handle missing or invalid values
-    filteredProducts = filteredProducts.filter((bracelet) => {
-      // Skip this filter if the product doesn't have price info
-      if (bracelet.price === undefined || bracelet.price === null) return true;
-
-      // Convert to number and ensure valid
-      const priceValue = parseFloat(bracelet.price);
-      if (isNaN(priceValue)) return true;
-
-      // Apply the range filter
-      return priceValue >= priceRange[0] && priceValue <= priceRange[1];
-    });
-
-    // Apply sorting
-    if (sortType === "low-high") {
-      filteredProducts.sort((a, b) => a.price - b.price);
-    } else if (sortType === "high-low") {
-      filteredProducts.sort((a, b) => b.price - a.price);
-    }
-
-    setFilterProducts(filteredProducts);
-    setIsLoading(false);
-  }, [
-    bracelets,
-    searchQuery,
-    selectedCategories,
-    sortType,
-    diamondTypes,
-    metals,
-    metalColors,
-    caratRange,
-    priceRange,
-  ]);
-
-  // Extract unique values for filter options and filter categories
-  useEffect(() => {
-    if (bracelets && bracelets.length > 0) {
-      // Find max price and carat for ranges
-      const maxProductPrice = Math.max(...bracelets.map((p) => p.price || 0));
-      const maxProductCarat = Math.max(...bracelets.map((p) => p.carats || 0));
-
-      // Ensure reasonable default values
-      const defaultMaxPrice = maxProductPrice > 0 ? maxProductPrice : 1000000;
-      const defaultMaxCarat = maxProductCarat > 0 ? maxProductCarat : 10;
-
-      setMaxPrice(defaultMaxPrice);
-      setMaxCarat(defaultMaxCarat);
-
-      // Only set the range values if they haven't been manually changed
-      if (priceRange[0] === 0 && priceRange[1] === 100000) {
-        setPriceRange([0, defaultMaxPrice]);
-      }
-
-      if (caratRange[0] === 0 && caratRange[1] === 20) {
-        setCaratRange([0, defaultMaxCarat]);
-      }
-
-      // Extract unique values
-      setUniqueDiamondTypes([
-        ...new Set(
-          bracelets.filter((p) => p.diamondType).map((p) => p.diamondType)
-        ),
-      ]);
-      setUniqueMetals([
-        ...new Set(bracelets.filter((p) => p.metal).map((p) => p.metal)),
-      ]);
-      setUniqueMetalColors([
-        ...new Set(
-          bracelets.filter((p) => p.metalColor).map((p) => p.metalColor)
-        ),
-      ]);
-
-      // Filter categories to only include those with associated products
-      if (categories && categories.length > 0) {
-        const usedCategoryIds = [...new Set(bracelets.map((p) => p.category))];
-        setFilteredCategories(
-          categories.filter((category) =>
-            usedCategoryIds.includes(category._id)
-          )
-        );
-      }
-    }
-  }, [bracelets, categories, priceRange, caratRange]);
-
-  // Reset form when there are no products or categories to show
-  useEffect(() => {
-    if (bracelets.length === 0 || filteredCategories.length === 0) {
-      setSelectedCategories([]);
-    }
-  }, [bracelets, filteredCategories]);
-
-  // Clear selected categories if they no longer exist in filtered categories
-  useEffect(() => {
-    if (selectedCategories.length > 0 && filteredCategories.length > 0) {
-      const validCategoryIds = filteredCategories.map((cat) => cat._id);
-      const validSelectedCategories = selectedCategories.filter((id) =>
-        validCategoryIds.includes(id)
-      );
-
-      if (validSelectedCategories.length !== selectedCategories.length) {
-        setSelectedCategories(validSelectedCategories);
-      }
-    }
-  }, [filteredCategories, selectedCategories]);
+  };
 
   // Add CSS for range sliders
   const rangeSliderStyles = `
@@ -464,7 +548,7 @@ const Bracelets = () => {
 
         {/* Search Bar */}
         <div className="w-full mb-8">
-          <div className="relative flex items-center mb-4">
+          <form onSubmit={handleSearchSubmit} className="relative flex items-center mb-4">
             <div className="relative flex-grow">
               <input
                 type="text"
@@ -478,6 +562,7 @@ const Bracelets = () => {
               </div>
               {searchQuery && (
                 <button
+                  type="button"
                   onClick={clearSearch}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
                 >
@@ -485,7 +570,13 @@ const Bracelets = () => {
                 </button>
               )}
             </div>
-          </div>
+            <button
+              type="submit"
+              className="ml-2 px-6 py-3 bg-gray-900 text-white rounded-lg hidden sm:block"
+            >
+              Search
+            </button>
+          </form>
         </div>
 
         {/* Main Layout - Three Section Design */}
@@ -507,9 +598,9 @@ const Bracelets = () => {
                     {uniqueDiamondTypes.map((type) => (
                       <button
                         key={type}
-                        onClick={() =>
-                          toggleFilter(type, diamondTypes, setDiamondTypes)
-                        }
+                        onClick={() => {
+                          toggleFilter(type, diamondTypes, setDiamondTypes);
+                        }}
                         className={`px-3 py-1 text-xs rounded-full ${
                           diamondTypes.includes(type)
                             ? "bg-gray-900 text-white shadow-md"
@@ -533,7 +624,9 @@ const Bracelets = () => {
                     {uniqueMetals.map((metal) => (
                       <button
                         key={metal}
-                        onClick={() => toggleFilter(metal, metals, setMetals)}
+                        onClick={() => {
+                          toggleFilter(metal, metals, setMetals);
+                        }}
                         className={`px-3 py-1 text-xs rounded-full ${
                           metals.includes(metal)
                             ? "bg-gray-900 text-white shadow-md"
@@ -557,9 +650,9 @@ const Bracelets = () => {
                     {uniqueMetalColors.map((color) => (
                       <button
                         key={color}
-                        onClick={() =>
-                          toggleFilter(color, metalColors, setMetalColors)
-                        }
+                        onClick={() => {
+                          toggleFilter(color, metalColors, setMetalColors);
+                        }}
                         className={`px-3 py-1 text-xs rounded-full ${
                           metalColors.includes(color)
                             ? "bg-gray-900 text-white shadow-md"
@@ -597,6 +690,7 @@ const Bracelets = () => {
                             // Calculate a safe maximum that ensures we don't exceed the max value
                             const safeMax = Math.min(value, priceRange[1] - 1);
                             setPriceRange([safeMax, priceRange[1]]);
+                            debouncedFetch();
                           }}
                           className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
                         />
@@ -621,6 +715,7 @@ const Bracelets = () => {
                               priceRange[0],
                               Math.max(value, priceRange[0] + 1),
                             ]);
+                            debouncedFetch();
                           }}
                           className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
                         />
@@ -654,6 +749,7 @@ const Bracelets = () => {
                             parseFloat(safeMax.toFixed(2)),
                             caratRange[1],
                           ]);
+                          debouncedFetch();
                         }}
                         className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                       />
@@ -676,6 +772,7 @@ const Bracelets = () => {
                               Math.max(value, caratRange[0] + 0.001).toFixed(2)
                             ),
                           ]);
+                          debouncedFetch();
                         }}
                         className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                       />
@@ -734,13 +831,9 @@ const Bracelets = () => {
                             {uniqueDiamondTypes.map((type) => (
                               <button
                                 key={type}
-                                onClick={() =>
-                                  toggleFilter(
-                                    type,
-                                    diamondTypes,
-                                    setDiamondTypes
-                                  )
-                                }
+                                onClick={() => {
+                                  toggleFilter(type, diamondTypes, setDiamondTypes);
+                                }}
                                 className={`px-3 py-1 text-xs rounded-full ${
                                   diamondTypes.includes(type)
                                     ? "bg-gray-900 text-white"
@@ -764,9 +857,9 @@ const Bracelets = () => {
                             {uniqueMetals.map((metal) => (
                               <button
                                 key={metal}
-                                onClick={() =>
-                                  toggleFilter(metal, metals, setMetals)
-                                }
+                                onClick={() => {
+                                  toggleFilter(metal, metals, setMetals);
+                                }}
                                 className={`px-3 py-1 text-xs rounded-full ${
                                   metals.includes(metal)
                                     ? "bg-gray-900 text-white"
@@ -790,13 +883,9 @@ const Bracelets = () => {
                             {uniqueMetalColors.map((color) => (
                               <button
                                 key={color}
-                                onClick={() =>
-                                  toggleFilter(
-                                    color,
-                                    metalColors,
-                                    setMetalColors
-                                  )
-                                }
+                                onClick={() => {
+                                  toggleFilter(color, metalColors, setMetalColors);
+                                }}
                                 className={`px-3 py-1 text-xs rounded-full ${
                                   metalColors.includes(color)
                                     ? "bg-gray-900 text-white"
@@ -837,6 +926,7 @@ const Bracelets = () => {
                                       priceRange[1] - 1
                                     );
                                     setPriceRange([safeMax, priceRange[1]]);
+                                    debouncedFetch();
                                   }}
                                   className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
                                 />
@@ -863,6 +953,7 @@ const Bracelets = () => {
                                       priceRange[0],
                                       Math.max(value, priceRange[0] + 1),
                                     ]);
+                                    debouncedFetch();
                                   }}
                                   className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
                                 />
@@ -896,6 +987,7 @@ const Bracelets = () => {
                                     parseFloat(safeMax.toFixed(2)),
                                     caratRange[1],
                                   ]);
+                                  debouncedFetch();
                                 }}
                                 className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                               />
@@ -917,12 +1009,10 @@ const Bracelets = () => {
                                   setCaratRange([
                                     caratRange[0],
                                     parseFloat(
-                                      Math.max(
-                                        value,
-                                        caratRange[0] + 0.001
-                                      ).toFixed(2)
+                                      Math.max(value, caratRange[0] + 0.001).toFixed(2)
                                     ),
                                   ]);
+                                  debouncedFetch();
                                 }}
                                 className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                               />
@@ -934,7 +1024,10 @@ const Bracelets = () => {
 
                     {/* Clear All Filters Button */}
                     <button
-                      onClick={clearFilters}
+                      onClick={() => {
+                        clearFilters();
+                        setTimeout(() => fetchProducts(), 100); // Small delay to allow state to update
+                      }}
                       className="w-full py-2 bg-black text-white rounded-lg text-sm font-medium"
                     >
                       Clear All Filters
@@ -1050,6 +1143,8 @@ const Bracelets = () => {
                           onClick={() => {
                             setSortType(option.value);
                             setShowSortOptions(false);
+                            setCurrentPage(1); // Reset to page 1
+                            setTimeout(() => fetchProducts(), 100); // Small delay to allow state to update
                           }}
                           className={`block w-full text-left px-4 py-2 hover:bg-gray-100 ${
                             sortType === option.value
@@ -1088,7 +1183,7 @@ const Bracelets = () => {
                   </button>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 products-grid-section">
                   <AnimatePresence>
                     {filterProducts.map((bracelet, index) => (
                       <motion.div
@@ -1110,23 +1205,73 @@ const Bracelets = () => {
               )}
 
               {/* Pagination */}
-              {/* Uncomment and implement if pagination is needed */}
-              {/* <div className="mt-8 flex justify-center">
+              {totalPages > 1 && (
+                <div className="mt-8 flex justify-center">
                   <nav className="flex items-center">
-                    <button className="p-2 rounded-md hover:bg-gray-100">
-                      <FaChevronLeft className="h-5 w-5 text-gray-500" />
+                    <button 
+                      onClick={() => {
+                        if (currentPage > 1) {
+                          handlePageChange(currentPage - 1);
+                        }
+                      }}
+                      disabled={currentPage === 1}
+                      className={`p-2 rounded-md ${currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'hover:bg-gray-100 text-gray-500'}`}
+                    >
+                      <FaChevronLeft className="h-5 w-5" />
                     </button>
-                    <button className="mx-1 px-4 py-2 rounded-md bg-gray-900 text-white">
-                      1
-                    </button>
-                    <button className="mx-1 px-4 py-2 rounded-md hover:bg-gray-100">
-                      2
-                    </button>
-                    <button className="p-2 rounded-md hover:bg-gray-100">
-                      <FaChevronRight className="h-5 w-5 text-gray-500" />
+                    
+                    {/* Generate page numbers */}
+                    {[...Array(totalPages)].map((_, index) => {
+                      const pageNum = index + 1;
+                      
+                      // Only show a limited number of pages to avoid clutter
+                      if (
+                        pageNum === 1 || 
+                        pageNum === totalPages || 
+                        (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
+                      ) {
+                        return (
+                          <button
+                            key={pageNum}
+                            onClick={() => {
+                              handlePageChange(pageNum);
+                            }}
+                            className={`mx-1 px-4 py-2 rounded-md ${
+                              currentPage === pageNum
+                                ? "bg-gray-900 text-white"
+                                : "hover:bg-gray-100"
+                            }`}
+                          >
+                            {pageNum}
+                          </button>
+                        );
+                      }
+                      
+                      // Add ellipsis for skipped pages
+                      if (
+                        (pageNum === currentPage - 2 && pageNum > 1) ||
+                        (pageNum === currentPage + 2 && pageNum < totalPages)
+                      ) {
+                        return <span key={`ellipsis-${pageNum}`} className="mx-1">...</span>;
+                      }
+                      
+                      return null;
+                    })}
+                    
+                    <button 
+                      onClick={() => {
+                        if (currentPage < totalPages) {
+                          handlePageChange(currentPage + 1);
+                        }
+                      }}
+                      disabled={currentPage === totalPages}
+                      className={`p-2 rounded-md ${currentPage === totalPages ? 'text-gray-300 cursor-not-allowed' : 'hover:bg-gray-100 text-gray-500'}`}
+                    >
+                      <FaChevronRight className="h-5 w-5" />
                     </button>
                   </nav>
-                </div> */}
+                </div>
+              )}
             </div>
           </div>
         </div>

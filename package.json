@@ -1,6 +1,14 @@
 {
+  "name": "ecommerce-app",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd back-end && npm run start",
+    "install:all": "npm install && cd frontend && npm install && cd ../back-end && npm install"
+  },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
+    "concurrently": "^8.2.2",
     "react-icons": "^5.4.0"
   }
 }

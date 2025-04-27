@@ -4,12 +4,13 @@ import React, {
   useState,
   useCallback,
   useRef,
+  useMemo,
 } from "react";
-import { ShopContext } from "../../../context/ShopContext";
+import { ShopContext } from "../../../context/ShopContext.jsx";
 import Title from "../../../components/Title";
 import GalleryItem from "../../../components/Home/GalleryItem";
 import { assets } from "../../../assets/assets";
-import { useCategories } from "../../../../hooks/useCategories";
+import { useCategories } from "../../../../hooks/useCategories.js";
 import NewsletterBox from "../../../components/NewsletterBox";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -26,6 +27,8 @@ import {
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { useLocation, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { debounce } from "lodash";
 
 const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const backendURL_WITHOUT_API = VITE_BACKEND_URL.replace("/api", "");
@@ -37,19 +40,25 @@ const Necklaces = () => {
   const query = searchParams.get("q") || "";
   const categoryParam = searchParams.get("category") || "";
 
-  // Data store
+  // Data store - Get necklaces from ShopContext
   const { necklaces } = useContext(ShopContext);
-  console.log(necklaces);
 
   // Core filtering states
   const [selectedCategories, setSelectedCategories] = useState(
     categoryParam ? [categoryParam] : []
   );
   const [searchQuery, setSearchQuery] = useState(query || "");
+  const [products, setProducts] = useState([]);
   const [filterProducts, setFilterProducts] = useState([]);
   const [showClearFilter, setShowClearFilter] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [sortType, setSortType] = useState("relevant");
+  
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [limit, setLimit] = useState(12);
 
   // Additional UI state
   const [showFilter, setShowFilter] = useState(false);
@@ -81,39 +90,371 @@ const Necklaces = () => {
   // Define sort options
   const sortOptions = [
     { value: "relevant", label: "Relevance" },
-    { value: "low-high", label: "Price: Low to High" },
-    { value: "high-low", label: "Price: High to Low" },
+    { value: "price:asc", label: "Price: Low to High" },
+    { value: "price:desc", label: "Price: High to Low" },
   ];
 
-  const toggleCategory = (e) => {
-    const categoryId = e.target.value;
-    if (selectedCategories.includes(categoryId)) {
-      setSelectedCategories(
-        selectedCategories.filter((id) => id !== categoryId)
-      );
-    } else {
-      setSelectedCategories([...selectedCategories, categoryId]);
+  // Ref to track first mount
+  const isFirstMount = useRef(true);
+
+  // Refs for values that shouldn't trigger fetchProducts recreation
+  const currentPageRef = useRef(currentPage);
+  const limitRef = useRef(limit);
+  const searchQueryRef = useRef(searchQuery);
+  const selectedCategoriesRef = useRef(selectedCategories);
+  const diamondTypesRef = useRef(diamondTypes);
+  const metalsRef = useRef(metals);
+  const metalColorsRef = useRef(metalColors);
+  const caratRangeRef = useRef(caratRange);
+  const priceRangeRef = useRef(priceRange);
+  const sortTypeRef = useRef(sortType);
+  const maxCaratRef = useRef(maxCarat);
+  const maxPriceRef = useRef(maxPrice);
+
+  // Update refs when values change
+  useEffect(() => {
+    currentPageRef.current = currentPage;
+    limitRef.current = limit;
+    searchQueryRef.current = searchQuery;
+    selectedCategoriesRef.current = selectedCategories;
+    diamondTypesRef.current = diamondTypes;
+    metalsRef.current = metals;
+    metalColorsRef.current = metalColors;
+    caratRangeRef.current = caratRange;
+    priceRangeRef.current = priceRange;
+    sortTypeRef.current = sortType;
+    maxCaratRef.current = maxCarat;
+    maxPriceRef.current = maxPrice;
+  }, [
+    currentPage, 
+    limit, 
+    searchQuery, 
+    selectedCategories, 
+    diamondTypes, 
+    metals, 
+    metalColors, 
+    caratRange, 
+    priceRange, 
+    sortType,
+    maxCarat,
+    maxPrice
+  ]);
+
+  // Function to extract unique filter values from products
+  const extractUniqueFilterValues = useCallback((products) => {
+    if (!products || products.length === 0) return;
+    
+    // Extract unique diamond types
+    const uniqueDiamondTypesSet = new Set();
+    products.forEach(product => {
+      if (product.diamondType) uniqueDiamondTypesSet.add(product.diamondType);
+    });
+    setUniqueDiamondTypes(Array.from(uniqueDiamondTypesSet));
+    
+    // Extract unique metals
+    const uniqueMetalsSet = new Set();
+    products.forEach(product => {
+      if (product.metal) uniqueMetalsSet.add(product.metal);
+    });
+    setUniqueMetals(Array.from(uniqueMetalsSet));
+    
+    // Extract unique metal colors
+    const uniqueMetalColorsSet = new Set();
+    products.forEach(product => {
+      if (product.metalColor) uniqueMetalColorsSet.add(product.metalColor);
+    });
+    setUniqueMetalColors(Array.from(uniqueMetalColorsSet));
+    
+    // Find max price and carat for ranges
+    const maxProductPrice = Math.max(...products.map(p => p.price || 0));
+    const maxProductCarat = Math.max(...products.map(p => p.carats || 0));
+    
+    // Ensure reasonable default values
+    const defaultMaxPrice = maxProductPrice > 0 ? maxProductPrice : 100000;
+    const defaultMaxCarat = maxProductCarat > 0 ? maxProductCarat : 20;
+    
+    setMaxPrice(defaultMaxPrice);
+    setMaxCarat(defaultMaxCarat);
+    
+    // Only set the range values if they haven't been manually changed
+    if (priceRange[0] === 0 && priceRange[1] === 100000) {
+      setPriceRange([0, defaultMaxPrice]);
+      priceRangeRef.current = [0, defaultMaxPrice];
     }
+    
+    if (caratRange[0] === 0 && caratRange[1] === 20) {
+      setCaratRange([0, defaultMaxCarat]);
+      caratRangeRef.current = [0, defaultMaxCarat];
+    }
+    
+    // Filter categories to only include those with associated products
+    if (categories && categories.length > 0) {
+      const usedCategoryIds = new Set(products.map(p => p.category));
+      setFilteredCategories(
+        categories.filter(category => usedCategoryIds.has(category._id))
+      );
+    }
+  }, [categories, priceRange, caratRange]);
+
+  // Fetch products from the API
+  const fetchProducts = useCallback(async () => {
+    // Save current scroll position before loading
+    const scrollPosition = window.scrollY;
+    
+    setIsLoading(true);
+    try {
+      // Prepare query parameters
+      const params = new URLSearchParams();
+      
+      // Pagination
+      params.append('page', currentPageRef.current);
+      params.append('limit', limitRef.current);
+      
+      // Search query
+      if (searchQueryRef.current) {
+        params.append('search', searchQueryRef.current);
+      }
+      
+      // Category
+      if (selectedCategoriesRef.current.length > 0) {
+        params.append('category', selectedCategoriesRef.current.join(','));
+      }
+      
+      // Diamond Types
+      if (diamondTypesRef.current.length > 0) {
+        params.append('diamondType', diamondTypesRef.current.join(','));
+      }
+      
+      // Metals
+      if (metalsRef.current.length > 0) {
+        params.append('metal', metalsRef.current.join(','));
+      }
+      
+      // Metal Colors
+      if (metalColorsRef.current.length > 0) {
+        params.append('metalColor', metalColorsRef.current.join(','));
+      }
+      
+      // Carat Range
+      if (caratRangeRef.current[0] > 0) {
+        params.append('minCarat', caratRangeRef.current[0]);
+      }
+      if (caratRangeRef.current[1] < maxCaratRef.current) {
+        params.append('maxCarat', caratRangeRef.current[1]);
+      }
+      
+      // Price Range
+      if (priceRangeRef.current[0] > 0) {
+        params.append('minPrice', priceRangeRef.current[0]);
+      }
+      if (priceRangeRef.current[1] < maxPriceRef.current) {
+        params.append('maxPrice', priceRangeRef.current[1]);
+      }
+      
+      // Sort
+      if (sortTypeRef.current !== 'relevant') {
+        params.append('sort', sortTypeRef.current);
+      }
+      
+      const response = await axios.get(`${VITE_BACKEND_URL}/product/jewelery/necklaces`, { params });
+      
+      console.log("Necklaces API response:", response.data);
+      
+      // Update state with the response data
+      setProducts(response.data.products);
+      setFilterProducts(response.data.products);
+      setTotalCount(response.data.totalProductsCount);
+      setTotalPages(response.data.totalPages);
+      setCurrentPage(response.data.currentPage);
+      
+      // Extract unique filter values from the products
+      extractUniqueFilterValues(response.data.products);
+    } catch (error) {
+      console.error("Error fetching necklace products:", error);
+      // Use the necklaces from context as fallback if API call fails
+      if (necklaces && necklaces.length > 0) {
+        setProducts(necklaces);
+        setFilterProducts(necklaces);
+        setTotalPages(Math.ceil(necklaces.length / limit));
+        setTotalCount(necklaces.length);
+        extractUniqueFilterValues(necklaces);
+      }
+    } finally {
+      setIsLoading(false);
+      
+      // Restore scroll position after loading completes
+      setTimeout(() => {
+        window.scrollTo({
+          top: scrollPosition,
+          behavior: 'auto' // Use 'auto' instead of 'smooth' to prevent visible scrolling
+        });
+      }, 0);
+    }
+  }, [extractUniqueFilterValues, necklaces, limit]);
+
+  // Create debounced fetch function for range inputs
+  const debouncedFetch = useCallback(
+    debounce(() => {
+      fetchProducts();
+    }, 500),
+    [fetchProducts]
+  );
+
+  // Input change handlers for range inputs
+  const handlePriceMinChange = (value) => {
+    if (isNaN(value)) return;
+    // Calculate a safe maximum that ensures we don't exceed the max value
+    const safeMin = Math.min(value, priceRange[1] - 1);
+    const newRange = [safeMin, priceRange[1]];
+    setPriceRange(newRange);
+    priceRangeRef.current = newRange;
+    debouncedFetch();
   };
+
+  const handlePriceMaxChange = (value) => {
+    if (isNaN(value)) return;
+    // Calculate a safe minimum that ensures we're at least 1 more than the min value
+    const newRange = [priceRange[0], Math.max(value, priceRange[0] + 1)];
+    setPriceRange(newRange);
+    priceRangeRef.current = newRange;
+    debouncedFetch();
+  };
+
+  const handleCaratMinChange = (value) => {
+    if (isNaN(value)) return;
+    // Calculate a safe maximum that ensures we don't exceed the max value
+    const safeMin = Math.min(value, caratRange[1] - 0.001);
+    const newRange = [parseFloat(safeMin.toFixed(2)), caratRange[1]];
+    setCaratRange(newRange);
+    caratRangeRef.current = newRange;
+    debouncedFetch();
+  };
+
+  const handleCaratMaxChange = (value) => {
+    if (isNaN(value)) return;
+    // Calculate a safe minimum that ensures we're at least 0.001 more than the min value
+    const newRange = [
+      caratRange[0],
+      parseFloat(Math.max(value, caratRange[0] + 0.001).toFixed(2))
+    ];
+    setCaratRange(newRange);
+    caratRangeRef.current = newRange;
+    debouncedFetch();
+  };
+
+  // Initial fetch on component mount
+  useEffect(() => {
+    // If necklaces are already available in context, use them initially
+    if (necklaces && necklaces.length > 0) {
+      setProducts(necklaces);
+      setFilterProducts(necklaces);
+      setTotalPages(Math.ceil(necklaces.length / limit));
+      setTotalCount(necklaces.length);
+      extractUniqueFilterValues(necklaces);
+      setIsLoading(false);
+    }
+    
+    // Only fetch from API on first mount
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      fetchProducts();
+    }
+  }, [fetchProducts, necklaces, limit]);
 
   // Toggle function for diamond property filters
-  const toggleFilter = (value, currentValues, setterFunction) => {
-    if (currentValues.includes(value)) {
-      setterFunction((prev) => prev.filter((item) => item !== value));
-    } else {
-      setterFunction((prev) => [...prev, value]);
+  const toggleFilter = (value, currentValues, setterFunction, refValue) => {
+    // Save scroll position
+    const scrollPosition = window.scrollY;
+    
+    // Update filter values
+    const newValues = currentValues.includes(value)
+      ? currentValues.filter((item) => item !== value)
+      : [...currentValues, value];
+    
+    // Update state
+    setterFunction(newValues);
+    
+    // Update ref directly for immediate use
+    if (refValue) {
+      refValue.current = newValues;
     }
+    
+    // Reset to page 1 when filtering
+    setCurrentPage(1);
+    currentPageRef.current = 1;
+    
+    // Fetch updated results
+    setTimeout(() => fetchProducts(), 100);
   };
 
-  // Function to reset all advanced filters
-  const resetAdvancedFilters = () => {
-    setDiamondTypes([]);
-    setMetals([]);
-    setMetalColors([]);
-    setCaratRange([0, maxCarat]);
-    setPriceRange([0, maxPrice]);
+  // Apply filters immediately when they change
+  useEffect(() => {
+    // Don't fetch on initial mount, as it will be handled by the main useEffect
+    if (!isLoading) {
+      // Use a short timeout to avoid multiple rapid fetches when multiple filters change together
+      const timer = setTimeout(() => {
+        fetchProducts();
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [diamondTypes, metals, metalColors, selectedCategories, sortType]);
+
+  // Update URL with current filter state for shareable links
+  useEffect(() => {
+    const params = new URLSearchParams();
+    
+    if (searchQuery) {
+      params.append('q', searchQuery);
+    }
+    
+    if (selectedCategories.length > 0) {
+      params.append('category', selectedCategories.join(','));
+    }
+    
+    // Only update URL if we have filter parameters
+    if (params.toString()) {
+      navigate(`${location.pathname}?${params.toString()}`, { replace: true });
+    } else if (location.search) {
+      // Clear search parameters if we don't have any
+      navigate(location.pathname, { replace: true });
+    }
+  }, [searchQuery, selectedCategories, navigate, location.pathname]);
+
+  // Handle page change
+  const handlePageChange = (newPage) => {
+    // Save current scroll position
+    const scrollPosition = window.scrollY;
+    
+    // Update page number
+    setCurrentPage(newPage);
+    currentPageRef.current = newPage;
+    
+    // Fetch new data
+    fetchProducts().then(() => {
+      // After fetching, scroll to products section instead of top
+      const productsSection = document.querySelector('.products-grid-section');
+      if (productsSection) {
+        productsSection.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        // If products section not found, maintain current position
+        window.scrollTo({
+          top: scrollPosition,
+          behavior: 'auto'
+        });
+      }
+    });
   };
 
+  // Handle search submission
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    setCurrentPage(1); // Reset to page 1 when searching
+    currentPageRef.current = 1;
+    fetchProducts();
+  };
+
+  // Clear all filters and reload results
   const clearFilters = () => {
     setSelectedCategories([]);
     setDiamondTypes([]);
@@ -122,11 +463,47 @@ const Necklaces = () => {
     setCaratRange([0, maxCarat]);
     setPriceRange([0, maxPrice]);
     setSearchQuery("");
+    setSortType("relevant");
+    setCurrentPage(1);
+    
+    // Update refs immediately to avoid stale data
+    selectedCategoriesRef.current = [];
+    diamondTypesRef.current = [];
+    metalsRef.current = [];
+    metalColorsRef.current = [];
+    caratRangeRef.current = [0, maxCarat];
+    priceRangeRef.current = [0, maxPrice];
+    searchQueryRef.current = "";
+    sortTypeRef.current = "relevant";
+    currentPageRef.current = 1;
+    
+    // Use timeout to ensure state updates have propagated
+    setTimeout(() => fetchProducts(), 100);
   };
 
-  // Search and filter handlers
+  // Function to reset all filters
+  const resetFilters = () => {
+    setDiamondTypes([]);
+    setMetals([]);
+    setMetalColors([]);
+    setCaratRange([0, maxCarat]);
+    setPriceRange([0, maxPrice]);
+    
+    // Update refs immediately
+    diamondTypesRef.current = [];
+    metalsRef.current = [];
+    metalColorsRef.current = [];
+    caratRangeRef.current = [0, maxCarat];
+    priceRangeRef.current = [0, maxPrice];
+    
+    // Fetch updated results
+    setTimeout(() => fetchProducts(), 100);
+  };
+
+  // Search handler
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
+    searchQueryRef.current = e.target.value;
     setIsSearching(true);
     // Implement debounce logic here if needed
     setTimeout(() => {
@@ -134,131 +511,17 @@ const Necklaces = () => {
     }, 500);
   };
 
+  // Clear search function
   const clearSearch = () => {
     setSearchQuery("");
+    searchQueryRef.current = "";
     setIsSearching(false);
-  };
-
-  // Filter and sort bracelets
-  useEffect(() => {
-    let filteredProducts = [...necklaces];
-
-    // Apply search filter
+    
+    // If search was active, reload results
     if (searchQuery) {
-      filteredProducts = filteredProducts.filter((necklace) =>
-        necklace.title.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      setTimeout(() => fetchProducts(), 100);
     }
-
-    // Apply category filter
-    if (selectedCategories.length > 0) {
-      filteredProducts = filteredProducts.filter((necklace) =>
-        selectedCategories.includes(necklace.category)
-      );
-    }
-
-    // Apply advanced diamond filters
-    // Shape filter
-    if (diamondTypes.length > 0) {
-      filteredProducts = filteredProducts.filter(
-        (necklace) => necklace.shape && diamondTypes.includes(necklace.shape)
-      );
-    }
-
-    // Color filter
-    if (metalColors.length > 0) {
-      filteredProducts = filteredProducts.filter(
-        (necklace) => necklace.col && metalColors.includes(necklace.col)
-      );
-    }
-
-    // Carat range filter
-    filteredProducts = filteredProducts.filter(
-      (necklace) =>
-        !necklace.carats ||
-        (necklace.carats >= caratRange[0] && necklace.carats <= caratRange[1])
-    );
-
-    // Price range filter
-    filteredProducts = filteredProducts.filter(
-      (necklace) =>
-        necklace.price >= priceRange[0] && necklace.price <= priceRange[1]
-    );
-
-    // Apply sorting
-    if (sortType === "low-high") {
-      filteredProducts.sort((a, b) => a.price - b.price);
-    } else if (sortType === "high-low") {
-      filteredProducts.sort((a, b) => b.price - a.price);
-    }
-
-    setFilterProducts(filteredProducts);
-    setIsLoading(false);
-  }, [
-    necklaces,
-    searchQuery,
-    selectedCategories,
-    sortType,
-    diamondTypes,
-    metalColors,
-    caratRange,
-    priceRange,
-  ]);
-
-  // Extract unique values for filter options and filter categories
-  useEffect(() => {
-    if (necklaces && necklaces.length > 0) {
-      // Find max price and carat for ranges
-      const maxProductPrice = Math.max(...necklaces.map((p) => p.price || 0));
-      const maxProductCarat = Math.max(...necklaces.map((p) => p.carats || 0));
-      setMaxPrice(maxProductPrice > 0 ? maxProductPrice : 1000000);
-      setMaxCarat(maxProductCarat > 0 ? maxProductCarat : 10);
-      setPriceRange([0, maxProductPrice > 0 ? maxProductPrice : 1000000]);
-      setCaratRange([0, maxProductCarat > 0 ? maxProductCarat : 10]);
-
-      // Extract unique values
-      setUniqueDiamondTypes([
-        ...new Set(necklaces.filter((p) => p.shape).map((p) => p.shape)),
-      ]);
-      setUniqueMetals([
-        ...new Set(necklaces.filter((p) => p.metal).map((p) => p.metal)),
-      ]);
-      setUniqueMetalColors([
-        ...new Set(necklaces.filter((p) => p.col).map((p) => p.col)),
-      ]);
-
-      // Filter categories to only include those with associated products
-      if (categories && categories.length > 0) {
-        const usedCategoryIds = [...new Set(necklaces.map((p) => p.category))];
-        setFilteredCategories(
-          categories.filter((category) =>
-            usedCategoryIds.includes(category._id)
-          )
-        );
-      }
-    }
-  }, [necklaces, categories]);
-
-  // Reset form when there are no products or categories to show
-  useEffect(() => {
-    if (necklaces.length === 0 || filteredCategories.length === 0) {
-      setSelectedCategories([]);
-    }
-  }, [necklaces, filteredCategories]);
-
-  // Clear selected categories if they no longer exist in filtered categories
-  useEffect(() => {
-    if (selectedCategories.length > 0 && filteredCategories.length > 0) {
-      const validCategoryIds = filteredCategories.map((cat) => cat._id);
-      const validSelectedCategories = selectedCategories.filter((id) =>
-        validCategoryIds.includes(id)
-      );
-
-      if (validSelectedCategories.length !== selectedCategories.length) {
-        setSelectedCategories(validSelectedCategories);
-      }
-    }
-  }, [filteredCategories, selectedCategories]);
+  };
 
   // Add CSS for range sliders
   const rangeSliderStyles = `
@@ -420,7 +683,7 @@ const Necklaces = () => {
 
         {/* Search Bar */}
         <div className="w-full mb-8">
-          <div className="relative flex items-center mb-4">
+          <form onSubmit={handleSearchSubmit} className="relative flex items-center mb-4">
             <div className="relative flex-grow">
               <input
                 type="text"
@@ -434,6 +697,7 @@ const Necklaces = () => {
               </div>
               {searchQuery && (
                 <button
+                  type="button"
                   onClick={clearSearch}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
                 >
@@ -441,7 +705,13 @@ const Necklaces = () => {
                 </button>
               )}
             </div>
-          </div>
+            <button
+              type="submit"
+              className="ml-2 px-6 py-3 bg-gray-900 text-white rounded-lg hidden sm:block"
+            >
+              Search
+            </button>
+          </form>
         </div>
 
         {/* Main Layout - Three Section Design */}
@@ -463,8 +733,8 @@ const Necklaces = () => {
                     {uniqueDiamondTypes.map((type) => (
                       <button
                         key={type}
-                        onClick={() =>
-                          toggleFilter(type, diamondTypes, setDiamondTypes)
+                        onClick={(e) =>
+                          toggleFilter(type, diamondTypes, setDiamondTypes, diamondTypesRef)
                         }
                         className={`px-3 py-1 text-xs rounded-full ${
                           diamondTypes.includes(type)
@@ -489,7 +759,9 @@ const Necklaces = () => {
                     {uniqueMetals.map((metal) => (
                       <button
                         key={metal}
-                        onClick={() => toggleFilter(metal, metals, setMetals)}
+                        onClick={(e) =>
+                          toggleFilter(metal, metals, setMetals, metalsRef)
+                        }
                         className={`px-3 py-1 text-xs rounded-full ${
                           metals.includes(metal)
                             ? "bg-gray-900 text-white shadow-md"
@@ -513,8 +785,8 @@ const Necklaces = () => {
                     {uniqueMetalColors.map((color) => (
                       <button
                         key={color}
-                        onClick={() =>
-                          toggleFilter(color, metalColors, setMetalColors)
+                        onClick={(e) =>
+                          toggleFilter(color, metalColors, setMetalColors, metalColorsRef)
                         }
                         className={`px-3 py-1 text-xs rounded-full ${
                           metalColors.includes(color)
@@ -547,13 +819,7 @@ const Necklaces = () => {
                           min={0}
                           max={maxPrice}
                           value={priceRange[0]}
-                          onChange={(e) => {
-                            const value = parseInt(e.target.value);
-                            if (isNaN(value)) return;
-                            // Calculate a safe maximum that ensures we don't exceed the max value
-                            const safeMax = Math.min(value, priceRange[1] - 1);
-                            setPriceRange([safeMax, priceRange[1]]);
-                          }}
+                          onChange={(e) => handlePriceMinChange(parseInt(e.target.value))}
                           className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
                         />
                       </div>
@@ -569,15 +835,7 @@ const Necklaces = () => {
                           min={0}
                           max={maxPrice}
                           value={priceRange[1]}
-                          onChange={(e) => {
-                            const value = parseInt(e.target.value);
-                            if (isNaN(value)) return;
-                            // Calculate a safe minimum that ensures we're at least 1 more than the min value
-                            setPriceRange([
-                              priceRange[0],
-                              Math.max(value, priceRange[0] + 1),
-                            ]);
-                          }}
+                          onChange={(e) => handlePriceMaxChange(parseInt(e.target.value))}
                           className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
                         />
                       </div>
@@ -598,19 +856,7 @@ const Necklaces = () => {
                         max={maxCarat}
                         step="0.01"
                         value={caratRange[0]}
-                        onChange={(e) => {
-                          const value = parseFloat(e.target.value);
-                          if (isNaN(value)) return;
-                          // Calculate a safe maximum that ensures we don't exceed the max value
-                          const safeMax = Math.min(
-                            value,
-                            caratRange[1] - 0.001
-                          );
-                          setCaratRange([
-                            parseFloat(safeMax.toFixed(2)),
-                            caratRange[1],
-                          ]);
-                        }}
+                        onChange={(e) => handleCaratMinChange(parseFloat(e.target.value))}
                         className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                       />
                     </div>
@@ -622,17 +868,7 @@ const Necklaces = () => {
                         max={maxCarat}
                         step="0.01"
                         value={caratRange[1]}
-                        onChange={(e) => {
-                          const value = parseFloat(e.target.value);
-                          if (isNaN(value)) return;
-                          // Calculate a safe minimum that ensures we're at least 0.001 more than the min value
-                          setCaratRange([
-                            caratRange[0],
-                            parseFloat(
-                              Math.max(value, caratRange[0] + 0.001).toFixed(2)
-                            ),
-                          ]);
-                        }}
+                        onChange={(e) => handleCaratMaxChange(parseFloat(e.target.value))}
                         className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                       />
                     </div>
@@ -689,12 +925,8 @@ const Necklaces = () => {
                             {uniqueDiamondTypes.map((type) => (
                               <button
                                 key={type}
-                                onClick={() =>
-                                  toggleFilter(
-                                    type,
-                                    diamondTypes,
-                                    setDiamondTypes
-                                  )
+                                onClick={(e) =>
+                                  toggleFilter(type, diamondTypes, setDiamondTypes, diamondTypesRef)
                                 }
                                 className={`px-3 py-1 text-xs rounded-full ${
                                   diamondTypes.includes(type)
@@ -719,8 +951,8 @@ const Necklaces = () => {
                             {uniqueMetals.map((metal) => (
                               <button
                                 key={metal}
-                                onClick={() =>
-                                  toggleFilter(metal, metals, setMetals)
+                                onClick={(e) =>
+                                  toggleFilter(metal, metals, setMetals, metalsRef)
                                 }
                                 className={`px-3 py-1 text-xs rounded-full ${
                                   metals.includes(metal)
@@ -745,12 +977,8 @@ const Necklaces = () => {
                             {uniqueMetalColors.map((color) => (
                               <button
                                 key={color}
-                                onClick={() =>
-                                  toggleFilter(
-                                    color,
-                                    metalColors,
-                                    setMetalColors
-                                  )
+                                onClick={(e) =>
+                                  toggleFilter(color, metalColors, setMetalColors, metalColorsRef)
                                 }
                                 className={`px-3 py-1 text-xs rounded-full ${
                                   metalColors.includes(color)
@@ -783,16 +1011,7 @@ const Necklaces = () => {
                                   min={0}
                                   max={maxPrice}
                                   value={priceRange[0]}
-                                  onChange={(e) => {
-                                    const value = parseInt(e.target.value);
-                                    if (isNaN(value)) return;
-                                    // Calculate a safe maximum that ensures we don't exceed the max value
-                                    const safeMax = Math.min(
-                                      value,
-                                      priceRange[1] - 1
-                                    );
-                                    setPriceRange([safeMax, priceRange[1]]);
-                                  }}
+                                  onChange={(e) => handlePriceMinChange(parseInt(e.target.value))}
                                   className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
                                 />
                               </div>
@@ -810,15 +1029,7 @@ const Necklaces = () => {
                                   min={0}
                                   max={maxPrice}
                                   value={priceRange[1]}
-                                  onChange={(e) => {
-                                    const value = parseInt(e.target.value);
-                                    if (isNaN(value)) return;
-                                    // Calculate a safe minimum that ensures we're at least 1 more than the min value
-                                    setPriceRange([
-                                      priceRange[0],
-                                      Math.max(value, priceRange[0] + 1),
-                                    ]);
-                                  }}
+                                  onChange={(e) => handlePriceMaxChange(parseInt(e.target.value))}
                                   className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
                                 />
                               </div>
@@ -839,19 +1050,7 @@ const Necklaces = () => {
                                 max={maxCarat}
                                 step="0.01"
                                 value={caratRange[0]}
-                                onChange={(e) => {
-                                  const value = parseFloat(e.target.value);
-                                  if (isNaN(value)) return;
-                                  // Calculate a safe maximum that ensures we don't exceed the max value
-                                  const safeMax = Math.min(
-                                    value,
-                                    caratRange[1] - 0.001
-                                  );
-                                  setCaratRange([
-                                    parseFloat(safeMax.toFixed(2)),
-                                    caratRange[1],
-                                  ]);
-                                }}
+                                onChange={(e) => handleCaratMinChange(parseFloat(e.target.value))}
                                 className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                               />
                             </div>
@@ -865,20 +1064,7 @@ const Necklaces = () => {
                                 max={maxCarat}
                                 step="0.01"
                                 value={caratRange[1]}
-                                onChange={(e) => {
-                                  const value = parseFloat(e.target.value);
-                                  if (isNaN(value)) return;
-                                  // Calculate a safe minimum that ensures we're at least 0.001 more than the min value
-                                  setCaratRange([
-                                    caratRange[0],
-                                    parseFloat(
-                                      Math.max(
-                                        value,
-                                        caratRange[0] + 0.001
-                                      ).toFixed(2)
-                                    ),
-                                  ]);
-                                }}
+                                onChange={(e) => handleCaratMaxChange(parseFloat(e.target.value))}
                                 className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                               />
                             </div>
@@ -889,7 +1075,10 @@ const Necklaces = () => {
 
                     {/* Clear All Filters Button */}
                     <button
-                      onClick={clearFilters}
+                      onClick={() => {
+                        clearFilters();
+                        setTimeout(() => fetchProducts(), 100);
+                      }}
                       className="w-full py-2 bg-black text-white rounded-lg text-sm font-medium"
                     >
                       Clear All Filters
@@ -1006,6 +1195,8 @@ const Necklaces = () => {
                         onClick={() => {
                           setSortType(option.value);
                           setShowSortOptions(false);
+                          setCurrentPage(1);
+                          setTimeout(() => fetchProducts(), 100);
                         }}
                         className={`block w-full text-left px-4 py-2 hover:bg-gray-100 ${
                           sortType === option.value
@@ -1026,7 +1217,7 @@ const Necklaces = () => {
               <div className="flex justify-center items-center h-64">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
               </div>
-            ) : filterProducts.length === 0 ? (
+            ) : filterProducts.length === 0 && necklaces?.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-64 text-center">
                 <FaGem className="text-gray-300 text-5xl mb-4" />
                 <h3 className="text-xl font-semibold text-gray-700 mb-2">
@@ -1037,24 +1228,31 @@ const Necklaces = () => {
                   adjusting your filters or search terms.
                 </p>
                 <button
-                  onClick={clearFilters}
+                  onClick={() => {
+                    clearFilters();
+                    setTimeout(() => fetchProducts(), 100);
+                  }}
                   className="px-6 py-2 bg-gray-900 text-white rounded-lg"
                 >
                   Clear All Filters
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 products-grid-section">
                 <AnimatePresence>
-                  {filterProducts.map((necklace, index) => (
+                  {(filterProducts.length > 0 ? filterProducts : necklaces).map((necklace, index) => (
                     <motion.div
-                      key={necklace._id}
+                      key={necklace._id || index}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.3 }}
                     >
-                      <GalleryItem item={necklace} price={true} index={index} />
+                      <GalleryItem
+                        item={necklace}
+                        price={true}
+                        index={index}
+                      />
                     </motion.div>
                   ))}
                 </AnimatePresence>
@@ -1062,23 +1260,73 @@ const Necklaces = () => {
             )}
 
             {/* Pagination */}
-            {/* Uncomment and implement if pagination is needed */}
-            {/* <div className="mt-8 flex justify-center">
+            {totalPages > 1 && (
+              <div className="mt-8 flex justify-center">
                 <nav className="flex items-center">
-                  <button className="p-2 rounded-md hover:bg-gray-100">
-                    <FaChevronLeft className="h-5 w-5 text-gray-500" />
+                  <button 
+                    onClick={() => {
+                      if (currentPage > 1) {
+                        handlePageChange(currentPage - 1);
+                      }
+                    }}
+                    disabled={currentPage === 1}
+                    className={`p-2 rounded-md ${currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'hover:bg-gray-100 text-gray-500'}`}
+                  >
+                    <FaChevronLeft className="h-5 w-5" />
                   </button>
-                  <button className="mx-1 px-4 py-2 rounded-md bg-gray-900 text-white">
-                    1
-                  </button>
-                  <button className="mx-1 px-4 py-2 rounded-md hover:bg-gray-100">
-                    2
-                  </button>
-                  <button className="p-2 rounded-md hover:bg-gray-100">
-                    <FaChevronRight className="h-5 w-5 text-gray-500" />
+                  
+                  {/* Generate page numbers */}
+                  {[...Array(totalPages)].map((_, index) => {
+                    const pageNum = index + 1;
+                    
+                    // Only show a limited number of pages to avoid clutter
+                    if (
+                      pageNum === 1 || 
+                      pageNum === totalPages ||
+                      (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
+                    ) {
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => {
+                            handlePageChange(pageNum);
+                          }}
+                          className={`mx-1 px-4 py-2 rounded-md ${
+                            currentPage === pageNum
+                              ? "bg-gray-900 text-white"
+                              : "hover:bg-gray-100"
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    }
+                    
+                    // Add ellipsis for skipped pages
+                    if (
+                      (pageNum === currentPage - 2 && pageNum > 1) ||
+                      (pageNum === currentPage + 2 && pageNum < totalPages)
+                    ) {
+                      return <span key={`ellipsis-${pageNum}`} className="mx-1">...</span>;
+                    }
+                    
+                    return null;
+                  })}
+                  
+                  <button 
+                    onClick={() => {
+                      if (currentPage < totalPages) {
+                        handlePageChange(currentPage + 1);
+                      }
+                    }}
+                    disabled={currentPage === totalPages}
+                    className={`p-2 rounded-md ${currentPage === totalPages ? 'text-gray-300 cursor-not-allowed' : 'hover:bg-gray-100 text-gray-500'}`}
+                  >
+                    <FaChevronRight className="h-5 w-5" />
                   </button>
                 </nav>
-              </div> */}
+              </div>
+            )}
           </div>
         </div>
       </div>

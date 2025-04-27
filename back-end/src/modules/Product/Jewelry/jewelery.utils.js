@@ -3,6 +3,20 @@ export const buildJeweleryFilterQuery = (queryParams) => {
   // Start with the base filter for diamond products
   const filterQuery = { productType: "jewelry" };
 
+  // Search query - search in title and description
+  if (queryParams.search) {
+    filterQuery.$or = [
+      { title: { $regex: queryParams.search, $options: 'i' } },
+      { description: { $regex: queryParams.search, $options: 'i' } }
+    ];
+  }
+
+  // Category filter
+  if (queryParams.category) {
+    const categories = queryParams.category.split(',').map(c => c.trim());
+    filterQuery.category = { $in: categories };
+  }
+
   // Price range
   if (queryParams.minPrice || queryParams.maxPrice) {
     filterQuery.price = {};
