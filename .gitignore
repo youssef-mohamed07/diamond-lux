@@ -33,8 +33,6 @@ lerna-debug.log*
 dist/
 .vitepress/dist/
 
-# Ignore uploads folder
-uploads/
 
 
 # Dependency directories
