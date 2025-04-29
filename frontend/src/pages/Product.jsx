@@ -23,6 +23,8 @@ import {
   FaRulerHorizontal,
   FaExclamationTriangle,
 } from "react-icons/fa";
+import { TbView360Number } from "react-icons/tb";
+
 import ScrollToTop from "../components/ScrollToTop";
 import { getDiamondProductById } from "../../api/Products/Diamond/diamondApi.js";
 
@@ -121,6 +123,34 @@ const Product = () => {
     } else {
       addToFavorites(productId);
       toast.success("Added to wishlist");
+    }
+  };
+
+  const getResponsiveLoupe360Url = (url) => {
+    // Check if it's a loupe360 URL
+    if (!url || !url.includes("loupe360.com")) return url;
+
+    // Parse out the existing parts of the URL
+    const baseUrlPattern =
+      /(https:\/\/loupe360\.com\/diamond\/[^\/]+\/video)\/\d+\/\d+\?(.+)/;
+    const match = url.match(baseUrlPattern);
+
+    if (match) {
+      // If the URL has the expected pattern with dimensions
+      const baseUrl = match[1];
+      const queryParams = match[2] || "";
+      // Use 100% of container width for responsiveness
+      return `${baseUrl}?${queryParams}&responsive=true&size=full`;
+    } else {
+      // If the URL doesn't match the expected pattern, try a different approach
+      // Remove any fixed dimensions and add responsive parameters
+      const simplifiedUrl = url.replace(/\/\d+\/\d+/, "");
+
+      if (simplifiedUrl.includes("?")) {
+        return `${simplifiedUrl}&responsive=true&size=full`;
+      } else {
+        return `${simplifiedUrl}?responsive=true&size=full`;
+      }
     }
   };
 
@@ -357,7 +387,29 @@ const Product = () => {
                   </span>
                   <div className="flex items-center">
                     <span className="text-sm font-medium text-gray-900">
-                      {product.lab}
+                      {product.lab === "NONE" ? (
+                        <>NONE</>
+                      ) : product.certificate_url ? (
+                        <div>
+                          <a
+                            href={product.certificate_url}
+                            target="_blank"
+                            className="underline text-md text-indigo-700 cursor-pointer"
+                          >
+                            {product.lab}
+                          </a>
+                        </div>
+                      ) : (
+                        <>
+                          {" "}
+                          <div>
+                            <p className="text-md">{product.lab}</p>
+                            <span className="text-[0.8rem] italic text-gray-700">
+                              (No certificate url is present)
+                            </span>
+                          </div>
+                        </>
+                      )}
                     </span>
                     {(product.lab === "GIA" || product.lab === "IGI") && (
                       <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded-full">
@@ -558,54 +610,92 @@ const Product = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             <div>
               <div className="mb-4 aspect-w-1 aspect-h-1 bg-gray-100 rounded-lg overflow-hidden">
-                <motion.img
-                  src={getImageUrl(
-                    product.imageCover ? product.imageCover : product.images[0]
-                  )}
-                  alt={product.title}
-                  className="w-full h-full object-center object-cover"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: isImageTransitioning ? 0 : 1 }}
-                  transition={{ duration: 0.3 }}
-                />
+                {activeImage === "360" ? (
+                  <div className="relative w-full pb-[100%] overflow-hidden bg-white">
+                    {product.images &&
+                    product.images[0] &&
+                    product.images[0].includes("loupe360.com") ? (
+                      <iframe
+                        src={getResponsiveLoupe360Url(product.images[0])}
+                        className="absolute top-0 left-0 w-full h-full"
+                        width="100%"
+                        height="100%"
+                        allowFullScreen
+                        title="360 degree view"
+                        frameBorder="0"
+                        scrolling="no"
+                        style={{
+                          objectFit: "contain",
+                          overflow: "hidden",
+                          maxWidth: "100%",
+                          maxHeight: "100%",
+                          transform: "scale(1.01)", // Slight scale to avoid any border issues
+                        }}
+                      />
+                    ) : (
+                      <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center">
+                        <p className="text-gray-500">360° view not available</p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <motion.img
+                    src={product.imageCover}
+                    alt={product.title}
+                    className="w-full h-full object-center object-cover"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: isImageTransitioning ? 0 : 1 }}
+                    transition={{ duration: 0.3 }}
+                  />
+                )}
               </div>
 
               {product.images && product.images.length > 0 && (
                 <div className="grid grid-cols-5 gap-2">
-                  {product.images.map((image, index) => (
+                  {/* Add 360-degree view option first */}
+                  {(product.loupe360 ||
+                    (product.images &&
+                      product.images[0] &&
+                      product.images[0].includes("loupe360.com"))) && (
                     <button
-                      key={index}
-                      onClick={() => handleImageChange(index)}
+                      onClick={() => handleImageChange("360")}
                       className={`aspect-w-1 aspect-h-1 rounded-md overflow-hidden ${
-                        activeImage === index
+                        activeImage === "360"
                           ? "ring-2 ring-gray-900"
                           : "ring-1 ring-gray-200"
                       }`}
                     >
-                      {/* Replace img with video element */}
-                      {product.images.length > 0 ? (
-                        <video
-                          muted
-                          loop
-                          autoPlay
-                          playsInline
-                          className="w-full h-full object-center object-cover"
-                        >
-                          <source
-                            src={getImageUrl(product.images[0])}
-                            type="video/mp4"
-                          />
-                          Your browser does not support the video tag.
-                        </video>
-                      ) : (
-                        <img
-                          src={getImageUrl(image)}
-                          alt={`${product.title} thumbnail ${index + 1}`}
-                          className="w-full h-full object-center object-cover"
-                        />
-                      )}
+                      <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                        <TbView360Number className="text-gray-500 text-xl" />
+                      </div>
                     </button>
-                  ))}
+                  )}
+
+                  {/* Add first image as second option */}
+                  <button
+                    onClick={() =>
+                      handleImageChange(
+                        product.imageCover
+                          ? product.imageCover
+                          : product.images[0]
+                      )
+                    }
+                    className={`aspect-w-1 aspect-h-1 rounded-md overflow-hidden ${
+                      activeImage === 0
+                        ? "ring-2 ring-gray-900"
+                        : "ring-1 ring-gray-200"
+                    }`}
+                  >
+                    <img
+                      src={getImageUrl(
+                        product.imageCover
+                          ? product.imageCover
+                          : product.images[0]
+                      )}
+                      alt="Main view"
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
                 </div>
               )}
             </div>

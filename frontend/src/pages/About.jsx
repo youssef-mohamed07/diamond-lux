@@ -229,47 +229,70 @@ const About = () => {
             transition={{ duration: 0.5, delay: 0.4 }}
           >
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900">Our Journey</h2>
+              <h2 className="text-3xl font-bold text-gray-900">About us</h2>
               <div className="w-16 h-1 bg-gradient-to-r from-gray-900 to-gray-700 mx-auto mt-4"></div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-              <div>
-                <img
-                  src="/images/about-workshop.jpg"
-                  alt="Jewelry workshop"
-                  className=" shadow-md w-full h-auto"
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src =
-                      "https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80";
-                  }}
-                />
+            <div className="flex flex-col gap-20">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div>
+                  <img
+                    src="/about/img1.jpg"
+                    alt="Jewelry workshop"
+                    className="shadow-md w-full h-[400px] object-cover object-top hover:scale-[1.02] transition-all duration-500"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src =
+                        "https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80";
+                    }}
+                  />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-semibold text-gray-900 mb-4">
+                    Shivang Joshi
+                  </h3>
+                  <p className="text-gray-600 mb-6">
+                    Was trained in diamond manufacturing, where I learned how to
+                    select rough diamonds, plan their transformation into
+                    polished stones, and grade them according to GIA/IGI
+                    standards.
+                  </p>
+                  <p className="text-gray-600 mb-6">
+                    I then worked for Signet Jewelers, a New York Stock
+                    Exchange-listed company, for five years. I began as a
+                    part-time sales associate and eventually assisted in
+                    management, selling over $3 million worth of jewelry. and
+                    then got passionate about starting diamond cartel.
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-2xl font-semibold text-gray-900 mb-4">
-                  From Humble Beginnings
-                </h3>
-                <p className="text-gray-600 mb-6">
-                  Diamond Cartel was founded in 1985 by master jeweler Alexander
-                  Lux in a small workshop in New York City. With a passion for
-                  craftsmanship and an eye for detail, Alexander began creating
-                  custom pieces for a select clientele who appreciated his
-                  artistry and dedication to quality.
-                </p>
-                <p className="text-gray-600 mb-6">
-                  As word of his exceptional work spread, the business grew, and
-                  Alexander brought on other skilled artisans who shared his
-                  vision. Together, they expanded the Diamond Cartel collection
-                  while maintaining the highest standards of craftsmanship.
-                </p>
-                <p className="text-gray-600">
-                  Today, Diamond Cartel is recognized worldwide for its
-                  exquisite designs and impeccable quality. While we have grown
-                  beyond our humble beginnings, we remain true to Alexander's
-                  original vision: to create beautiful jewelry that captures the
-                  essence of life's most precious moments.
-                </p>
+              <div className="grid grid-cols-1 lg:grid-flow lg:grid-cols-2 gap-12 items-center">
+                <div>
+                  <h3 className="text-2xl font-semibold text-gray-900 mb-4">
+                    Dharmesh joshi
+                  </h3>
+                  <p className="text-gray-600 mb-6">
+                    Has over 45 years of experience in buying and assorting
+                    diamonds. Throughout his career, he has likely assorted more
+                    than 100,000 carats of diamonds. He began as a small-time
+                    diamond assorter in a multi-billion-dollar company, where he
+                    eventually worked as the head buyer for over 17 years.
+                    Later, he started his own business, and today, he serves
+                    customers in more than 35 countries.
+                  </p>
+                </div>
+                <div>
+                  <img
+                    src="/about/img2.jpg"
+                    alt="Jewelry workshop"
+                    className=" shadow-md w-full h-[400px] object-cover object-top  hover:scale-[1.02] transition-all duration-500"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src =
+                        "https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80";
+                    }}
+                  />
+                </div>
               </div>
             </div>
           </motion.div>

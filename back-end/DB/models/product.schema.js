@@ -54,6 +54,7 @@ const schema = new Schema(
     table: Number,
     culet: String,
     lab: String,
+    certificate_url: String,
     girdle: String,
     eyeClean: String,
     brown: String,

@@ -8,10 +8,10 @@ import { DIAMOND_CATEGORIES } from "./src/utils/staticCategories.js"; // Import 
 dotenv.config();
 
 // Configuration options
-const IMPORT_ALL_RECORDS = true; // Set to true to import all records, false to import a random subset
-const SUBSET_SIZE = 10000; // Number of records to import when not importing all
-const BATCH_SIZE = 1000; // Increased batch size for faster imports
-const PARALLEL_BATCHES = 4; // Number of batches to process in parallel
+const IMPORT_ALL_RECORDS = false; // Set to true to import all records, false to import a random subset
+const SUBSET_SIZE = 2000; // Number of records to import when not importing all
+const BATCH_SIZE = 500; // Increased batch size for faster imports
+const PARALLEL_BATCHES = 2; // Number of batches to process in parallel
 
 // Enhanced logging function with timestamps
 function log(message, type = "info") {
@@ -269,6 +269,7 @@ async function importDiamondsFromCSV() {
                 floCol: item.floCol || "",
                 length: parsedValues.length,
                 width: parsedValues.width,
+                certificate_url: item.pdf,
                 height: parsedValues.height,
                 depth: parsedValues.depth,
                 table: parsedValues.table,
