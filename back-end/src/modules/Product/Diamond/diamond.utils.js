@@ -1,7 +1,15 @@
 // src/modules/Product/Diamond/diamond.utils.js
 export const buildDiamondFilterQuery = (queryParams) => {
   // Start with the base filter for diamond products
-  const filterQuery = { productType: "diamond" };
+  const filterQuery = {};
+
+  // Diamond type filter (lab or natural)
+  if (queryParams.diamondType) {
+    filterQuery.productType = queryParams.diamondType === "lab" ? "lab_diamond" : "natural_diamond";
+  } else {
+    // If no specific type is selected, show both
+    filterQuery.productType = { $in: ["lab_diamond", "natural_diamond"] };
+  }
 
   // Price range
   if (queryParams.minPrice || queryParams.maxPrice) {
@@ -63,13 +71,45 @@ export const buildDiamondFilterQuery = (queryParams) => {
     filterQuery.flo = { $in: fluorescences };
   }
 
-  // Fluorescence color filter
-  if (queryParams.floCol) {
-    const floColors = queryParams.floCol.split(",").map((fc) => fc.trim());
-    filterQuery.floCol = { $in: floColors };
+  // Lab filter
+  if (queryParams.lab) {
+    const labs = queryParams.lab.split(",").map((l) => l.trim());
+    filterQuery.lab = { $in: labs };
   }
 
-  // Depth percentage range
+  // Girdle filter
+  if (queryParams.girdle) {
+    const girdles = queryParams.girdle.split(",").map((g) => g.trim());
+    filterQuery.girdle = { $in: girdles };
+  }
+
+  // Culet filter
+  if (queryParams.culet) {
+    const culets = queryParams.culet.split(",").map((c) => c.trim());
+    filterQuery.culet = { $in: culets };
+  }
+
+  // Eye clean filter
+  if (queryParams.eyeClean) {
+    filterQuery.eyeClean = queryParams.eyeClean;
+  }
+
+  // Brown filter
+  if (queryParams.brown) {
+    filterQuery.brown = queryParams.brown === 'true';
+  }
+
+  // Green filter
+  if (queryParams.green) {
+    filterQuery.green = queryParams.green === 'true';
+  }
+
+  // Milky filter
+  if (queryParams.milky) {
+    filterQuery.milky = queryParams.milky === 'true';
+  }
+
+  // Depth range
   if (queryParams.minDepth || queryParams.maxDepth) {
     filterQuery.depth = {};
     if (queryParams.minDepth)
@@ -78,22 +118,13 @@ export const buildDiamondFilterQuery = (queryParams) => {
       filterQuery.depth.$lte = Number(queryParams.maxDepth);
   }
 
-  // Table percentage range
+  // Table range
   if (queryParams.minTable || queryParams.maxTable) {
     filterQuery.table = {};
     if (queryParams.minTable)
       filterQuery.table.$gte = Number(queryParams.minTable);
     if (queryParams.maxTable)
       filterQuery.table.$lte = Number(queryParams.maxTable);
-  }
-
-  // L/W Ratio range
-  if (queryParams.minLwRatio || queryParams.maxLwRatio) {
-    filterQuery.lwRatio = {};
-    if (queryParams.minLwRatio)
-      filterQuery.lwRatio.$gte = Number(queryParams.minLwRatio);
-    if (queryParams.maxLwRatio)
-      filterQuery.lwRatio.$lte = Number(queryParams.maxLwRatio);
   }
 
   // Length range
@@ -114,37 +145,15 @@ export const buildDiamondFilterQuery = (queryParams) => {
       filterQuery.width.$lte = Number(queryParams.maxWidth);
   }
 
-  // Lab certification filter
-  if (queryParams.lab) {
-    const labs = queryParams.lab.split(",").map((l) => l.trim());
-    filterQuery.lab = { $in: labs };
-  }
-
-  // Culet filter
-  if (queryParams.culet) {
-    const culets = queryParams.culet.split(",").map((c) => c.trim());
-    filterQuery.culet = { $in: culets };
-  }
-
-  // Boolean filters
-  if (queryParams.eyeClean) {
-    filterQuery.eyeClean =
-      queryParams.eyeClean.toLowerCase() === "true" ? "Yes" : "No";
-  }
-  if (queryParams.brown) {
-    filterQuery.brown =
-      queryParams.brown.toLowerCase() === "true" ? "Yes" : "No";
-  }
-  if (queryParams.green) {
-    filterQuery.green =
-      queryParams.green.toLowerCase() === "true" ? "Yes" : "No";
-  }
-  if (queryParams.milky) {
-    filterQuery.milky =
-      queryParams.milky.toLowerCase() === "true" ? "Yes" : "No";
-  }
-  if (queryParams.isPopular !== undefined) {
-    filterQuery.isPopular = queryParams.isPopular.toLowerCase() === "true";
+  // Search term filter
+  if (queryParams.search) {
+    const searchTerm = queryParams.search.trim();
+    filterQuery.$or = [
+      { title: { $regex: searchTerm, $options: 'i' } },
+      { description: { $regex: searchTerm, $options: 'i' } },
+      { stockId: { $regex: searchTerm, $options: 'i' } },
+      { reportNo: { $regex: searchTerm, $options: 'i' } }
+    ];
   }
 
   return filterQuery;

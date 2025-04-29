@@ -52,7 +52,7 @@ const Earrings = () => {
   const [showClearFilter, setShowClearFilter] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [sortType, setSortType] = useState("relevant");
-  
+
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -97,41 +97,41 @@ const Earrings = () => {
   const fetchProducts = useCallback(async () => {
     // Save current scroll position before loading
     const scrollPosition = window.scrollY;
-    
+
     setIsLoading(true);
     try {
       // Prepare query parameters
       const params = new URLSearchParams();
-      
+
       // Pagination
       params.append('page', currentPage);
       params.append('limit', limit);
-      
+
       // Search query
       if (searchQuery) {
         params.append('search', searchQuery);
       }
-      
+
       // Category
       if (selectedCategories.length > 0) {
         params.append('category', selectedCategories.join(','));
       }
-      
+
       // Diamond Types
       if (diamondTypes.length > 0) {
         params.append('diamondType', diamondTypes.join(','));
       }
-      
+
       // Metals
       if (metals.length > 0) {
         params.append('metal', metals.join(','));
       }
-      
+
       // Metal Colors
       if (metalColors.length > 0) {
         params.append('metalColor', metalColors.join(','));
       }
-      
+
       // Carat Range
       if (caratRange[0] > 0) {
         params.append('minCarat', caratRange[0]);
@@ -139,7 +139,7 @@ const Earrings = () => {
       if (caratRange[1] < maxCarat) {
         params.append('maxCarat', caratRange[1]);
       }
-      
+
       // Price Range
       if (priceRange[0] > 0) {
         params.append('minPrice', priceRange[0]);
@@ -147,28 +147,28 @@ const Earrings = () => {
       if (priceRange[1] < maxPrice) {
         params.append('maxPrice', priceRange[1]);
       }
-      
+
       // Sort
       if (sortType !== 'relevant') {
         params.append('sort', sortType);
       }
-      
+
       const response = await axios.get(`${VITE_BACKEND_URL}/product/jewelery/earrings`, { params });
-      
+
       // Update state with the response data
       setProducts(response.data.products);
       setFilterProducts(response.data.products);
       setTotalCount(response.data.totalProductsCount);
       setTotalPages(response.data.totalPages);
       setCurrentPage(response.data.currentPage);
-      
+
       // Extract unique filter values from the products
       extractUniqueFilterValues(response.data.products);
     } catch (error) {
       console.error("Error fetching earring products:", error);
     } finally {
       setIsLoading(false);
-      
+
       // Restore scroll position after loading completes
       setTimeout(() => {
         window.scrollTo({
@@ -178,65 +178,65 @@ const Earrings = () => {
       }, 0);
     }
   }, [
-    currentPage, 
-    limit, 
-    searchQuery, 
-    selectedCategories, 
-    diamondTypes, 
-    metals, 
-    metalColors, 
-    caratRange, 
-    priceRange, 
+    currentPage,
+    limit,
+    searchQuery,
+    selectedCategories,
+    diamondTypes,
+    metals,
+    metalColors,
+    caratRange,
+    priceRange,
     sortType,
-    maxCarat, 
+    maxCarat,
     maxPrice
   ]);
 
   // Function to extract unique filter values from products
   const extractUniqueFilterValues = useCallback((products) => {
     if (!products || products.length === 0) return;
-    
+
     // Extract unique diamond types
     const uniqueDiamondTypesSet = new Set();
     products.forEach(product => {
       if (product.diamondType) uniqueDiamondTypesSet.add(product.diamondType);
     });
     setUniqueDiamondTypes(Array.from(uniqueDiamondTypesSet));
-    
+
     // Extract unique metals
     const uniqueMetalsSet = new Set();
     products.forEach(product => {
       if (product.metal) uniqueMetalsSet.add(product.metal);
     });
     setUniqueMetals(Array.from(uniqueMetalsSet));
-    
+
     // Extract unique metal colors
     const uniqueMetalColorsSet = new Set();
     products.forEach(product => {
       if (product.metalColor) uniqueMetalColorsSet.add(product.metalColor);
     });
     setUniqueMetalColors(Array.from(uniqueMetalColorsSet));
-    
+
     // Find max price and carat for ranges
     const maxProductPrice = Math.max(...products.map(p => p.price || 0));
     const maxProductCarat = Math.max(...products.map(p => p.carats || 0));
-    
+
     // Ensure reasonable default values
     const defaultMaxPrice = maxProductPrice > 0 ? maxProductPrice : 100000;
     const defaultMaxCarat = maxProductCarat > 0 ? maxProductCarat : 20;
-    
+
     setMaxPrice(defaultMaxPrice);
     setMaxCarat(defaultMaxCarat);
-    
+
     // Only set the range values if they haven't been manually changed
     if (priceRange[0] === 0 && priceRange[1] === 100000) {
       setPriceRange([0, defaultMaxPrice]);
     }
-    
+
     if (caratRange[0] === 0 && caratRange[1] === 20) {
       setCaratRange([0, defaultMaxCarat]);
     }
-    
+
     // Filter categories to only include those with associated products
     if (categories && categories.length > 0) {
       const usedCategoryIds = new Set(products.map(p => p.category));
@@ -245,7 +245,7 @@ const Earrings = () => {
       );
     }
   }, [categories, priceRange, caratRange]);
-  
+
   // Create debounced fetch function for range inputs
   const debouncedFetch = useCallback(
     debounce(() => {
@@ -263,14 +263,14 @@ const Earrings = () => {
   const toggleFilter = (value, currentValues, setterFunction) => {
     // Save scroll position
     const scrollPosition = window.scrollY;
-    
+
     // Update filter values
     if (currentValues.includes(value)) {
       setterFunction((prev) => prev.filter((item) => item !== value));
     } else {
       setterFunction((prev) => [...prev, value]);
     }
-    
+
     // Reset to page 1 when filtering
     setCurrentPage(1);
   };
@@ -283,7 +283,7 @@ const Earrings = () => {
       const timer = setTimeout(() => {
         fetchProducts();
       }, 100);
-      
+
       return () => clearTimeout(timer);
     }
   }, [diamondTypes, metals, metalColors, selectedCategories, sortType]);
@@ -291,15 +291,15 @@ const Earrings = () => {
   // Update URL with current filter state for shareable links
   useEffect(() => {
     const params = new URLSearchParams();
-    
+
     if (searchQuery) {
       params.append('q', searchQuery);
     }
-    
+
     if (selectedCategories.length > 0) {
       params.append('category', selectedCategories.join(','));
     }
-    
+
     // Only update URL if we have filter parameters
     if (params.toString()) {
       navigate(`${location.pathname}?${params.toString()}`, { replace: true });
@@ -344,22 +344,22 @@ const Earrings = () => {
     setSearchQuery("");
     setIsSearching(false);
   };
-  
+
   // Handle search submission
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     setCurrentPage(1); // Reset to page 1 when searching
     fetchProducts();
   };
-  
+
   // Handle page change
   const handlePageChange = (newPage) => {
     // Save current scroll position
     const scrollPosition = window.scrollY;
-    
+
     // Update page number
     setCurrentPage(newPage);
-    
+
     // Fetch new data
     fetchProducts().then(() => {
       // After fetching, scroll to products section instead of top
@@ -542,7 +542,7 @@ const Earrings = () => {
                 type="text"
                 value={searchQuery}
                 onChange={handleSearchChange}
-                placeholder="Search earrings..."
+                placeholder="Search by name, description, or report number..."
                 className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
               />
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -589,11 +589,10 @@ const Earrings = () => {
                         onClick={() =>
                           toggleFilter(type, diamondTypes, setDiamondTypes)
                         }
-                        className={`px-3 py-1 text-xs rounded-full ${
-                          diamondTypes.includes(type)
-                            ? "bg-gray-900 text-white shadow-md"
-                            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                        }`}
+                        className={`px-3 py-1 text-xs rounded-full ${diamondTypes.includes(type)
+                          ? "bg-gray-900 text-white shadow-md"
+                          : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                          }`}
                       >
                         {type}
                       </button>
@@ -613,11 +612,10 @@ const Earrings = () => {
                       <button
                         key={metal}
                         onClick={() => toggleFilter(metal, metals, setMetals)}
-                        className={`px-3 py-1 text-xs rounded-full ${
-                          metals.includes(metal)
-                            ? "bg-gray-900 text-white shadow-md"
-                            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                        }`}
+                        className={`px-3 py-1 text-xs rounded-full ${metals.includes(metal)
+                          ? "bg-gray-900 text-white shadow-md"
+                          : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                          }`}
                       >
                         {metal}
                       </button>
@@ -639,11 +637,10 @@ const Earrings = () => {
                         onClick={() =>
                           toggleFilter(color, metalColors, setMetalColors)
                         }
-                        className={`px-3 py-1 text-xs rounded-full ${
-                          metalColors.includes(color)
-                            ? "bg-gray-900 text-white shadow-md"
-                            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                        }`}
+                        className={`px-3 py-1 text-xs rounded-full ${metalColors.includes(color)
+                          ? "bg-gray-900 text-white shadow-md"
+                          : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                          }`}
                       >
                         {color}
                       </button>
@@ -820,11 +817,10 @@ const Earrings = () => {
                                     setDiamondTypes
                                   )
                                 }
-                                className={`px-3 py-1 text-xs rounded-full ${
-                                  diamondTypes.includes(type)
-                                    ? "bg-gray-900 text-white"
-                                    : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                                }`}
+                                className={`px-3 py-1 text-xs rounded-full ${diamondTypes.includes(type)
+                                  ? "bg-gray-900 text-white"
+                                  : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                                  }`}
                               >
                                 {type}
                               </button>
@@ -846,11 +842,10 @@ const Earrings = () => {
                                 onClick={() =>
                                   toggleFilter(metal, metals, setMetals)
                                 }
-                                className={`px-3 py-1 text-xs rounded-full ${
-                                  metals.includes(metal)
-                                    ? "bg-gray-900 text-white"
-                                    : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                                }`}
+                                className={`px-3 py-1 text-xs rounded-full ${metals.includes(metal)
+                                  ? "bg-gray-900 text-white"
+                                  : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                                  }`}
                               >
                                 {metal}
                               </button>
@@ -876,11 +871,10 @@ const Earrings = () => {
                                     setMetalColors
                                   )
                                 }
-                                className={`px-3 py-1 text-xs rounded-full ${
-                                  metalColors.includes(color)
-                                    ? "bg-gray-900 text-white"
-                                    : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                                }`}
+                                className={`px-3 py-1 text-xs rounded-full ${metalColors.includes(color)
+                                  ? "bg-gray-900 text-white"
+                                  : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                                  }`}
                               >
                                 {color}
                               </button>
@@ -1130,11 +1124,10 @@ const Earrings = () => {
                             setSortType(option.value);
                             setShowSortOptions(false);
                           }}
-                          className={`block w-full text-left px-4 py-2 hover:bg-gray-100 ${
-                            sortType === option.value
-                              ? "bg-gray-100 font-medium"
-                              : ""
-                          }`}
+                          className={`block w-full text-left px-4 py-2 hover:bg-gray-100 ${sortType === option.value
+                            ? "bg-gray-100 font-medium"
+                            : ""
+                            }`}
                         >
                           {option.label}
                         </button>
@@ -1172,7 +1165,7 @@ const Earrings = () => {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 products-grid-section">
                   <AnimatePresence>
-                    {filterProducts.map((earring, index) => (
+                    {(filterProducts.length > 0 ? filterProducts : products).map((earring, index) => (
                       <motion.div
                         key={earring._id}
                         initial={{ opacity: 0 }}
@@ -1195,7 +1188,7 @@ const Earrings = () => {
               {totalPages > 1 && (
                 <div className="mt-8 flex justify-center">
                   <nav className="flex items-center">
-                    <button 
+                    <button
                       onClick={() => {
                         if (currentPage > 1) {
                           handlePageChange(currentPage - 1);
@@ -1206,15 +1199,15 @@ const Earrings = () => {
                     >
                       <FaChevronLeft className="h-5 w-5" />
                     </button>
-                    
+
                     {/* Generate page numbers */}
                     {[...Array(totalPages)].map((_, index) => {
                       const pageNum = index + 1;
-                      
+
                       // Only show a limited number of pages to avoid clutter
                       if (
-                        pageNum === 1 || 
-                        pageNum === totalPages || 
+                        pageNum === 1 ||
+                        pageNum === totalPages ||
                         (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
                       ) {
                         return (
@@ -1223,17 +1216,16 @@ const Earrings = () => {
                             onClick={() => {
                               handlePageChange(pageNum);
                             }}
-                            className={`mx-1 px-4 py-2 rounded-md ${
-                              currentPage === pageNum
-                                ? "bg-gray-900 text-white"
-                                : "hover:bg-gray-100"
-                            }`}
+                            className={`mx-1 px-4 py-2 rounded-md ${currentPage === pageNum
+                              ? "bg-gray-900 text-white"
+                              : "hover:bg-gray-100"
+                              }`}
                           >
                             {pageNum}
                           </button>
                         );
                       }
-                      
+
                       // Add ellipsis for skipped pages
                       if (
                         (pageNum === currentPage - 2 && pageNum > 1) ||
@@ -1241,11 +1233,11 @@ const Earrings = () => {
                       ) {
                         return <span key={`ellipsis-${pageNum}`} className="mx-1">...</span>;
                       }
-                      
+
                       return null;
                     })}
-                    
-                    <button 
+
+                    <button
                       onClick={() => {
                         if (currentPage < totalPages) {
                           handlePageChange(currentPage + 1);

@@ -14,15 +14,17 @@ import SortDropdown from "../../components/Products/SortDropdown";
 const Diamond = () => {
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [isProductsLoading, setIsProductsLoading] = useState(true);
-  const [paginationKey, setPaginationKey] = useState(0); // Key to force pagination component refresh
+  const [paginationKey, setPaginationKey] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
+  const [diamondType, setDiamondType] = useState("all");
+  const [error, setError] = useState(null);
 
   // Get data and functions from useDiamonds hook
   const {
     diamonds,
     pagination,
     loading,
-    error,
+    error: hookError,
     filters,
     sortOption,
     diamondShapes,
@@ -79,8 +81,8 @@ const Diamond = () => {
       const currentShapes = Array.isArray(filters.shape)
         ? filters.shape.map(String)
         : filters.shape
-        ? [String(filters.shape)]
-        : [];
+          ? [String(filters.shape)]
+          : [];
 
       if (currentShapes.includes(shapeId)) {
         // If the shape is already selected and it's the only one, remove the filter
@@ -118,8 +120,8 @@ const Diamond = () => {
       const currentColors = Array.isArray(filters.col)
         ? filters.col
         : filters.col
-        ? filters.col.split(",")
-        : [];
+          ? filters.col.split(",")
+          : [];
 
       if (currentColors.includes(colorValue)) {
         // If the color is already selected and it's the only one, remove the filter
@@ -159,8 +161,8 @@ const Diamond = () => {
       const currentCuts = Array.isArray(filters.cut)
         ? filters.cut
         : filters.cut
-        ? filters.cut.split(",")
-        : [];
+          ? filters.cut.split(",")
+          : [];
 
       if (currentCuts.includes(cutValue)) {
         // If the cut is already selected and it's the only one, remove the filter
@@ -198,8 +200,8 @@ const Diamond = () => {
       const currentClarities = Array.isArray(filters.clar)
         ? filters.clar
         : filters.clar
-        ? filters.clar.split(",")
-        : [];
+          ? filters.clar.split(",")
+          : [];
 
       if (currentClarities.includes(clarityValue)) {
         // If the clarity is already selected and it's the only one, remove the filter
@@ -275,8 +277,8 @@ const Diamond = () => {
       const currentPolishes = Array.isArray(filters.pol)
         ? filters.pol
         : filters.pol
-        ? filters.pol.split(",")
-        : [];
+          ? filters.pol.split(",")
+          : [];
 
       if (currentPolishes.includes(polishValue)) {
         // If the polish is already selected and it's the only one, remove the filter
@@ -316,8 +318,8 @@ const Diamond = () => {
       const currentSymmetries = Array.isArray(filters.symm)
         ? filters.symm
         : filters.symm
-        ? filters.symm.split(",")
-        : [];
+          ? filters.symm.split(",")
+          : [];
 
       if (currentSymmetries.includes(symmetryValue)) {
         // If the symmetry is already selected and it's the only one, remove the filter
@@ -359,8 +361,8 @@ const Diamond = () => {
       const currentLabs = Array.isArray(filters.lab)
         ? filters.lab
         : filters.lab
-        ? filters.lab.split(",")
-        : [];
+          ? filters.lab.split(",")
+          : [];
 
       if (currentLabs.includes(labValue)) {
         // If the lab is already selected and it's the only one, remove the filter
@@ -398,8 +400,8 @@ const Diamond = () => {
       const currentFluorescences = Array.isArray(filters.flu)
         ? filters.flu
         : filters.flu
-        ? filters.flu.split(",")
-        : [];
+          ? filters.flu.split(",")
+          : [];
 
       if (currentFluorescences.includes(fluorescenceValue)) {
         // If the fluorescence is already selected and it's the only one, remove the filter
@@ -541,19 +543,16 @@ const Diamond = () => {
 
   const handleSearch = (term) => {
     setSearchTerm(term);
-
-    // Update filters with search term
+    setError(null);
     const updatedFilters = { ...filters, searchTerm: term };
 
-    // If search term is empty, remove it from filters
     if (!term) {
       delete updatedFilters.searchTerm;
     }
 
-    // Reset to first page when searching
     updateFilters(updatedFilters);
+    changePage(1);
 
-    // Update URL with search parameter
     const url = new URL(window.location);
     if (term) {
       url.searchParams.set("search", term);
@@ -564,53 +563,47 @@ const Diamond = () => {
     window.history.pushState({}, "", url);
   };
 
-  // This effect reads the page from URL when component mounts
+  // Handle diamond type change
+  const handleDiamondTypeChange = (type) => {
+    setDiamondType(type);
+    setError(null);
+    const updatedFilters = { ...filters };
+
+    if (type === "all") {
+      delete updatedFilters.productType;
+    } else {
+      // Set the correct product type based on the selected type
+      updatedFilters.productType = type === "lab" ? "lab_diamond" : "natural_diamond";
+    }
+
+    // Reset to first page when changing diamond type
+    setPaginationKey((prev) => prev + 1);
+    updateFilters(updatedFilters);
+    changePage(1);
+
+    // Update URL
+    const url = new URL(window.location);
+    if (type !== "all") {
+      url.searchParams.set("type", type);
+    } else {
+      url.searchParams.delete("type");
+    }
+    url.searchParams.set("page", "1");
+    window.history.pushState({}, "", url);
+  };
+
+  // Update error state when hook error changes
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const page = parseInt(params.get("page")) || 1;
-    const categoryId = params.get("category");
-    const search = params.get("search");
-
-    // If there's a search term in the URL, set it
-    if (search) {
-      setSearchTerm(search);
-
-      // Update filters with search term
-      const newFilters = { ...filters, searchTerm: search };
-      updateFilters(newFilters);
+    if (hookError) {
+      setError(hookError);
+      setIsProductsLoading(false);
     }
+  }, [hookError]);
 
-    // If there's a category ID in the URL, select that shape
-    if (categoryId) {
-      // Make sure we have a valid ID
-      if (typeof categoryId === "string" && categoryId.trim() !== "") {
-        // Reset other filters when selecting a shape directly from homepage
-        const newFilters = { shape: [categoryId] };
-
-        // Preserve search term if exists
-        if (search) {
-          newFilters.searchTerm = search;
-        }
-
-        updateFilters(newFilters);
-
-        // Add this category ID to browser history for correct back navigation
-        const url = new URL(window.location);
-        url.searchParams.set("category", categoryId);
-        url.searchParams.set("page", page);
-        window.history.replaceState({}, "", url);
-      }
-    }
-
-    changePage(page);
-    // Only run this once on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Update products loading state whenever diamonds or loading state changes
+  // Update loading state
   useEffect(() => {
     setIsProductsLoading(loading);
-  }, [loading, diamonds]);
+  }, [loading]);
 
   // Update pagination key whenever pagination changes to force re-render
   useEffect(() => {
@@ -620,20 +613,16 @@ const Diamond = () => {
   // Handle page change
   const handlePageChange = useCallback(
     (newPage) => {
-      // Ensure newPage is an integer
       const pageNumber = parseInt(newPage);
       if (isNaN(pageNumber)) {
         console.error("Invalid page number:", newPage);
         return;
       }
 
-      // Directly set loading state to true for immediate user feedback
       setIsProductsLoading(true);
-
-      // Change page in the hook
       changePage(pageNumber);
 
-      // Update URL for bookmarking/sharing
+      // Update URL
       const url = new URL(window.location);
       url.searchParams.set("page", pageNumber);
       window.history.pushState({}, "", url);
@@ -641,30 +630,76 @@ const Diamond = () => {
     [changePage]
   );
 
+  // Handle limit change
+  const handleLimitChange = useCallback(
+    (newLimit) => {
+      const limitNumber = parseInt(newLimit);
+      if (isNaN(limitNumber)) {
+        console.error("Invalid limit number:", newLimit);
+        return;
+      }
+
+      setIsProductsLoading(true);
+      changeLimit(limitNumber);
+      changePage(1); // Reset to first page when changing limit
+
+      // Update URL
+      const url = new URL(window.location);
+      url.searchParams.set("limit", limitNumber);
+      url.searchParams.set("page", "1");
+      window.history.pushState({}, "", url);
+    },
+    [changeLimit, changePage]
+  );
+
+  // Initialize from URL parameters
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const page = parseInt(params.get("page")) || 1;
+    const limit = parseInt(params.get("limit")) || 12;
+    const type = params.get("type");
+    const search = params.get("search");
+
+    // Set initial values
+    if (type && ["all", "lab", "natural"].includes(type)) {
+      setDiamondType(type);
+      handleDiamondTypeChange(type);
+    }
+
+    if (search) {
+      setSearchTerm(search);
+      handleSearch(search);
+    }
+
+    // Set initial pagination
+    changePage(page);
+    changeLimit(limit);
+  }, []);
+
   // Calculate filter values for QuickFilters component
   const selectedShapes = Array.isArray(filters.shape)
     ? filters.shape.map(String)
     : filters.shape
-    ? filters.shape.split(",").map(String)
-    : [];
+      ? filters.shape.split(",").map(String)
+      : [];
 
   const selectedColors = Array.isArray(filters.col)
     ? filters.col
     : filters.col
-    ? filters.col.split(",")
-    : [];
+      ? filters.col.split(",")
+      : [];
 
   const selectedCuts = Array.isArray(filters.cut)
     ? filters.cut
     : filters.cut
-    ? filters.cut.split(",")
-    : [];
+      ? filters.cut.split(",")
+      : [];
 
   const selectedClarities = Array.isArray(filters.clar)
     ? filters.clar
     : filters.clar
-    ? filters.clar.split(",")
-    : [];
+      ? filters.clar.split(",")
+      : [];
 
   const priceRange = [filters.minPrice || 0, filters.maxPrice || 999999];
 
@@ -673,26 +708,26 @@ const Diamond = () => {
   const selectedPolishes = Array.isArray(filters.pol)
     ? filters.pol
     : filters.pol
-    ? filters.pol.split(",")
-    : [];
+      ? filters.pol.split(",")
+      : [];
 
   const selectedSymmetries = Array.isArray(filters.symm)
     ? filters.symm
     : filters.symm
-    ? filters.symm.split(",")
-    : [];
+      ? filters.symm.split(",")
+      : [];
 
   const selectedLabs = Array.isArray(filters.lab)
     ? filters.lab
     : filters.lab
-    ? filters.lab.split(",")
-    : [];
+      ? filters.lab.split(",")
+      : [];
 
   const selectedFluorescences = Array.isArray(filters.flu)
     ? filters.flu
     : filters.flu
-    ? filters.flu.split(",")
-    : [];
+      ? filters.flu.split(",")
+      : [];
 
   const tableRange = [filters.minTable || 0, filters.maxTable || 100];
 
@@ -715,6 +750,46 @@ const Diamond = () => {
         <SubBannerSection productsType={"diamond"} />
         {/* Search bar */}
         <SearchBar onSearch={handleSearch} initialSearchTerm={searchTerm} />
+
+        {/* Diamond type filter buttons */}
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex flex-wrap gap-4 mb-6 justify-center">
+            <button
+              onClick={() => handleDiamondTypeChange("all")}
+              className={`px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-300 transform hover:scale-105 ${diamondType === "all"
+                ? "bg-black text-white shadow-lg hover:bg-gray-900"
+                : "bg-white text-gray-700 hover:bg-gray-900 hover:text-white border border-gray-200"
+                }`}
+            >
+              All Diamonds
+            </button>
+            <button
+              onClick={() => handleDiamondTypeChange("lab")}
+              className={`px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-300 transform hover:scale-105 ${diamondType === "lab"
+                ? "bg-black text-white shadow-lg hover:bg-gray-900"
+                : "bg-white text-gray-700 hover:bg-gray-900 hover:text-white border border-gray-200"
+                }`}
+            >
+              Lab Grown
+            </button>
+            <button
+              onClick={() => handleDiamondTypeChange("natural")}
+              className={`px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-300 transform hover:scale-105 ${diamondType === "natural"
+                ? "bg-black text-white shadow-lg hover:bg-gray-900"
+                : "bg-white text-gray-700 hover:bg-gray-900 hover:text-white border border-gray-200"
+                }`}
+            >
+              Natural
+            </button>
+          </div>
+        </div>
+
+        {/* Error message */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-red-600">{error}</p>
+          </div>
+        )}
 
         {/* Main Layout - Three Section Design */}
         <div className="flex flex-col w-full">
@@ -750,7 +825,6 @@ const Diamond = () => {
               >
                 <FaFilter />
                 <span>{isMobileFilterOpen ? "Hide Filters" : "Filters"}</span>
-                {/* Add filter count badge */}
                 {Object.keys(filters).length > 0 && (
                   <span className="bg-white text-gray-900 text-xs rounded-full px-2 py-0.5 ml-2">
                     {Object.keys(filters).length}
@@ -838,8 +912,7 @@ const Diamond = () => {
                 <div className="text-sm text-gray-500">
                   {!isProductsLoading && pagination.totalCount > 0 && (
                     <span>
-                      Showing {diamonds.length} of {pagination.totalCount}{" "}
-                      diamonds
+                      Showing {diamonds.length} of {pagination.totalCount} diamonds
                     </span>
                   )}
                 </div>
@@ -889,25 +962,64 @@ const Diamond = () => {
                 setIsProductsLoading={setIsProductsLoading}
               />
 
-              {/* Pagination - use key to force complete refresh when pagination changes */}
+              {/* No Diamonds Found Message */}
+              {!isProductsLoading && (!diamonds || diamonds.length === 0) && (
+                <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+                  <div className="w-16 h-16 mb-4 text-gray-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">No Diamonds Found</h3>
+                  <p className="text-gray-600 max-w-md">
+                    We couldn't find any diamonds matching your criteria. Try adjusting your filters or search terms.
+                  </p>
+                  <button
+                    onClick={handleClearFilters}
+                    className="mt-6 px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-900 transition-colors duration-300"
+                  >
+                    Clear All Filters
+                  </button>
+                </div>
+              )}
+
+              {/* Pagination */}
               {!isProductsLoading &&
                 Array.isArray(diamonds) &&
                 diamonds.length > 0 &&
                 pagination.totalPages > 0 && (
-                  <Pagination
-                    key={paginationKey}
-                    currentPage={pagination.currentPage}
-                    totalPages={pagination.totalPages}
-                    onPageChange={handlePageChange}
-                    loading={isProductsLoading}
-                  />
+                  <div className="mt-8">
+                    <Pagination
+                      key={paginationKey}
+                      currentPage={pagination.currentPage}
+                      totalPages={pagination.totalPages}
+                      onPageChange={handlePageChange}
+                      loading={isProductsLoading}
+                    />
+                  </div>
                 )}
+
+              {/* Items per page selector */}
+              {!isProductsLoading && diamonds.length > 0 && (
+                <div className="mt-4 flex justify-end items-center space-x-2">
+                  <span className="text-sm text-gray-600">Items per page:</span>
+                  <select
+                    value={pagination.limit}
+                    onChange={(e) => handleLimitChange(e.target.value)}
+                    className="text-sm border rounded px-2 py-1"
+                  >
+                    <option value="12">12</option>
+                    <option value="24">24</option>
+                    <option value="48">48</option>
+                    <option value="80">80</option>
+                  </select>
+                </div>
+              )}
 
               {/* Summary */}
               {!isProductsLoading && pagination.totalCount > 0 && (
                 <div className="mt-4 text-center text-gray-500 text-sm">
-                  Showing {(pagination.currentPage - 1) * pagination.limit + 1}{" "}
-                  to{" "}
+                  Showing {(pagination.currentPage - 1) * pagination.limit + 1} to{" "}
                   {Math.min(
                     pagination.currentPage * pagination.limit,
                     pagination.totalCount

@@ -18,89 +18,113 @@ export const getAllDiamondProducts = async (
     }
 
     // Add filter parameters to the query string
-    // Ensure we're working with a clean filters object
     const cleanFilters = { ...filters };
+
+    // Handle product type filter
+    if (cleanFilters.productType) {
+      // Map the product type to the correct query parameter
+      if (cleanFilters.productType === "lab_diamond") {
+        queryString += `&diamondType=lab`;
+      } else if (cleanFilters.productType === "natural_diamond") {
+        queryString += `&diamondType=natural`;
+      }
+      delete cleanFilters.productType;
+    }
 
     // Handle search term specifically as a special case
     if (cleanFilters.searchTerm) {
       queryString += `&search=${encodeURIComponent(cleanFilters.searchTerm)}`;
-      delete cleanFilters.searchTerm; // Remove from normal filters
+      delete cleanFilters.searchTerm;
     }
 
-    // Remove any empty or null filters
-    Object.keys(cleanFilters).forEach((key) => {
-      if (
-        cleanFilters[key] === null ||
-        cleanFilters[key] === undefined ||
-        cleanFilters[key] === "" ||
-        (Array.isArray(cleanFilters[key]) && cleanFilters[key].length === 0) ||
-        (typeof cleanFilters[key] === "object" &&
-          !Array.isArray(cleanFilters[key]) &&
-          Object.keys(cleanFilters[key]).length === 0)
-      ) {
-        delete cleanFilters[key];
-      }
-    });
+    // Map frontend filter names to backend field names
+    const fieldMapping = {
+      color: 'col',
+      clarity: 'clar',
+      polish: 'pol',
+      symmetry: 'symm',
+      fluorescence: 'flo',
+      fluorescenceColor: 'floCol',
+      minPrice: 'minPrice',
+      maxPrice: 'maxPrice',
+      minCarat: 'minCarat',
+      maxCarat: 'maxCarat',
+      shape: 'shape',
+      cut: 'cut',
+      lab: 'lab',
+      girdle: 'girdle',
+      culet: 'culet',
+      eyeClean: 'eyeClean',
+      brown: 'brown',
+      green: 'green',
+      milky: 'milky',
+      minLength: 'minLength',
+      maxLength: 'maxLength',
+      minWidth: 'minWidth',
+      maxWidth: 'maxWidth',
+      minDepth: 'minDepth',
+      maxDepth: 'maxDepth',
+      minTable: 'minTable',
+      maxTable: 'maxTable',
+      minLwRatio: 'minLwRatio',
+      maxLwRatio: 'maxLwRatio',
+      certificateNumber: 'certificate_number',
+      mineOfOrigin: 'mineOfOrigin',
+      canadaMarkEligible: 'canadaMarkEligible',
+      isReturnable: 'isReturnable',
+      minPricePerCarat: 'minPricePerCarat',
+      maxPricePerCarat: 'maxPricePerCarat',
+      minDiscount: 'minDiscount',
+      maxDiscount: 'maxDiscount'
+    };
 
-    // Add remaining filters to query string
+    // Add all other filters to the query string with proper field mapping
     Object.entries(cleanFilters).forEach(([key, value]) => {
-      // Skip empty values
-      if (value === undefined || value === null || value === "") return;
-
-      // Handle arrays by joining with commas
-      if (Array.isArray(value)) {
-        if (value.length > 0) {
-          queryString += `&${key}=${value.join(",")}`;
+      if (value !== undefined && value !== null && value !== "") {
+        const backendField = fieldMapping[key] || key;
+        if (Array.isArray(value)) {
+          queryString += `&${backendField}=${value.join(",")}`;
+        } else {
+          queryString += `&${backendField}=${value}`;
         }
-      }
-      // Handle range objects with min/max properties
-      else if (
-        typeof value === "object" &&
-        (value.min !== undefined || value.max !== undefined)
-      ) {
-        if (value.min !== undefined) {
-          queryString += `&min${key.charAt(0).toUpperCase() + key.slice(1)}=${
-            value.min
-          }`;
-        }
-        if (value.max !== undefined) {
-          queryString += `&max${key.charAt(0).toUpperCase() + key.slice(1)}=${
-            value.max
-          }`;
-        }
-      }
-      // Special handling for range filter names with prefixes already (min/max)
-      else if (key.startsWith("min") || key.startsWith("max")) {
-        // These are already formatted properly, just add to query
-        queryString += `&${key}=${encodeURIComponent(value)}`;
-      }
-      // Handle boolean values
-      else if (typeof value === "boolean") {
-        queryString += `&${key}=${value}`;
-      }
-      // Handle simple string/number values
-      else {
-        queryString += `&${key}=${encodeURIComponent(value)}`;
       }
     });
 
+    console.log("Making API request to:", queryString);
     const response = await axiosInstance.get(queryString);
+    console.log("API Response:", response.data);
 
-    // Extract pagination data from response body instead of headers
+    if (!response.data) {
+      throw new Error("No data received from the server");
+    }
+
     const data = response.data;
-
-    // Extract or set default pagination values
-    const currentPage = data.currentPage || page;
-    const totalPages = data.totalPages || 1;
-    const totalCount = data.totalProductsCount || 0;
-    const productsPerPage = data.productsPerPage || limit;
-
-    // Check the shape of the response to determine where products are located
     let products = [];
+    let currentPage = page;
+    let totalPages = 1;
+    let totalCount = 0;
+    let productsPerPage = limit;
+
+    // Handle different response formats
     if (data.products && Array.isArray(data.products)) {
       products = data.products;
     } else if (Array.isArray(data)) {
       products = data;
+    } else if (data.data && Array.isArray(data.data)) {
+      products = data.data;
+    }
+
+    // Handle pagination data
+    if (data.pagination) {
+      currentPage = data.pagination.currentPage || page;
+      totalPages = data.pagination.totalPages || 1;
+      totalCount = data.pagination.totalCount || 0;
+      productsPerPage = data.pagination.limit || limit;
+    } else if (data.meta) {
+      currentPage = data.meta.currentPage || page;
+      totalPages = data.meta.totalPages || 1;
+      totalCount = data.meta.totalCount || 0;
+      productsPerPage = data.meta.limit || limit;
     }
 
     const result = {
@@ -110,13 +134,18 @@ export const getAllDiamondProducts = async (
         currentPage: parseInt(currentPage),
         totalPages: parseInt(totalPages),
         totalCount: parseInt(totalCount),
-        limit: parseInt(productsPerPage) || parseInt(limit),
+        limit: parseInt(productsPerPage),
       },
     };
+
+    console.log("Processed result:", result);
     return result;
   } catch (error) {
-    console.error("Error fetching diamond products:", error);
-    console.error("Error details:", error.response?.data || error.message);
+    console.error("Error in getAllDiamondProducts:", error);
+    if (error.response) {
+      console.error("Error response data:", error.response.data);
+      console.error("Error response status:", error.response.status);
+    }
     throw error;
   }
 };
@@ -124,7 +153,44 @@ export const getAllDiamondProducts = async (
 export const getDiamondProductById = async (id) => {
   try {
     const response = await axiosInstance.get(`/product/diamonds/${id}`);
-    return response.data;
+
+    // Ensure we have a valid response
+    if (!response.data) {
+      throw new Error("No data received from the server");
+    }
+
+    // Handle different response formats
+    let productData;
+    if (response.data.product) {
+      productData = response.data.product;
+    } else if (response.data) {
+      productData = response.data;
+    } else {
+      throw new Error("Invalid response format");
+    }
+
+    // Ensure all fields are present
+    const requiredFields = [
+      '_id', 'title', 'price', 'description', 'images', 'imageCover',
+      'shape', 'carats', 'col', 'clar', 'cut', 'pol', 'symm',
+      'flo', 'floCol', 'culet', 'lab', 'girdle', 'eyeClean',
+      'brown', 'green', 'milky', 'length', 'width', 'height',
+      'depth', 'table', 'productType', 'certificate_url', 'stockId',
+      'reportNo', 'mineOfOrigin', 'canadaMarkEligible', 'isReturnable',
+      'pricePerCarat', 'discount'
+    ];
+
+    // Add any missing fields with null values
+    requiredFields.forEach(field => {
+      if (!(field in productData)) {
+        productData[field] = null;
+      }
+    });
+
+    return {
+      success: true,
+      product: productData
+    };
   } catch (error) {
     console.error(`Error fetching diamond product with ID ${id}:`, error);
     throw error;

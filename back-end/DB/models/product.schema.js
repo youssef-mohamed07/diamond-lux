@@ -5,40 +5,38 @@ dotenv.config();
 
 const schema = new Schema(
   {
+    // Basic product info
     title: String,
     description: String,
     price: Number,
-    category: {
-      type: String,
-      required: true,
-    },
-    imageCover: { type: String, required: true },
+    category: String,
+    imageCover: String,
     images: [String],
     isPopular: { type: Boolean, default: false },
 
-    // Product type (diamond or jewelry)
+    // Product type
     productType: {
       type: String,
-      enum: ["diamond", "jewelry"],
+      enum: ["lab_diamond", "natural_diamond", "jewelry"],
       required: true,
     },
 
-    // Sub-category for jewelry (earrings, necklace, bracelet)
+    // Jewelry specific
     jewelryType: {
       type: String,
       enum: ["earrings", "necklace", "bracelet"],
-      required: function () {
-        return this.productType === "jewelry";
-      },
+    },
+    metal: String,
+    metalColor: String,
+    diamondType: {
+      type: String,
+      enum: ["lab_grown", "natural"],
     },
 
-    // Diamond-specific properties
-    shape: {
-      type: String,
-      required: function () {
-        return this.productType === "diamond";
-      },
-    },
+    // Diamond specific
+    stockId: String,
+    reportNo: String,
+    shape: String,
     carats: Number,
     col: String, // color
     clar: String, // clarity
@@ -55,32 +53,21 @@ const schema = new Schema(
     culet: String,
     lab: String,
     certificate_url: String,
+    certificate_number: String,
     girdle: String,
     eyeClean: String,
-    brown: String,
-    green: String,
-    milky: String,
-
-    // Jewelry-specific properties
-    diamondType: {
-      type: String,
-      enum: ["lab_grown", "natural"],
-      required: function () {
-        return this.productType === "jewelry";
-      },
-    },
-    metal: {
-      type: String,
-      required: function () {
-        return this.productType === "jewelry";
-      },
-    },
-    metalColor: {
-      type: String,
-      required: function () {
-        return this.productType === "jewelry";
-      },
-    },
+    brown: Boolean,
+    green: Boolean,
+    milky: Boolean,
+    pricePerCarat: Number,
+    discount: Number,
+    video: String,
+    pdf: String,
+    mineOfOrigin: String,
+    canadaMarkEligible: Boolean,
+    isReturnable: Boolean,
+    markupPrice: Number,
+    markupCurrency: String,
   },
   {
     versionKey: false,
@@ -95,9 +82,8 @@ schema.post("init", function (doc) {
   // Handle imageCover
   if (doc.imageCover) {
     if (!isExternalUrl(doc.imageCover)) {
-      doc.imageCover = `${
-        process.env.BACKEND_URL || "http://localhost:3000"
-      }/uploads/product/${doc.imageCover}`;
+      doc.imageCover = `${process.env.BACKEND_URL || "http://localhost:3000"
+        }/uploads/product/${doc.imageCover}`;
     }
   }
 
@@ -105,9 +91,8 @@ schema.post("init", function (doc) {
   if (doc.images) {
     doc.images = doc.images.map((img) => {
       if (!isExternalUrl(img)) {
-        return `${
-          process.env.BACKEND_URL || "http://localhost:3000"
-        }/uploads/product/${img}`;
+        return `${process.env.BACKEND_URL || "http://localhost:3000"
+          }/uploads/product/${img}`;
       }
       return img;
     });

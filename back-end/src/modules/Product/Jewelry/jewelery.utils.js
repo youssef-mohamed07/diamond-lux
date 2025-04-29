@@ -7,7 +7,9 @@ export const buildJeweleryFilterQuery = (queryParams) => {
   if (queryParams.search) {
     filterQuery.$or = [
       { title: { $regex: queryParams.search, $options: 'i' } },
-      { description: { $regex: queryParams.search, $options: 'i' } }
+      { description: { $regex: queryParams.search, $options: 'i' } },
+      { reportNo: { $regex: queryParams.search, $options: 'i' } },
+      { stockId: { $regex: queryParams.search, $options: 'i' } }
     ];
   }
 

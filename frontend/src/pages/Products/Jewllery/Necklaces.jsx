@@ -53,7 +53,7 @@ const Necklaces = () => {
   const [showClearFilter, setShowClearFilter] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [sortType, setSortType] = useState("relevant");
-  
+
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -126,15 +126,15 @@ const Necklaces = () => {
     maxCaratRef.current = maxCarat;
     maxPriceRef.current = maxPrice;
   }, [
-    currentPage, 
-    limit, 
-    searchQuery, 
-    selectedCategories, 
-    diamondTypes, 
-    metals, 
-    metalColors, 
-    caratRange, 
-    priceRange, 
+    currentPage,
+    limit,
+    searchQuery,
+    selectedCategories,
+    diamondTypes,
+    metals,
+    metalColors,
+    caratRange,
+    priceRange,
     sortType,
     maxCarat,
     maxPrice
@@ -143,50 +143,50 @@ const Necklaces = () => {
   // Function to extract unique filter values from products
   const extractUniqueFilterValues = useCallback((products) => {
     if (!products || products.length === 0) return;
-    
+
     // Extract unique diamond types
     const uniqueDiamondTypesSet = new Set();
     products.forEach(product => {
       if (product.diamondType) uniqueDiamondTypesSet.add(product.diamondType);
     });
     setUniqueDiamondTypes(Array.from(uniqueDiamondTypesSet));
-    
+
     // Extract unique metals
     const uniqueMetalsSet = new Set();
     products.forEach(product => {
       if (product.metal) uniqueMetalsSet.add(product.metal);
     });
     setUniqueMetals(Array.from(uniqueMetalsSet));
-    
+
     // Extract unique metal colors
     const uniqueMetalColorsSet = new Set();
     products.forEach(product => {
       if (product.metalColor) uniqueMetalColorsSet.add(product.metalColor);
     });
     setUniqueMetalColors(Array.from(uniqueMetalColorsSet));
-    
+
     // Find max price and carat for ranges
     const maxProductPrice = Math.max(...products.map(p => p.price || 0));
     const maxProductCarat = Math.max(...products.map(p => p.carats || 0));
-    
+
     // Ensure reasonable default values
     const defaultMaxPrice = maxProductPrice > 0 ? maxProductPrice : 100000;
     const defaultMaxCarat = maxProductCarat > 0 ? maxProductCarat : 20;
-    
+
     setMaxPrice(defaultMaxPrice);
     setMaxCarat(defaultMaxCarat);
-    
+
     // Only set the range values if they haven't been manually changed
     if (priceRange[0] === 0 && priceRange[1] === 100000) {
       setPriceRange([0, defaultMaxPrice]);
       priceRangeRef.current = [0, defaultMaxPrice];
     }
-    
+
     if (caratRange[0] === 0 && caratRange[1] === 20) {
       setCaratRange([0, defaultMaxCarat]);
       caratRangeRef.current = [0, defaultMaxCarat];
     }
-    
+
     // Filter categories to only include those with associated products
     if (categories && categories.length > 0) {
       const usedCategoryIds = new Set(products.map(p => p.category));
@@ -200,41 +200,41 @@ const Necklaces = () => {
   const fetchProducts = useCallback(async () => {
     // Save current scroll position before loading
     const scrollPosition = window.scrollY;
-    
+
     setIsLoading(true);
     try {
       // Prepare query parameters
       const params = new URLSearchParams();
-      
+
       // Pagination
       params.append('page', currentPageRef.current);
       params.append('limit', limitRef.current);
-      
+
       // Search query
       if (searchQueryRef.current) {
         params.append('search', searchQueryRef.current);
       }
-      
+
       // Category
       if (selectedCategoriesRef.current.length > 0) {
         params.append('category', selectedCategoriesRef.current.join(','));
       }
-      
+
       // Diamond Types
       if (diamondTypesRef.current.length > 0) {
         params.append('diamondType', diamondTypesRef.current.join(','));
       }
-      
+
       // Metals
       if (metalsRef.current.length > 0) {
         params.append('metal', metalsRef.current.join(','));
       }
-      
+
       // Metal Colors
       if (metalColorsRef.current.length > 0) {
         params.append('metalColor', metalColorsRef.current.join(','));
       }
-      
+
       // Carat Range
       if (caratRangeRef.current[0] > 0) {
         params.append('minCarat', caratRangeRef.current[0]);
@@ -242,7 +242,7 @@ const Necklaces = () => {
       if (caratRangeRef.current[1] < maxCaratRef.current) {
         params.append('maxCarat', caratRangeRef.current[1]);
       }
-      
+
       // Price Range
       if (priceRangeRef.current[0] > 0) {
         params.append('minPrice', priceRangeRef.current[0]);
@@ -250,23 +250,23 @@ const Necklaces = () => {
       if (priceRangeRef.current[1] < maxPriceRef.current) {
         params.append('maxPrice', priceRangeRef.current[1]);
       }
-      
+
       // Sort
       if (sortTypeRef.current !== 'relevant') {
         params.append('sort', sortTypeRef.current);
       }
-      
+
       const response = await axios.get(`${VITE_BACKEND_URL}/product/jewelery/necklaces`, { params });
-      
+
       console.log("Necklaces API response:", response.data);
-      
+
       // Update state with the response data
       setProducts(response.data.products);
       setFilterProducts(response.data.products);
       setTotalCount(response.data.totalProductsCount);
       setTotalPages(response.data.totalPages);
       setCurrentPage(response.data.currentPage);
-      
+
       // Extract unique filter values from the products
       extractUniqueFilterValues(response.data.products);
     } catch (error) {
@@ -281,7 +281,7 @@ const Necklaces = () => {
       }
     } finally {
       setIsLoading(false);
-      
+
       // Restore scroll position after loading completes
       setTimeout(() => {
         window.scrollTo({
@@ -353,7 +353,7 @@ const Necklaces = () => {
       extractUniqueFilterValues(necklaces);
       setIsLoading(false);
     }
-    
+
     // Only fetch from API on first mount
     if (isFirstMount.current) {
       isFirstMount.current = false;
@@ -365,24 +365,24 @@ const Necklaces = () => {
   const toggleFilter = (value, currentValues, setterFunction, refValue) => {
     // Save scroll position
     const scrollPosition = window.scrollY;
-    
+
     // Update filter values
     const newValues = currentValues.includes(value)
       ? currentValues.filter((item) => item !== value)
       : [...currentValues, value];
-    
+
     // Update state
     setterFunction(newValues);
-    
+
     // Update ref directly for immediate use
     if (refValue) {
       refValue.current = newValues;
     }
-    
+
     // Reset to page 1 when filtering
     setCurrentPage(1);
     currentPageRef.current = 1;
-    
+
     // Fetch updated results
     setTimeout(() => fetchProducts(), 100);
   };
@@ -395,7 +395,7 @@ const Necklaces = () => {
       const timer = setTimeout(() => {
         fetchProducts();
       }, 100);
-      
+
       return () => clearTimeout(timer);
     }
   }, [diamondTypes, metals, metalColors, selectedCategories, sortType]);
@@ -403,15 +403,15 @@ const Necklaces = () => {
   // Update URL with current filter state for shareable links
   useEffect(() => {
     const params = new URLSearchParams();
-    
+
     if (searchQuery) {
       params.append('q', searchQuery);
     }
-    
+
     if (selectedCategories.length > 0) {
       params.append('category', selectedCategories.join(','));
     }
-    
+
     // Only update URL if we have filter parameters
     if (params.toString()) {
       navigate(`${location.pathname}?${params.toString()}`, { replace: true });
@@ -425,11 +425,11 @@ const Necklaces = () => {
   const handlePageChange = (newPage) => {
     // Save current scroll position
     const scrollPosition = window.scrollY;
-    
+
     // Update page number
     setCurrentPage(newPage);
     currentPageRef.current = newPage;
-    
+
     // Fetch new data
     fetchProducts().then(() => {
       // After fetching, scroll to products section instead of top
@@ -465,7 +465,7 @@ const Necklaces = () => {
     setSearchQuery("");
     setSortType("relevant");
     setCurrentPage(1);
-    
+
     // Update refs immediately to avoid stale data
     selectedCategoriesRef.current = [];
     diamondTypesRef.current = [];
@@ -476,7 +476,7 @@ const Necklaces = () => {
     searchQueryRef.current = "";
     sortTypeRef.current = "relevant";
     currentPageRef.current = 1;
-    
+
     // Use timeout to ensure state updates have propagated
     setTimeout(() => fetchProducts(), 100);
   };
@@ -488,14 +488,14 @@ const Necklaces = () => {
     setMetalColors([]);
     setCaratRange([0, maxCarat]);
     setPriceRange([0, maxPrice]);
-    
+
     // Update refs immediately
     diamondTypesRef.current = [];
     metalsRef.current = [];
     metalColorsRef.current = [];
     caratRangeRef.current = [0, maxCarat];
     priceRangeRef.current = [0, maxPrice];
-    
+
     // Fetch updated results
     setTimeout(() => fetchProducts(), 100);
   };
@@ -516,7 +516,7 @@ const Necklaces = () => {
     setSearchQuery("");
     searchQueryRef.current = "";
     setIsSearching(false);
-    
+
     // If search was active, reload results
     if (searchQuery) {
       setTimeout(() => fetchProducts(), 100);
@@ -689,7 +689,7 @@ const Necklaces = () => {
                 type="text"
                 value={searchQuery}
                 onChange={handleSearchChange}
-                placeholder="Search necklaces..."
+                placeholder="Search by name, description, or report number..."
                 className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
               />
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -736,11 +736,10 @@ const Necklaces = () => {
                         onClick={(e) =>
                           toggleFilter(type, diamondTypes, setDiamondTypes, diamondTypesRef)
                         }
-                        className={`px-3 py-1 text-xs rounded-full ${
-                          diamondTypes.includes(type)
-                            ? "bg-gray-900 text-white shadow-md"
-                            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                        }`}
+                        className={`px-3 py-1 text-xs rounded-full ${diamondTypes.includes(type)
+                          ? "bg-gray-900 text-white shadow-md"
+                          : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                          }`}
                       >
                         {type}
                       </button>
@@ -762,11 +761,10 @@ const Necklaces = () => {
                         onClick={(e) =>
                           toggleFilter(metal, metals, setMetals, metalsRef)
                         }
-                        className={`px-3 py-1 text-xs rounded-full ${
-                          metals.includes(metal)
-                            ? "bg-gray-900 text-white shadow-md"
-                            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                        }`}
+                        className={`px-3 py-1 text-xs rounded-full ${metals.includes(metal)
+                          ? "bg-gray-900 text-white shadow-md"
+                          : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                          }`}
                       >
                         {metal}
                       </button>
@@ -788,11 +786,10 @@ const Necklaces = () => {
                         onClick={(e) =>
                           toggleFilter(color, metalColors, setMetalColors, metalColorsRef)
                         }
-                        className={`px-3 py-1 text-xs rounded-full ${
-                          metalColors.includes(color)
-                            ? "bg-gray-900 text-white shadow-md"
-                            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                        }`}
+                        className={`px-3 py-1 text-xs rounded-full ${metalColors.includes(color)
+                          ? "bg-gray-900 text-white shadow-md"
+                          : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                          }`}
                       >
                         {color}
                       </button>
@@ -928,11 +925,10 @@ const Necklaces = () => {
                                 onClick={(e) =>
                                   toggleFilter(type, diamondTypes, setDiamondTypes, diamondTypesRef)
                                 }
-                                className={`px-3 py-1 text-xs rounded-full ${
-                                  diamondTypes.includes(type)
-                                    ? "bg-gray-900 text-white"
-                                    : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                                }`}
+                                className={`px-3 py-1 text-xs rounded-full ${diamondTypes.includes(type)
+                                  ? "bg-gray-900 text-white"
+                                  : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                                  }`}
                               >
                                 {type}
                               </button>
@@ -954,11 +950,10 @@ const Necklaces = () => {
                                 onClick={(e) =>
                                   toggleFilter(metal, metals, setMetals, metalsRef)
                                 }
-                                className={`px-3 py-1 text-xs rounded-full ${
-                                  metals.includes(metal)
-                                    ? "bg-gray-900 text-white"
-                                    : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                                }`}
+                                className={`px-3 py-1 text-xs rounded-full ${metals.includes(metal)
+                                  ? "bg-gray-900 text-white"
+                                  : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                                  }`}
                               >
                                 {metal}
                               </button>
@@ -980,11 +975,10 @@ const Necklaces = () => {
                                 onClick={(e) =>
                                   toggleFilter(color, metalColors, setMetalColors, metalColorsRef)
                                 }
-                                className={`px-3 py-1 text-xs rounded-full ${
-                                  metalColors.includes(color)
-                                    ? "bg-gray-900 text-white"
-                                    : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                                }`}
+                                className={`px-3 py-1 text-xs rounded-full ${metalColors.includes(color)
+                                  ? "bg-gray-900 text-white"
+                                  : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                                  }`}
                               >
                                 {color}
                               </button>
@@ -1198,11 +1192,10 @@ const Necklaces = () => {
                           setCurrentPage(1);
                           setTimeout(() => fetchProducts(), 100);
                         }}
-                        className={`block w-full text-left px-4 py-2 hover:bg-gray-100 ${
-                          sortType === option.value
-                            ? "bg-gray-100 font-medium"
-                            : ""
-                        }`}
+                        className={`block w-full text-left px-4 py-2 hover:bg-gray-100 ${sortType === option.value
+                          ? "bg-gray-100 font-medium"
+                          : ""
+                          }`}
                       >
                         {option.label}
                       </button>
@@ -1263,7 +1256,7 @@ const Necklaces = () => {
             {totalPages > 1 && (
               <div className="mt-8 flex justify-center">
                 <nav className="flex items-center">
-                  <button 
+                  <button
                     onClick={() => {
                       if (currentPage > 1) {
                         handlePageChange(currentPage - 1);
@@ -1274,14 +1267,14 @@ const Necklaces = () => {
                   >
                     <FaChevronLeft className="h-5 w-5" />
                   </button>
-                  
+
                   {/* Generate page numbers */}
                   {[...Array(totalPages)].map((_, index) => {
                     const pageNum = index + 1;
-                    
+
                     // Only show a limited number of pages to avoid clutter
                     if (
-                      pageNum === 1 || 
+                      pageNum === 1 ||
                       pageNum === totalPages ||
                       (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
                     ) {
@@ -1291,17 +1284,16 @@ const Necklaces = () => {
                           onClick={() => {
                             handlePageChange(pageNum);
                           }}
-                          className={`mx-1 px-4 py-2 rounded-md ${
-                            currentPage === pageNum
-                              ? "bg-gray-900 text-white"
-                              : "hover:bg-gray-100"
-                          }`}
+                          className={`mx-1 px-4 py-2 rounded-md ${currentPage === pageNum
+                            ? "bg-gray-900 text-white"
+                            : "hover:bg-gray-100"
+                            }`}
                         >
                           {pageNum}
                         </button>
                       );
                     }
-                    
+
                     // Add ellipsis for skipped pages
                     if (
                       (pageNum === currentPage - 2 && pageNum > 1) ||
@@ -1309,11 +1301,11 @@ const Necklaces = () => {
                     ) {
                       return <span key={`ellipsis-${pageNum}`} className="mx-1">...</span>;
                     }
-                    
+
                     return null;
                   })}
-                  
-                  <button 
+
+                  <button
                     onClick={() => {
                       if (currentPage < totalPages) {
                         handlePageChange(currentPage + 1);
