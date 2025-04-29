@@ -39,7 +39,7 @@ const Diamond = () => {
 
   // Define filter options data
   const colorOptions = ["D", "E", "F", "G", "H", "I", "J", "K", "L", "M"];
-  const cutOptions = ["EX", "VG", "G", "F", "P"]; // EX=Excellent, VG=Very Good, G=Good, F=Fair, P=Poor
+  const cutOptions = ["EX", "VG", "G", "F", "P", "ID"]; // EX=Excellent, VG=Very Good, G=Good, F=Fair, P=Poor
   const clarityOptions = [
     "FL",
     "IF",
