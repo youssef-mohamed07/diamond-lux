@@ -259,32 +259,88 @@ const MobileFilterPanel = ({
           {/* Colors */}
           {colors && colors.length > 0 && (
             <div className="pb-4 border-b border-gray-200">
-              <div className="flex justify-between items-center mb-3">
-                <h3 className="text-lg font-medium">Color</h3>
+              <div className="flex justify-between items-center mb-3 sticky top-0 z-10 bg-white pt-2">
+                <h3 className="text-lg font-bold tracking-wide text-gray-900">Color</h3>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {colors.map((color) => (
-                  <button
-                    key={color}
-                    onClick={() => {
-                      if (selectedColors.includes(color)) {
-                        // If already selected, remove it (deselect) by sending just the single item
-                        // This will toggle it off in the Diamond page handler
-                        onColorChange([color]);
-                      } else {
-                        // Add to selection
-                        onColorChange([...selectedColors, color]);
-                      }
-                    }}
-                    className={`px-3 py-1 text-xs rounded-full ${
-                      selectedColors.includes(color)
-                        ? "bg-gray-900 text-white"
-                        : "bg-gray-100 text-gray-800"
-                    }`}
-                  >
-                    {color}
-                  </button>
-                ))}
+
+              <div className="rounded-xl bg-gray-50 p-3 shadow-sm mb-2">
+                {/* Regular Colors */}
+                <div className="mb-4">
+                  <h4 className="text-base font-semibold text-gray-700 mb-2">Regular Colors</h4>
+                  <div className="flex flex-nowrap gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                    {colors.filter(color => /^[D-M]$/.test(color)).map((color) => (
+                      <button
+                        key={color}
+                        onClick={() => {
+                          if (selectedColors.includes(color)) {
+                            onColorChange([color]);
+                          } else {
+                            onColorChange([...selectedColors, color]);
+                          }
+                        }}
+                        className={`min-w-[44px] px-4 py-2 text-base rounded-full border transition-colors duration-150 font-medium focus:outline-none focus:ring-2 focus:ring-gray-400 ${
+                          selectedColors.includes(color)
+                            ? "bg-gray-900 text-white border-gray-900 shadow"
+                            : "bg-white text-gray-800 border-gray-300 hover:bg-gray-200"
+                        }`}
+                      >
+                        {color}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Fancy Colors */}
+                <div className="mb-4">
+                  <h4 className="text-base font-semibold text-gray-700 mb-2">Fancy Colors</h4>
+                  <div className="flex flex-nowrap gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                    {colors.filter(color => !color.startsWith('Fancy') && !/^[D-M]$/.test(color)).map((color) => (
+                      <button
+                        key={color}
+                        onClick={() => {
+                          if (selectedColors.includes(color)) {
+                            onColorChange([color]);
+                          } else {
+                            onColorChange([...selectedColors, color]);
+                          }
+                        }}
+                        className={`min-w-[80px] px-4 py-2 text-base rounded-full border transition-colors duration-150 font-medium focus:outline-none focus:ring-2 focus:ring-gray-400 ${
+                          selectedColors.includes(color)
+                            ? "bg-gray-900 text-white border-gray-900 shadow"
+                            : "bg-white text-gray-800 border-gray-300 hover:bg-gray-200"
+                        }`}
+                      >
+                        {color}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Fancy Intensities */}
+                <div className="mb-2">
+                  <h4 className="text-base font-semibold text-gray-700 mb-2">Fancy Intensities</h4>
+                  <div className="flex flex-nowrap gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                    {colors.filter(color => color.startsWith('Fancy')).map((intensity) => (
+                      <button
+                        key={intensity}
+                        onClick={() => {
+                          if (selectedColors.includes(intensity)) {
+                            onColorChange([intensity]);
+                          } else {
+                            onColorChange([...selectedColors, intensity]);
+                          }
+                        }}
+                        className={`min-w-[120px] px-4 py-2 text-base rounded-full border transition-colors duration-150 font-medium focus:outline-none focus:ring-2 focus:ring-gray-400 ${
+                          selectedColors.includes(intensity)
+                            ? "bg-gray-900 text-white border-gray-900 shadow"
+                            : "bg-white text-gray-800 border-gray-300 hover:bg-gray-200"
+                        }`}
+                      >
+                        {intensity}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           )}

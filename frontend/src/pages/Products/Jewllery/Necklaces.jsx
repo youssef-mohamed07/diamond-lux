@@ -33,6 +33,14 @@ import { debounce } from "lodash";
 const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const backendURL_WITHOUT_API = VITE_BACKEND_URL.replace("/api", "");
 
+const colorOptions = ["D", "E", "F", "G", "H", "I", "J", "K", "L", "M"];
+const fancyColorOptions = [
+  "Yellow", "Orange", "Pink", "Blue", "Green", "Purple", "Brown", "Gray", "Black"
+];
+const fancyIntensityOptions = [
+  "Fancy Light", "Fancy Very Light", "Fancy", "Fancy Intense", "Fancy Deep", "Fancy Vivid", "Fancy Dark"
+];
+
 const Necklaces = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -723,6 +731,67 @@ const Necklaces = () => {
             </h2>
 
             <div className="flex flex-col">
+              {/* Color Filter */}
+              <div className="w-full mb-8">
+                <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center justify-between">
+                  <span>Color</span>
+                </h3>
+                {/* Regular Colors */}
+                <div className="mb-4">
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">Regular Colors</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {colorOptions.map((color) => (
+                      <button
+                        key={color}
+                        onClick={() => toggleFilter(color, diamondTypes, setDiamondTypes, diamondTypesRef)}
+                        className={`px-3 py-1 text-xs rounded-full ${diamondTypes.includes(color)
+                          ? "bg-gray-900 text-white shadow-md"
+                          : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                          }`}
+                      >
+                        {color}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {/* Fancy Colors */}
+                <div className="mb-4">
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">Fancy Colors</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {fancyColorOptions.map((color) => (
+                      <button
+                        key={color}
+                        onClick={() => toggleFilter(color, diamondTypes, setDiamondTypes, diamondTypesRef)}
+                        className={`px-3 py-1 text-xs rounded-full ${diamondTypes.includes(color)
+                          ? "bg-gray-900 text-white shadow-md"
+                          : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                          }`}
+                      >
+                        {color}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {/* Fancy Intensities */}
+                <div className="mb-4">
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">Fancy Intensities</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {fancyIntensityOptions.map((intensity) => (
+                      <button
+                        key={intensity}
+                        onClick={() => toggleFilter(intensity, diamondTypes, setDiamondTypes, diamondTypesRef)}
+                        className={`px-3 py-1 text-xs rounded-full ${diamondTypes.includes(intensity)
+                          ? "bg-gray-900 text-white shadow-md"
+                          : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                          }`}
+                      >
+                        {intensity}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
               {/* Diamond Type Filter */}
               {uniqueDiamondTypes.length > 0 && (
                 <div className="w-full mb-8">
@@ -912,6 +981,27 @@ const Necklaces = () => {
 
                     {/* Mobile Quick Filters Section */}
                     <div className="mb-5">
+                      {/* Color Filter */}
+                      <div className="mb-6">
+                        <h3 className="text-base font-medium text-gray-900 mb-3">
+                          Color
+                        </h3>
+                        <div className="flex flex-wrap gap-2">
+                          {colorOptions.map((color) => (
+                            <button
+                              key={color}
+                              onClick={(e) => toggleFilter(color, diamondTypes, setDiamondTypes, diamondTypesRef)}
+                              className={`px-3 py-1 text-xs rounded-full ${diamondTypes.includes(color)
+                                ? "bg-gray-900 text-white"
+                                : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                                }`}
+                            >
+                              {color}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
                       {/* Diamond Type Filter */}
                       {uniqueDiamondTypes.length > 0 && (
                         <div className="mb-6">

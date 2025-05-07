@@ -64,9 +64,34 @@ function normalizeShapeName(csvShape) {
   return shapeMapping[csvShapeUpper] || shapesMap[csvShapeUpper.toLowerCase()] || "round";
 }
 
+// Function to parse color values into color and fancy intensity
+function parseColorValue(colorValue) {
+  if (!colorValue) return { color: 'N/A', fancyIntensity: null };
+
+  // Handle regular D-Z colors
+  if (/^[D-Z]$/.test(colorValue)) {
+    return { color: colorValue, fancyIntensity: null };
+  }
+
+  // Handle fancy colors
+  const fancyPattern = /^(Fancy\s+)?(Light|Very\s+Light|Intense|Deep|Vivid|Dark)?\s*([A-Za-z\s]+)$/i;
+  const match = colorValue.match(fancyPattern);
+
+  if (match) {
+    const [_, isFancy, intensity, color] = match;
+    return {
+      color: color.trim(),
+      fancyIntensity: intensity ? intensity.trim() : null
+    };
+  }
+
+  return { color: colorValue, fancyIntensity: null };
+}
+
 // Function to validate and clean product data
 function validateProductData(item, type) {
   const shape = normalizeShapeName(item.shape);
+  const { color, fancyIntensity } = parseColorValue(item.col);
 
   // Basic validation
   if (!item.carats || !item.col || !item.clar) {
@@ -93,7 +118,8 @@ function validateProductData(item, type) {
     reportNo: item.ReportNo,
     shape: shape || 'round',
     carats: parseFloat(item.carats) || 0,
-    col: item.col || 'N/A',
+    col: color, // Store the base color
+    fancyIntensity: fancyIntensity, // Store the fancy intensity separately
     clar: item.clar || 'N/A',
     cut: item.cut || 'N/A',
     pol: item.pol || 'N/A',

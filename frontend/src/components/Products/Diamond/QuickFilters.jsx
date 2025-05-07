@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { getImageUrl } from "../../../../utils/imageHelper";
+import DoubleRangeSlider from '../DoubleRangeSlider';
 
 const QuickFilters = ({
   categories,
@@ -312,100 +313,110 @@ const QuickFilters = ({
             <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center justify-between">
               <span>Color</span>
             </h3>
-            <div className="flex flex-wrap gap-2">
-              {colors.map((color) => (
-                <button
-                  key={color}
-                  onClick={() => handleColorToggle(color)}
-                  className={`px-3 py-1 text-xs rounded-full ${
-                    selectedColors.includes(color)
-                      ? "bg-gray-900 text-white shadow-md"
-                      : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                  }`}
-                >
-                  {color}
-                </button>
-              ))}
+            
+            {/* Regular Colors */}
+            <div className="mb-4">
+              <h4 className="text-sm font-medium text-gray-700 mb-2">Regular Colors</h4>
+              <div className="flex flex-wrap gap-2">
+                {colors.filter(color => /^[D-M]$/.test(color)).map((color) => (
+                  <button
+                    key={color}
+                    onClick={() => handleColorToggle(color)}
+                    className={`px-3 py-1 text-xs rounded-full ${
+                      selectedColors.includes(color)
+                        ? "bg-gray-900 text-white shadow-md"
+                        : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                    }`}
+                  >
+                    {color}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Fancy Colors */}
+            <div className="mb-4">
+              <h4 className="text-sm font-medium text-gray-700 mb-2">Fancy Colors</h4>
+              <div className="flex flex-wrap gap-2">
+                {colors.filter(color => !color.startsWith('Fancy') && !/^[D-M]$/.test(color)).map((color) => (
+                  <button
+                    key={color}
+                    onClick={() => handleColorToggle(color)}
+                    className={`px-3 py-1 text-xs rounded-full ${
+                      selectedColors.includes(color)
+                        ? "bg-gray-900 text-white shadow-md"
+                        : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                    }`}
+                  >
+                    {color}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Fancy Intensities */}
+            <div className="mb-4">
+              <h4 className="text-sm font-medium text-gray-700 mb-2">Fancy Intensities</h4>
+              <div className="flex flex-wrap gap-2">
+                {colors.filter(color => color.startsWith('Fancy')).map((intensity) => (
+                  <button
+                    key={intensity}
+                    onClick={() => handleColorToggle(intensity)}
+                    className={`px-3 py-1 text-xs rounded-full ${
+                      selectedColors.includes(intensity)
+                        ? "bg-gray-900 text-white shadow-md"
+                        : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                    }`}
+                  >
+                    {intensity}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         )}
 
         {/* 2x2 Grid for Price/Carat and Cut/Clarity */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-4">
-          {/* Price Range Inputs */}
+          {/* Price Range Slider */}
           <div>
             <h3 className="text-lg font-medium text-gray-900 mb-4">
               Price Range
             </h3>
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                    $
-                  </span>
-                  <input
-                    type="number"
-                    min={0}
-                    value={minPrice}
-                    onChange={(e) =>
-                      handlePriceChange(Number(e.target.value), maxPrice)
-                    }
-                    className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
-                  />
-                </div>
-              </div>
-              <div className="mx-4 text-gray-400 self-end mb-2">to</div>
-              <div className="flex-1">
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                    $
-                  </span>
-                  <input
-                    type="number"
-                    min={0}
-                    value={maxPrice}
-                    onChange={(e) =>
-                      handlePriceChange(minPrice, Number(e.target.value))
-                    }
-                    className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
-                  />
-                </div>
-              </div>
-            </div>
+            <DoubleRangeSlider
+              min={0}
+              max={1000000}
+              step={50}
+              value={[minPrice, maxPrice]}
+              onChange={([min, max]) => {
+                setMinPrice(min);
+                setMaxPrice(max);
+                onPriceChange({ min, max });
+              }}
+              minLabel="Min. Price"
+              maxLabel="Max. Price"
+              prefix="$ "
+            />
           </div>
 
-          {/* Carat Range Inputs */}
+          {/* Carat Range Slider */}
           <div>
             <h3 className="text-lg font-medium text-gray-900 mb-4">
               Carat Range
             </h3>
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <input
-                  type="number"
-                  min={0}
-                  step="0.01"
-                  value={minCarat}
-                  onChange={(e) =>
-                    handleCaratChange(Number(e.target.value), maxCarat)
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                />
-              </div>
-              <div className="mx-4 text-gray-400 self-end mb-2">to</div>
-              <div className="flex-1">
-                <input
-                  type="number"
-                  min={0}
-                  step="0.01"
-                  value={maxCarat}
-                  onChange={(e) =>
-                    handleCaratChange(minCarat, Number(e.target.value))
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                />
-              </div>
-            </div>
+            <DoubleRangeSlider
+              min={0.01}
+              max={60}
+              step={0.01}
+              value={[minCarat, maxCarat]}
+              onChange={([min, max]) => {
+                setMinCarat(min);
+                setMaxCarat(max);
+                onCaratChange({ min, max });
+              }}
+              minLabel="Min. Carat"
+              maxLabel="Max. Carat"
+            />
           </div>
 
           {/* Cut Filter */}

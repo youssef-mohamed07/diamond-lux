@@ -39,6 +39,7 @@ const schema = new Schema(
     shape: String,
     carats: Number,
     col: String, // color
+    fancyIntensity: String, // fancy color intensity (Light, Very Light, Intense, Deep, Vivid, Dark)
     clar: String, // clarity
     cut: String,
     pol: String, // polish

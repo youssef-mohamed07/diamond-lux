@@ -10,13 +10,14 @@ import AdvancedFilters from "../../components/Products/Diamond/AdvancedFilters";
 import { useDiamonds } from "../../../hooks/Products/Diamond/useDiamonds";
 import Pagination from "../../components/Products/Pagination";
 import SortDropdown from "../../components/Products/SortDropdown";
+import DoubleRangeSlider from "../../components/Products/DoubleRangeSlider";
 
 const Diamond = () => {
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [isProductsLoading, setIsProductsLoading] = useState(true);
   const [paginationKey, setPaginationKey] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
-  const [diamondType, setDiamondType] = useState("all");
+  const [diamondType, setDiamondType] = useState("lab");
   const [error, setError] = useState(null);
 
   // Get data and functions from useDiamonds hook
@@ -39,6 +40,12 @@ const Diamond = () => {
 
   // Define filter options data
   const colorOptions = ["D", "E", "F", "G", "H", "I", "J", "K", "L", "M"];
+  const fancyColorOptions = [
+    "Yellow", "Orange", "Pink", "Blue", "Green", "Purple", "Brown", "Gray", "Black"
+  ];
+  const fancyIntensityOptions = [
+    "Fancy Light", "Fancy Very Light", "Fancy", "Fancy Intense", "Fancy Deep", "Fancy Vivid", "Fancy Dark"
+  ];
   const cutOptions = ["EX", "VG", "G", "F", "P", "ID"]; // EX=Excellent, VG=Very Good, G=Good, F=Fair, P=Poor
   const clarityOptions = [
     "FL",
@@ -111,39 +118,61 @@ const Diamond = () => {
       // If empty array is passed, remove the filter
       const updatedFilters = { ...filters };
       delete updatedFilters.col;
+      delete updatedFilters.fancyIntensity;
       updateFilters(updatedFilters);
     } else if (selectedColors.length === 1) {
       // Check if this is a toggle operation on an already selected color
       const colorValue = selectedColors[0];
 
-      // Create an array from the current color filter for consistent handling
+      // Create arrays from the current color filters for consistent handling
       const currentColors = Array.isArray(filters.col)
         ? filters.col
         : filters.col
           ? filters.col.split(",")
           : [];
 
-      if (currentColors.includes(colorValue)) {
+      const currentFancyIntensities = Array.isArray(filters.fancyIntensity)
+        ? filters.fancyIntensity
+        : filters.fancyIntensity
+          ? filters.fancyIntensity.split(",")
+          : [];
+
+      if (currentColors.includes(colorValue) || currentFancyIntensities.includes(colorValue)) {
         // If the color is already selected and it's the only one, remove the filter
-        if (currentColors.length === 1) {
+        if (currentColors.length === 1 || currentFancyIntensities.length === 1) {
           const updatedFilters = { ...filters };
           delete updatedFilters.col;
+          delete updatedFilters.fancyIntensity;
           updateFilters(updatedFilters);
         } else {
           // If multiple colors are selected, remove just this one
-          const newColors = currentColors.filter(
-            (color) => color !== colorValue
-          );
-          updateFilters({ ...filters, col: newColors });
+          const newColors = currentColors.filter(color => color !== colorValue);
+          const newFancyIntensities = currentFancyIntensities.filter(intensity => intensity !== colorValue);
+          
+          const updatedFilters = { ...filters };
+          if (newColors.length > 0) updatedFilters.col = newColors;
+          if (newFancyIntensities.length > 0) updatedFilters.fancyIntensity = newFancyIntensities;
+          updateFilters(updatedFilters);
         }
       } else {
         // If it's a new color, add it to existing selections
-        const newColors = [...currentColors, colorValue];
-        updateFilters({ ...filters, col: newColors });
+        const updatedFilters = { ...filters };
+        if (fancyIntensityOptions.includes(colorValue)) {
+          updatedFilters.fancyIntensity = [...currentFancyIntensities, colorValue];
+        } else {
+          updatedFilters.col = [...currentColors, colorValue];
+        }
+        updateFilters(updatedFilters);
       }
     } else {
       // Multiple colors were passed, use as is
-      updateFilters({ ...filters, col: selectedColors });
+      const updatedFilters = { ...filters };
+      const regularColors = selectedColors.filter(color => !fancyIntensityOptions.includes(color));
+      const fancyIntensities = selectedColors.filter(color => fancyIntensityOptions.includes(color));
+      
+      if (regularColors.length > 0) updatedFilters.col = regularColors;
+      if (fancyIntensities.length > 0) updatedFilters.fancyIntensity = fancyIntensities;
+      updateFilters(updatedFilters);
     }
   };
 
@@ -568,13 +597,8 @@ const Diamond = () => {
     setDiamondType(type);
     setError(null);
     const updatedFilters = { ...filters };
-
-    if (type === "all") {
-      delete updatedFilters.productType;
-    } else {
-      // Set the correct product type based on the selected type
-      updatedFilters.productType = type === "lab" ? "lab_diamond" : "natural_diamond";
-    }
+    // Set the correct product type based on the selected type
+    updatedFilters.productType = type === "lab" ? "lab_diamond" : "natural_diamond";
 
     // Reset to first page when changing diamond type
     setPaginationKey((prev) => prev + 1);
@@ -583,11 +607,7 @@ const Diamond = () => {
 
     // Update URL
     const url = new URL(window.location);
-    if (type !== "all") {
-      url.searchParams.set("type", type);
-    } else {
-      url.searchParams.delete("type");
-    }
+    url.searchParams.set("type", type);
     url.searchParams.set("page", "1");
     window.history.pushState({}, "", url);
   };
@@ -661,7 +681,7 @@ const Diamond = () => {
     const search = params.get("search");
 
     // Set initial values
-    if (type && ["all", "lab", "natural"].includes(type)) {
+    if (type && ["lab", "natural"].includes(type)) {
       setDiamondType(type);
       handleDiamondTypeChange(type);
     }
@@ -683,11 +703,10 @@ const Diamond = () => {
       ? filters.shape.split(",").map(String)
       : [];
 
-  const selectedColors = Array.isArray(filters.col)
-    ? filters.col
-    : filters.col
-      ? filters.col.split(",")
-      : [];
+  const selectedColors = [
+    ...(Array.isArray(filters.col) ? filters.col : filters.col ? filters.col.split(",") : []),
+    ...(Array.isArray(filters.fancyIntensity) ? filters.fancyIntensity : filters.fancyIntensity ? filters.fancyIntensity.split(",") : [])
+  ];
 
   const selectedCuts = Array.isArray(filters.cut)
     ? filters.cut
@@ -755,15 +774,6 @@ const Diamond = () => {
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-wrap gap-4 mb-6 justify-center">
             <button
-              onClick={() => handleDiamondTypeChange("all")}
-              className={`px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-300 transform hover:scale-105 ${diamondType === "all"
-                ? "bg-black text-white shadow-lg hover:bg-gray-900"
-                : "bg-white text-gray-700 hover:bg-gray-900 hover:text-white border border-gray-200"
-                }`}
-            >
-              All Diamonds
-            </button>
-            <button
               onClick={() => handleDiamondTypeChange("lab")}
               className={`px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-300 transform hover:scale-105 ${diamondType === "lab"
                 ? "bg-black text-white shadow-lg hover:bg-gray-900"
@@ -798,7 +808,7 @@ const Diamond = () => {
             categories={diamondShapes}
             selectedCategories={selectedShapes}
             onCategoryChange={handleShapeChange}
-            colors={colorOptions}
+            colors={[...colorOptions, ...fancyColorOptions, ...fancyIntensityOptions]}
             selectedColors={selectedColors}
             onColorChange={handleColorChange}
             priceRange={priceRange}
@@ -840,7 +850,7 @@ const Diamond = () => {
               selectedCategories={selectedShapes}
               onCategoryChange={handleShapeChange}
               categories={diamondShapes}
-              colors={colorOptions}
+              colors={[...colorOptions, ...fancyColorOptions, ...fancyIntensityOptions]}
               selectedColors={selectedColors}
               onColorChange={handleColorChange}
               priceRange={priceRange}
