@@ -83,7 +83,7 @@ const Wishlist = () => {
             My Wishlist
           </h1>
           <Link
-            to="/products"
+            to="/products/diamond"
             className="text-gray-600 hover:text-gray-900 flex items-center self-start sm:self-auto"
           >
             <FaArrowLeft className="mr-2" />
@@ -100,7 +100,7 @@ const Wishlist = () => {
               Browse our collection and add items to your wishlist.
             </p>
             <Link
-              to="/products"
+              to="/products/diamond"
               className="inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-gradient-to-br from-gray-900 via-gray-800 to-black hover:from-gray-800 hover:to-gray-700"
             >
               Start Shopping

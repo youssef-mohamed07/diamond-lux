@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import "./DoubleRangeSlider.css";
 
 const DoubleRangeSlider = ({
@@ -7,69 +7,59 @@ const DoubleRangeSlider = ({
   step,
   value,
   onChange,
-  minLabel,
-  maxLabel,
   prefix = "",
   suffix = "",
 }) => {
   const [minValue, setMinValue] = useState(value[0]);
   const [maxValue, setMaxValue] = useState(value[1]);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     setMinValue(value[0]);
     setMaxValue(value[1]);
   }, [value]);
 
-  const handleMinChange = (e) => {
-    const val = Math.min(Number(e.target.value), maxValue - step);
-    setMinValue(val);
-    onChange([val, maxValue]);
+  const handleMinChange = useCallback((e) => {
+    const newMin = Math.min(Number(e.target.value), maxValue - step);
+    setMinValue(newMin);
+    onChange({ min: newMin, max: maxValue });
+  }, [maxValue, step, onChange]);
+
+  const handleMaxChange = useCallback((e) => {
+    const newMax = Math.max(Number(e.target.value), minValue + step);
+    setMaxValue(newMax);
+    onChange({ min: minValue, max: newMax });
+  }, [minValue, step, onChange]);
+
+  const handleMouseDown = () => {
+    setIsDragging(true);
   };
 
-  const handleMaxChange = (e) => {
-    const val = Math.max(Number(e.target.value), minValue + step);
-    setMaxValue(val);
-    onChange([minValue, val]);
+  const handleMouseUp = () => {
+    setIsDragging(false);
   };
 
-  const handleMinInput = (e) => {
-    let val = Number(e.target.value);
-    if (isNaN(val)) val = min;
-    val = Math.max(min, Math.min(val, maxValue - step));
-    setMinValue(val);
-    onChange([val, maxValue]);
-  };
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener('touchend', handleMouseUp);
+    }
+    return () => {
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('touchend', handleMouseUp);
+    };
+  }, [isDragging]);
 
-  const handleMaxInput = (e) => {
-    let val = Number(e.target.value);
-    if (isNaN(val)) val = max;
-    val = Math.min(max, Math.max(val, minValue + step));
-    setMaxValue(val);
-    onChange([minValue, val]);
+  // Format the value for display
+  const formatValue = (val) => {
+    if (step < 1) {
+      return val.toFixed(2);
+    }
+    return Math.round(val).toLocaleString();
   };
 
   return (
     <div className="double-range-slider">
-      <div className="inputs">
-        <input
-          type="number"
-          value={minValue}
-          min={min}
-          max={maxValue - step}
-          onChange={handleMinInput}
-          className="range-input"
-        />
-        <span className="label">{minLabel}</span>
-        <input
-          type="number"
-          value={maxValue}
-          min={minValue + step}
-          max={max}
-          onChange={handleMaxInput}
-          className="range-input"
-        />
-        <span className="label">{maxLabel}</span>
-      </div>
       <div className="slider-container">
         <input
           type="range"
@@ -78,6 +68,8 @@ const DoubleRangeSlider = ({
           step={step}
           value={minValue}
           onChange={handleMinChange}
+          onMouseDown={handleMouseDown}
+          onTouchStart={handleMouseDown}
           className="thumb thumb--left"
           style={{ zIndex: minValue > max - 100 ? "5" : "3" }}
         />
@@ -88,6 +80,8 @@ const DoubleRangeSlider = ({
           step={step}
           value={maxValue}
           onChange={handleMaxChange}
+          onMouseDown={handleMouseDown}
+          onTouchStart={handleMouseDown}
           className="thumb thumb--right"
         />
         <div className="slider">
@@ -104,12 +98,12 @@ const DoubleRangeSlider = ({
       <div className="slider-values">
         <span>
           {prefix}
-          {minValue}
+          {formatValue(minValue)}
           {suffix}
         </span>
         <span>
           {prefix}
-          {maxValue}
+          {formatValue(maxValue)}
           {suffix}
         </span>
       </div>

@@ -12,11 +12,13 @@ import { RiSparklingFill } from "react-icons/ri";
 
 const Hero = () => {
   const [currentImage, setCurrentImage] = useState(0);
-  const [homeData, setHomeData] = useState();
-  const [heroTitle, setHeroTitle] = useState("");
-  const [heroSubtitle, setSubtitle] = useState("");
-  const [heroButtonText, setButtonText] = useState("");
+  const [homeData, setHomeData] = useState(null);
+  const [heroTitle, setHeroTitle] = useState("Discover Timeless Elegance");
+  const [heroSubtitle, setSubtitle] = useState("Explore our exquisite collection of diamonds");
+  const [heroButtonText, setButtonText] = useState("Explore Collection");
   const [heroImages, setHeroImages] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const containerRef = useRef(null);
   const { scrollYProgress } = useScroll({
@@ -31,36 +33,81 @@ const Hero = () => {
   useEffect(() => {
     const fetchHeroData = async () => {
       try {
+        setIsLoading(true);
+        setError(null);
+        
         const response = await axios.get(
           `${import.meta.env.VITE_BACKEND_URL || "http://localhost:3000"}/home`
         );
 
-        if (!response.data) {
-          alert("No data found for the hero section.");
-          return;
+        if (!response.data || !response.data.home) {
+          throw new Error("Invalid data format received from server");
         }
 
         const { home } = response.data;
 
-        setHeroTitle(home.Title);
-        setSubtitle(home.subtitle);
-        setButtonText(home.buttonText);
-        setHeroImages(home.imagesCover);
+        setHeroTitle(home.Title || "Discover Timeless Elegance");
+        setSubtitle(home.subtitle || "Explore our exquisite collection of diamonds");
+        setButtonText(home.buttonText || "Explore Collection");
+        setHeroImages(home.imagesCover || []);
         setHomeData(response.data);
       } catch (error) {
         console.error("Error fetching hero data:", error);
+        setError("Failed to load hero content. Please try again later.");
+        // Set default values in case of error
+        setHeroTitle("Discover Timeless Elegance");
+        setSubtitle("Explore our exquisite collection of diamonds");
+        setButtonText("Explore Collection");
+        setHeroImages([]);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchHeroData();
+  }, []);
+
+  // Separate useEffect for image rotation
+  useEffect(() => {
+    if (heroImages.length === 0) return;
 
     const interval = setInterval(() => {
       setCurrentImage((prev) =>
         prev === heroImages.length - 1 ? 0 : prev + 1
       );
     }, 5000);
+
     return () => clearInterval(interval);
   }, [heroImages.length]);
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="relative h-[90vh] w-full overflow-hidden bg-gray-100 flex items-center justify-center">
+        <div className="animate-pulse flex flex-col items-center space-y-4">
+          <div className="h-12 w-64 bg-gray-200 rounded"></div>
+          <div className="h-4 w-48 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="relative h-[90vh] w-full overflow-hidden bg-gray-100 flex items-center justify-center">
+        <div className="text-center p-4">
+          <p className="text-red-500 mb-4">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -69,25 +116,32 @@ const Hero = () => {
     >
       {/* Background Images with Crossfade */}
       <div className="absolute inset-0 z-0">
-        <AnimatePresence>
-          {heroImages.map(
-            (image, index) =>
-              index === currentImage && (
-                <motion.div
-                  key={image}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 1.5 }}
-                  className="absolute inset-0"
-                >
-                  <img
-                    src={image}
-                    alt="Luxury Diamond"
-                    className="w-full h-full object-cover object-center"
-                  />
-                </motion.div>
-              )
+        <AnimatePresence mode="wait">
+          {heroImages.length > 0 ? (
+            heroImages.map(
+              (image, index) =>
+                index === currentImage && (
+                  <motion.div
+                    key={image}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 1.5 }}
+                    className="absolute inset-0"
+                  >
+                    <img
+                      src={image}
+                      alt="Luxury Diamond"
+                      className="w-full h-full object-cover object-center"
+                      onError={(e) => {
+                        e.target.src = "https://via.placeholder.com/1920x1080?text=Luxury+Diamond";
+                      }}
+                    />
+                  </motion.div>
+                )
+            )
+          ) : (
+            <div className="absolute inset-0 bg-gradient-to-r from-gray-900 to-gray-800"></div>
           )}
         </AnimatePresence>
 
@@ -182,11 +236,11 @@ const Hero = () => {
               className="flex flex-col sm:flex-row gap-4 sm:gap-6 pt-2 sm:pt-4"
             >
               <Link
-                to="/products"
+                to="/products/diamond"
                 className="group relative overflow-hidden bg-white px-6 sm:px-8 py-3 sm:py-4 text-black transition-all duration-300 ease-out hover:bg-opacity-90 hover:shadow-lg text-center sm:text-left"
               >
                 <span className="relative z-10 flex items-center justify-center font-medium text-sm sm:text-base">
-                  {heroButtonText || "Explore Collection"}
+                  {heroButtonText}
                   <FaArrowRight className="ml-2 transition-transform duration-300 group-hover:translate-x-1" />
                 </span>
               </Link>
@@ -202,7 +256,7 @@ const Hero = () => {
           >
             <div className="relative w-[500px] h-[500px] mx-auto">
               {/* Diamond glow effect */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64  bg-white/20 blur-3xl"></div>
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-white/20 blur-3xl"></div>
 
               {/* Diamond container */}
               <motion.div
@@ -255,7 +309,7 @@ const Hero = () => {
                         ease: "easeInOut",
                       }}
                     >
-                      <div className="w-20 h-20 bg-white/30  blur-md"></div>
+                      <div className="w-20 h-20 bg-white/30 blur-md"></div>
                     </motion.div>
                   ))}
                 </div>

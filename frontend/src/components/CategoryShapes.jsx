@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { FaChevronDown } from "react-icons/fa";
 import axios from "axios";
 import { useContext } from "react";
@@ -8,13 +8,22 @@ import { ShopContext } from "../context/ShopContext";
 const CategoryShapes = () => {
   const { products } = useContext(ShopContext);
   const navigate = useNavigate();
+  const location = useLocation();
   const [categories, setCategories] = useState([]);
   const [showAllShapes, setShowAllShapes] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
   const backendURL = import.meta.env.VITE_BACKEND_URL;
   const backendURL_WITHOUT_API = backendURL.replace("/api", "");
+
+  // Get category from URL on component mount and when location changes
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const categoryId = searchParams.get("category");
+    setSelectedCategory(categoryId);
+  }, [location.search]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -111,6 +120,8 @@ const CategoryShapes = () => {
       return;
     }
 
+    setSelectedCategory(categoryId);
+
     // Navigate to diamond page with the category parameter and reset page to 1
     const searchParams = new URLSearchParams();
     searchParams.set("category", categoryId);
@@ -120,6 +131,12 @@ const CategoryShapes = () => {
       pathname: "/products/diamond",
       search: searchParams.toString(),
     });
+  };
+
+  // Handle view all click
+  const handleViewAllClick = () => {
+    setSelectedCategory(null);
+    navigate("/products/diamond");
   };
 
   return (
@@ -140,13 +157,17 @@ const CategoryShapes = () => {
           {categories.slice(0, visibleCount).map((category, index) => (
             <div
               key={category._id || `category-${index}`}
-              className="flex flex-col items-center "
+              className="flex flex-col items-center"
             >
               <div
                 onClick={() => handleCategoryClick(category._id, category.name)}
-                className="group cursor-pointer flex flex-col items-center "
+                className={`group cursor-pointer flex flex-col items-center ${
+                  selectedCategory === category._id ? "ring-2 ring-black" : ""
+                }`}
               >
-                <div className="bg-gray-50 rounded-lg overflow-hidden h-[70px] w-[70px] text-center transition-all group-hover:shadow-md flex items-center justify-center">
+                <div className={`bg-gray-50 rounded-lg overflow-hidden h-[70px] w-[70px] text-center transition-all group-hover:shadow-md flex items-center justify-center ${
+                  selectedCategory === category._id ? "bg-gray-100" : ""
+                }`}>
                   {category.image ? (
                     <img
                       src={`${backendURL_WITHOUT_API}/uploads/diamond-shapes/${category.image}`}
@@ -154,9 +175,7 @@ const CategoryShapes = () => {
                       className="object-contain h-20 w-20"
                       onError={(e) => {
                         try {
-                          // If image fails to load, show the initial letter
                           e.target.style.display = "none";
-                          // Create and add fallback icon if not present
                           const parentNode = e.target.parentNode;
                           let fallbackIcon =
                             parentNode.querySelector(".fallback-icon");
@@ -192,7 +211,9 @@ const CategoryShapes = () => {
                     </div>
                   )}
                 </div>
-                <p className="mt-2 text-xs sm:text-sm text-center font-medium text-gray-800">
+                <p className={`mt-2 text-xs sm:text-sm text-center font-medium ${
+                  selectedCategory === category._id ? "text-black font-bold" : "text-gray-800"
+                }`}>
                   {category.name}
                 </p>
               </div>
@@ -200,8 +221,8 @@ const CategoryShapes = () => {
           ))}
         </div>
 
-        {categories.length > 5 && (
-          <div className="text-center mt-2">
+        <div className="flex justify-center gap-4 mt-4">
+          {categories.length > 5 && (
             <button
               onClick={() => setShowAllShapes(!showAllShapes)}
               className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
@@ -217,8 +238,18 @@ const CategoryShapes = () => {
                 }`}
               />
             </button>
-          </div>
-        )}
+          )}
+          <button
+            onClick={handleViewAllClick}
+            className={`inline-flex items-center px-4 py-2 border text-sm font-medium rounded-md ${
+              selectedCategory === null
+                ? "bg-black text-white border-black"
+                : "bg-white text-black border-black hover:bg-gray-50"
+            } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black`}
+          >
+            View All Diamonds
+          </button>
+        </div>
       </div>
     </div>
   );

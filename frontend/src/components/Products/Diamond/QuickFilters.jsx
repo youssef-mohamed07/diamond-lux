@@ -386,15 +386,13 @@ const QuickFilters = ({
             <DoubleRangeSlider
               min={0}
               max={1000000}
-              step={50}
+              step={1000}
               value={[minPrice, maxPrice]}
               onChange={([min, max]) => {
                 setMinPrice(min);
                 setMaxPrice(max);
                 onPriceChange({ min, max });
               }}
-              minLabel="Min. Price"
-              maxLabel="Max. Price"
               prefix="$ "
             />
           </div>
@@ -414,8 +412,6 @@ const QuickFilters = ({
                 setMaxCarat(max);
                 onCaratChange({ min, max });
               }}
-              minLabel="Min. Carat"
-              maxLabel="Max. Carat"
             />
           </div>
 

@@ -1,8 +1,7 @@
 import React, { useContext } from "react";
-import { FaHeart } from "react-icons/fa";
+import { FaCartShopping } from "react-icons/fa6";
 import { ShopContext } from "../../context/ShopContext";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaCartShopping } from "react-icons/fa6";
 
 const WishlistButton = ({ className, isHomePage, scrolled }) => {
   const { favorites } = useContext(ShopContext);
