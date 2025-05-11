@@ -82,20 +82,30 @@ const Product = () => {
             console.error("Error fetching diamond product from API:", apiError);
             // If diamond product fetch fails, try fetching as a jewelry product
             try {
-              const response = await axios.get(`${VITE_BACKEND_URL}/product/jewelery/${productId}`);
+              const response = await axios.get(
+                `${VITE_BACKEND_URL}/product/jewelery/${productId}`
+              );
               if (response.data && response.data.product) {
                 foundProduct = response.data.product;
               }
             } catch (jewelryError) {
-              console.error("Error fetching jewelry product from API:", jewelryError);
+              console.error(
+                "Error fetching jewelry product from API:",
+                jewelryError
+              );
               // If both attempts fail, try the general product endpoint
               try {
-                const response = await axios.get(`${VITE_BACKEND_URL}/product/${productId}`);
+                const response = await axios.get(
+                  `${VITE_BACKEND_URL}/product/${productId}`
+                );
                 if (response.data && response.data.product) {
                   foundProduct = response.data.product;
                 }
               } catch (generalError) {
-                console.error("Error fetching product from general endpoint:", generalError);
+                console.error(
+                  "Error fetching product from general endpoint:",
+                  generalError
+                );
               }
             }
           }
@@ -359,190 +369,190 @@ const Product = () => {
           product.culet ||
           product.lab ||
           product.girdle) && (
-            <div className="p-6 border-b border-gray-100 bg-gray-50">
-              <div className="flex items-center mb-4">
-                <FaMagic className="text-indigo-500 mr-3 text-xl" />
-                <h3 className="text-md font-semibold text-gray-800">
-                  Additional Features
-                </h3>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-6">
-                {product.flo && (
-                  <div className="flex flex-col">
-                    <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
-                      Fluorescence
-                    </span>
-                    <span className="text-sm font-medium text-gray-900">
-                      {product.flo}
-                    </span>
-                  </div>
-                )}
-
-                {product.floCol && (
-                  <div className="flex flex-col">
-                    <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
-                      Fluorescence Color
-                    </span>
-                    <span className="text-sm font-medium text-gray-900">
-                      {product.floCol}
-                    </span>
-                  </div>
-                )}
-
-                {product.culet && (
-                  <div className="flex flex-col">
-                    <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
-                      Culet
-                    </span>
-                    <span className="text-sm font-medium text-gray-900">
-                      {product.culet}
-                    </span>
-                  </div>
-                )}
-
-                {product.lab && (
-                  <div className="flex flex-col">
-                    <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
-                      Certification
-                    </span>
-                    <div className="flex items-center">
-                      <span className="text-sm font-medium text-gray-900">
-                        {product.lab === "NONE" ? (
-                          <>NONE</>
-                        ) : product.certificate_url ? (
-                          <div>
-                            <a
-                              href={product.certificate_url}
-                              target="_blank"
-                              className="underline text-md text-indigo-700 cursor-pointer"
-                            >
-                              {product.lab}
-                            </a>
-                          </div>
-                        ) : (
-                          <>
-                            {" "}
-                            <div>
-                              <p className="text-md">{product.lab}</p>
-                              <span className="text-[0.8rem] italic text-gray-700">
-                                (No certificate url is present)
-                              </span>
-                            </div>
-                          </>
-                        )}
-                      </span>
-                      {(product.lab === "GIA" || product.lab === "IGI") && (
-                        <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded-full">
-                          Certified
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {product.girdle && (
-                  <div className="flex flex-col">
-                    <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
-                      Girdle
-                    </span>
-                    <span className="text-sm font-medium text-gray-900">
-                      {product.girdle}
-                    </span>
-                  </div>
-                )}
-              </div>
+          <div className="p-6 border-b border-gray-100 bg-gray-50">
+            <div className="flex items-center mb-4">
+              <FaMagic className="text-indigo-500 mr-3 text-xl" />
+              <h3 className="text-md font-semibold text-gray-800">
+                Additional Features
+              </h3>
             </div>
-          )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-6">
+              {product.flo && (
+                <div className="flex flex-col">
+                  <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                    Fluorescence
+                  </span>
+                  <span className="text-sm font-medium text-gray-900">
+                    {product.flo}
+                  </span>
+                </div>
+              )}
+
+              {product.floCol && (
+                <div className="flex flex-col">
+                  <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                    Fluorescence Color
+                  </span>
+                  <span className="text-sm font-medium text-gray-900">
+                    {product.floCol}
+                  </span>
+                </div>
+              )}
+
+              {product.culet && (
+                <div className="flex flex-col">
+                  <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                    Culet
+                  </span>
+                  <span className="text-sm font-medium text-gray-900">
+                    {product.culet}
+                  </span>
+                </div>
+              )}
+
+              {product.lab && (
+                <div className="flex flex-col">
+                  <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                    Certification
+                  </span>
+                  <div className="flex items-center">
+                    <span className="text-sm font-medium text-gray-900">
+                      {product.lab === "NONE" ? (
+                        <>NONE</>
+                      ) : product.certificate_url ? (
+                        <div>
+                          <a
+                            href={product.certificate_url}
+                            target="_blank"
+                            className="underline text-md text-indigo-700 cursor-pointer"
+                          >
+                            {product.lab}
+                          </a>
+                        </div>
+                      ) : (
+                        <>
+                          {" "}
+                          <div>
+                            <p className="text-md">{product.lab}</p>
+                            <span className="text-[0.8rem] italic text-gray-700">
+                              (No certificate url is present)
+                            </span>
+                          </div>
+                        </>
+                      )}
+                    </span>
+                    {(product.lab === "GIA" || product.lab === "IGI") && (
+                      <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded-full">
+                        Certified
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {product.girdle && (
+                <div className="flex flex-col">
+                  <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                    Girdle
+                  </span>
+                  <span className="text-sm font-medium text-gray-900">
+                    {product.girdle}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Characteristics */}
         {(product.eyeClean ||
           product.brown ||
           product.green ||
           product.milky) && (
-            <div className="p-6">
-              <div className="flex items-center mb-4">
-                <FaEye className="text-amber-500 mr-3 text-xl" />
-                <h3 className="text-md font-semibold text-gray-800">
-                  Characteristics
-                </h3>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6">
-                {product.eyeClean && (
-                  <div className="flex flex-col">
-                    <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
-                      Eye Clean
-                    </span>
-                    <div className="flex items-center">
-                      <span className="text-sm font-medium text-gray-900">
-                        {product.eyeClean}
-                      </span>
-                      {product.eyeClean === "Yes" && (
-                        <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
-                          No Visible Inclusions
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {product.brown && (
-                  <div className="flex flex-col">
-                    <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
-                      Brown Tint
-                    </span>
-                    <div className="flex items-center">
-                      <span className="text-sm font-medium text-gray-900">
-                        {product.brown}
-                      </span>
-                      {product.brown === "None" && (
-                        <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
-                          None
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {product.green && (
-                  <div className="flex flex-col">
-                    <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
-                      Green Tint
-                    </span>
-                    <div className="flex items-center">
-                      <span className="text-sm font-medium text-gray-900">
-                        {product.green}
-                      </span>
-                      {product.green === "None" && (
-                        <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
-                          None
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {product.milky && (
-                  <div className="flex flex-col">
-                    <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
-                      Milky Appearance
-                    </span>
-                    <div className="flex items-center">
-                      <span className="text-sm font-medium text-gray-900">
-                        {product.milky}
-                      </span>
-                      {product.milky === "None" && (
-                        <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
-                          None
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
+          <div className="p-6">
+            <div className="flex items-center mb-4">
+              <FaEye className="text-amber-500 mr-3 text-xl" />
+              <h3 className="text-md font-semibold text-gray-800">
+                Characteristics
+              </h3>
             </div>
-          )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6">
+              {product.eyeClean && (
+                <div className="flex flex-col">
+                  <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                    Eye Clean
+                  </span>
+                  <div className="flex items-center">
+                    <span className="text-sm font-medium text-gray-900">
+                      {product.eyeClean}
+                    </span>
+                    {product.eyeClean === "Yes" && (
+                      <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
+                        No Visible Inclusions
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {product.brown && (
+                <div className="flex flex-col">
+                  <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                    Brown Tint
+                  </span>
+                  <div className="flex items-center">
+                    <span className="text-sm font-medium text-gray-900">
+                      {product.brown}
+                    </span>
+                    {product.brown === "None" && (
+                      <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
+                        None
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {product.green && (
+                <div className="flex flex-col">
+                  <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                    Green Tint
+                  </span>
+                  <div className="flex items-center">
+                    <span className="text-sm font-medium text-gray-900">
+                      {product.green}
+                    </span>
+                    {product.green === "None" && (
+                      <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
+                        None
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {product.milky && (
+                <div className="flex flex-col">
+                  <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                    Milky Appearance
+                  </span>
+                  <div className="flex items-center">
+                    <span className="text-sm font-medium text-gray-900">
+                      {product.milky}
+                    </span>
+                    {product.milky === "None" && (
+                      <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
+                        None
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </>
     );
   };
@@ -561,10 +571,10 @@ const Product = () => {
               {product.jewelryType === "necklace"
                 ? "Necklace Properties"
                 : product.jewelryType === "bracelet"
-                  ? "Bracelet Properties"
-                  : product.jewelryType === "earrings"
-                    ? "Earrings Properties"
-                    : "Jewelry Properties"}
+                ? "Bracelet Properties"
+                : product.jewelryType === "earrings"
+                ? "Earrings Properties"
+                : "Jewelry Properties"}
             </h3>
           </div>
 
@@ -647,7 +657,10 @@ const Product = () => {
               Home
             </Link>
             <span className="mx-2 text-gray-400">/</span>
-            <Link to="/collections" className="text-gray-600 hover:text-gray-900">
+            <Link
+              to="/collections"
+              className="text-gray-600 hover:text-gray-900"
+            >
               Collections
             </Link>
             <span className="mx-2 text-gray-400">/</span>
@@ -661,8 +674,8 @@ const Product = () => {
                 {activeImage === "360" ? (
                   <div className="relative w-full pb-[100%] overflow-hidden bg-white">
                     {product.images &&
-                      product.images[0] &&
-                      product.images[0].includes("loupe360.com") ? (
+                    product.images[0] &&
+                    product.images[0].includes("loupe360.com") ? (
                       <iframe
                         src={getResponsiveLoupe360Url(product.images[0])}
                         className="absolute top-0 left-0 w-full h-full"
@@ -705,18 +718,19 @@ const Product = () => {
                     (product.images &&
                       product.images[0] &&
                       product.images[0].includes("loupe360.com"))) && (
-                      <button
-                        onClick={() => handleImageChange("360")}
-                        className={`aspect-w-1 aspect-h-1 rounded-md overflow-hidden ${activeImage === "360"
+                    <button
+                      onClick={() => handleImageChange("360")}
+                      className={`aspect-w-1 aspect-h-1 rounded-md overflow-hidden ${
+                        activeImage === "360"
                           ? "ring-2 ring-gray-900"
                           : "ring-1 ring-gray-200"
-                          }`}
-                      >
-                        <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                          <TbView360Number className="text-gray-500 text-xl" />
-                        </div>
-                      </button>
-                    )}
+                      }`}
+                    >
+                      <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                        <TbView360Number className="text-gray-500 text-xl" />
+                      </div>
+                    </button>
+                  )}
 
                   {/* Add first image as second option */}
                   <button
@@ -727,10 +741,11 @@ const Product = () => {
                           : product.images[0]
                       )
                     }
-                    className={`aspect-w-1 aspect-h-1 rounded-md overflow-hidden ${activeImage === 0
-                      ? "ring-2 ring-gray-900"
-                      : "ring-1 ring-gray-200"
-                      }`}
+                    className={`aspect-w-1 aspect-h-1 rounded-md overflow-hidden ${
+                      activeImage === 0
+                        ? "ring-2 ring-gray-900"
+                        : "ring-1 ring-gray-200"
+                    }`}
                   >
                     <img
                       src={getImageUrl(
@@ -782,7 +797,8 @@ const Product = () => {
                 )}
 
                 {/* Diamond Properties */}
-                {(product.productType === "lab_diamond" || product.productType === "natural_diamond") && (
+                {(product.productType === "lab_diamond" ||
+                  product.productType === "natural_diamond") && (
                   <>
                     <div className="p-6 border-b border-gray-100">
                       <div className="flex items-center mb-4">
@@ -798,7 +814,7 @@ const Product = () => {
                             SHAPE
                           </span>
                           <span className="text-sm font-medium text-gray-900">
-                            {product.shape || '-'}
+                            {product.shape || "-"}
                           </span>
                         </div>
                         <div>
@@ -806,7 +822,7 @@ const Product = () => {
                             CARAT
                           </span>
                           <span className="text-sm font-medium text-gray-900">
-                            {product.carats || '-'}
+                            {product.carats || "-"}
                           </span>
                         </div>
                         <div>
@@ -814,7 +830,7 @@ const Product = () => {
                             COLOR
                           </span>
                           <span className="text-sm font-medium text-gray-900">
-                            {product.col || '-'}
+                            {product.col || "-"}
                           </span>
                         </div>
                         <div>
@@ -822,7 +838,7 @@ const Product = () => {
                             CLARITY
                           </span>
                           <span className="text-sm font-medium text-gray-900">
-                            {product.clar || '-'}
+                            {product.clar || "-"}
                           </span>
                         </div>
                       </div>
@@ -843,7 +859,7 @@ const Product = () => {
                             CUT
                           </span>
                           <span className="text-sm font-medium text-gray-900">
-                            {product.cut || '-'}
+                            {product.cut || "-"}
                           </span>
                         </div>
                         <div>
@@ -851,7 +867,7 @@ const Product = () => {
                             POLISH
                           </span>
                           <span className="text-sm font-medium text-gray-900">
-                            {product.pol || '-'}
+                            {product.pol || "-"}
                           </span>
                         </div>
                         <div>
@@ -859,7 +875,7 @@ const Product = () => {
                             SYMMETRY
                           </span>
                           <span className="text-sm font-medium text-gray-900">
-                            {product.symm || '-'}
+                            {product.symm || "-"}
                           </span>
                         </div>
                       </div>
@@ -880,7 +896,7 @@ const Product = () => {
                             FLUORESCENCE
                           </span>
                           <span className="text-sm font-medium text-gray-900">
-                            {product.flo || '-'}
+                            {product.flo || "-"}
                           </span>
                         </div>
                         <div>
@@ -888,7 +904,7 @@ const Product = () => {
                             CULET
                           </span>
                           <span className="text-sm font-medium text-gray-900">
-                            {product.culet || '-'}
+                            {product.culet || "-"}
                           </span>
                         </div>
                         <div>
@@ -912,9 +928,10 @@ const Product = () => {
                               </a>
                             )}
                           </div>
-                          {(product.reportNo || product.certificate_number) && (
+                          {product.certificate_url && (
                             <span className="text-xs text-gray-500 block mt-1">
-                              Certificate: {product.reportNo || product.certificate_number}
+                              Number:{" "}
+                              {product.reportNo || product.certificate_number}
                             </span>
                           )}
                         </div>
@@ -936,7 +953,7 @@ const Product = () => {
                             EYE CLEAN
                           </span>
                           <span className="text-sm font-medium text-gray-900">
-                            {product.eyeClean || 'No'}
+                            {product.eyeClean || "No"}
                           </span>
                         </div>
                         <div>
@@ -944,7 +961,7 @@ const Product = () => {
                             BROWN TINT
                           </span>
                           <span className="text-sm font-medium text-gray-900">
-                            {product.brown ? 'Yes' : 'No'}
+                            {product.brown ? "Yes" : "No"}
                           </span>
                         </div>
                         <div>
@@ -952,7 +969,7 @@ const Product = () => {
                             GREEN TINT
                           </span>
                           <span className="text-sm font-medium text-gray-900">
-                            {product.green ? 'Yes' : 'No'}
+                            {product.green ? "Yes" : "No"}
                           </span>
                         </div>
                         <div>
@@ -960,7 +977,7 @@ const Product = () => {
                             MILKY APPEARANCE
                           </span>
                           <span className="text-sm font-medium text-gray-900">
-                            {product.milky ? 'Yes' : 'No'}
+                            {product.milky ? "Yes" : "No"}
                           </span>
                         </div>
                       </div>
@@ -981,7 +998,7 @@ const Product = () => {
                             LENGTH
                           </span>
                           <span className="text-sm font-medium text-gray-900">
-                            {product.length || '-'} mm
+                            {product.length || "-"} mm
                           </span>
                         </div>
                         <div>
@@ -989,7 +1006,7 @@ const Product = () => {
                             WIDTH
                           </span>
                           <span className="text-sm font-medium text-gray-900">
-                            {product.width || '-'} mm
+                            {product.width || "-"} mm
                           </span>
                         </div>
                         <div>
@@ -997,7 +1014,7 @@ const Product = () => {
                             HEIGHT
                           </span>
                           <span className="text-sm font-medium text-gray-900">
-                            {product.height || '-'} mm
+                            {product.height || "-"} mm
                           </span>
                         </div>
                         <div>
@@ -1005,7 +1022,7 @@ const Product = () => {
                             DEPTH
                           </span>
                           <span className="text-sm font-medium text-gray-900">
-                            {product.depth || '-'}%
+                            {product.depth || "-"}%
                           </span>
                         </div>
                         <div>
@@ -1013,7 +1030,7 @@ const Product = () => {
                             TABLE
                           </span>
                           <span className="text-sm font-medium text-gray-900">
-                            {product.table || '-'}%
+                            {product.table || "-"}%
                           </span>
                         </div>
                       </div>
@@ -1023,7 +1040,8 @@ const Product = () => {
                           <div className="flex items-center text-sm text-gray-700">
                             <FaRuler className="text-gray-400 mr-2" />
                             <span>
-                              L {product.length} × W {product.width} × H {product.height} mm
+                              L {product.length} × W {product.width} × H{" "}
+                              {product.height} mm
                             </span>
                           </div>
                         </div>
@@ -1034,7 +1052,9 @@ const Product = () => {
 
                 {/* Details & Care */}
                 <div className="p-6">
-                  <h3 className="text-md font-semibold text-gray-800 mb-4">Details & Care</h3>
+                  <h3 className="text-md font-semibold text-gray-800 mb-4">
+                    Details & Care
+                  </h3>
                   <div className="space-y-4">
                     <div className="flex items-start">
                       <FaGem className="text-gray-400 mt-1 mr-3" />
@@ -1043,7 +1063,8 @@ const Product = () => {
                           Premium Materials
                         </h4>
                         <p className="mt-1 text-sm text-gray-600">
-                          Crafted with the finest materials, ensuring exceptional quality and durability.
+                          Crafted with the finest materials, ensuring
+                          exceptional quality and durability.
                         </p>
                       </div>
                     </div>
@@ -1055,7 +1076,8 @@ const Product = () => {
                           Precise Measurements
                         </h4>
                         <p className="mt-1 text-sm text-gray-600">
-                          Each piece is meticulously measured and crafted to ensure perfect fit.
+                          Each piece is meticulously measured and crafted to
+                          ensure perfect fit.
                         </p>
                       </div>
                     </div>
@@ -1067,7 +1089,8 @@ const Product = () => {
                           Authenticity Guaranteed
                         </h4>
                         <p className="mt-1 text-sm text-gray-600">
-                          Includes a certificate of authenticity and a 2-year warranty.
+                          Includes a certificate of authenticity and a 2-year
+                          warranty.
                         </p>
                       </div>
                     </div>

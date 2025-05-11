@@ -9,9 +9,9 @@ const QuickFilters = ({
   colors = [],
   selectedColors = [],
   onColorChange,
-  priceRange = [0, 100000],
+  priceRange = [0, 99999999],
   onPriceChange,
-  caratRange = [0, 10],
+  caratRange = [0, 1],
   onCaratChange,
   cuts = [],
   selectedCuts = [],
@@ -22,10 +22,10 @@ const QuickFilters = ({
   onClearFilters,
 }) => {
   // Local state for controlled inputs
-  const [minPrice, setMinPrice] = useState(priceRange[0] || 0);
-  const [maxPrice, setMaxPrice] = useState(priceRange[1] || 100000);
-  const [minCarat, setMinCarat] = useState(caratRange[0] || 0);
-  const [maxCarat, setMaxCarat] = useState(caratRange[1] || 10);
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [minCarat, setMinCarat] = useState("");
+  const [maxCarat, setMaxCarat] = useState("");
 
   // Add a ref for the selected category
   const selectedCategoryRef = useRef(null);
@@ -33,13 +33,13 @@ const QuickFilters = ({
 
   // Update local state when props change
   useEffect(() => {
-    setMinPrice(priceRange[0] || 0);
-    setMaxPrice(priceRange[1] || 100000);
+    setMinPrice(priceRange[0] !== undefined ? priceRange[0] : "");
+    setMaxPrice(priceRange[1] !== undefined ? priceRange[1] : "");
   }, [priceRange]);
 
   useEffect(() => {
-    setMinCarat(caratRange[0] || 0);
-    setMaxCarat(caratRange[1] || 10);
+    setMinCarat(caratRange[0] !== undefined ? caratRange[0] : "");
+    setMaxCarat(caratRange[1] !== undefined ? caratRange[1] : "");
   }, [caratRange]);
 
   // Scroll selected category into view when component mounts or selection changes
@@ -74,19 +74,17 @@ const QuickFilters = ({
 
   // Handle price change with debounce
   const handlePriceChange = (min, max) => {
-    // Validate and format the values
-    const formattedMin = Math.max(0, Math.min(Number(min) || 0, 1000000));
-    const formattedMax = Math.max(0, Math.min(Number(max) || 100000, 1000000));
-
-    // Ensure min doesn't exceed max
-    const finalMin = Math.min(formattedMin, formattedMax);
-    const finalMax = Math.max(formattedMin, formattedMax);
-
-    setMinPrice(finalMin);
-    setMaxPrice(finalMax);
+    // Update local state without immediate validation
+    setMinPrice(min === "" ? "" : Number(min));
+    setMaxPrice(max === "" ? "" : Number(max));
 
     // Use setTimeout to debounce the API call
     const timer = setTimeout(() => {
+      // Only validate when actually making the API call
+      const finalMin = min === "" ? 0 : Math.max(0, Number(min) || 0);
+      const finalMax =
+        max === "" ? 99999999 : Math.max(0, Number(max) || 99999999);
+
       onPriceChange({ min: finalMin, max: finalMax });
     }, 500); // 500ms debounce
 
@@ -95,19 +93,16 @@ const QuickFilters = ({
 
   // Handle carat change with debounce
   const handleCaratChange = (min, max) => {
-    // Validate and format the values
-    const formattedMin = Math.max(0, Math.min(Number(min) || 0, 60));
-    const formattedMax = Math.max(0, Math.min(Number(max) || 10, 60));
-
-    // Ensure min doesn't exceed max
-    const finalMin = Math.min(formattedMin, formattedMax);
-    const finalMax = Math.max(formattedMin, formattedMax);
-
-    setMinCarat(finalMin);
-    setMaxCarat(finalMax);
+    // Update local state without immediate validation
+    setMinCarat(min === "" ? "" : Number(min));
+    setMaxCarat(max === "" ? "" : Number(max));
 
     // Use setTimeout to debounce the API call
     const timer = setTimeout(() => {
+      // Only validate when actually making the API call
+      const finalMin = min === "" ? 0 : Math.max(0, Number(min) || 0);
+      const finalMax = max === "" ? 1 : Math.max(0, Number(max) || 1);
+
       onCaratChange({ min: finalMin, max: finalMax });
     }, 500); // 500ms debounce
 
@@ -328,66 +323,105 @@ const QuickFilters = ({
             <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center justify-between">
               <span>Color</span>
             </h3>
-            
+
             {/* Regular Colors */}
             <div className="mb-4">
-              <h4 className="text-sm font-medium text-gray-700 mb-2">Regular Colors</h4>
+              <h4 className="text-sm font-medium text-gray-700 mb-2">
+                Regular Colors
+              </h4>
               <div className="flex flex-wrap gap-2">
-                {colors.filter(color => /^[D-M]$/.test(color)).map((color) => (
-                  <button
-                    key={color}
-                    onClick={() => handleColorToggle(color)}
-                    className={`px-3 py-1 text-xs rounded-full ${
-                      selectedColors.includes(color)
-                        ? "bg-gray-900 text-white shadow-md"
-                        : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                    }`}
-                  >
-                    {color}
-                  </button>
-                ))}
+                {colors
+                  .filter((color) => /^[D-M]$/.test(color))
+                  .map((color) => (
+                    <button
+                      key={color}
+                      onClick={() => handleColorToggle(color)}
+                      className={`px-3 py-1 text-xs rounded-full ${
+                        selectedColors.includes(color)
+                          ? "bg-gray-900 text-white shadow-md"
+                          : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                      }`}
+                    >
+                      {color}
+                    </button>
+                  ))}
               </div>
             </div>
 
             {/* Fancy Colors */}
             <div className="mb-4">
-              <h4 className="text-sm font-medium text-gray-700 mb-2">Fancy Colors</h4>
+              <h4 className="text-sm font-medium text-gray-700 mb-2">
+                Fancy Colors
+              </h4>
               <div className="flex flex-wrap gap-2">
-                {colors.filter(color => !color.startsWith('Fancy') && !/^[D-M]$/.test(color)).map((color) => (
-                  <button
-                    key={color}
-                    onClick={() => handleColorToggle(color)}
-                    className={`px-3 py-1 text-xs rounded-full ${
-                      selectedColors.includes(color)
-                        ? "bg-gray-900 text-white shadow-md"
-                        : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                    }`}
-                  >
-                    {color}
-                  </button>
-                ))}
+                {colors
+                  .filter(
+                    (color) =>
+                      !color.startsWith("Fancy") && !/^[D-M]$/.test(color)
+                  )
+                  .map((color) => (
+                    <button
+                      key={color}
+                      onClick={() => handleColorToggle(color)}
+                      className={`px-3 py-1 text-xs rounded-full ${
+                        selectedColors.includes(color)
+                          ? "bg-gray-900 text-white shadow-md"
+                          : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                      }`}
+                    >
+                      {color}
+                    </button>
+                  ))}
               </div>
             </div>
 
-            {/* Fancy Intensities */}
-            <div className="mb-4">
-              <h4 className="text-sm font-medium text-gray-700 mb-2">Fancy Intensities</h4>
-              <div className="flex flex-wrap gap-2">
-                {colors.filter(color => color.startsWith('Fancy')).map((intensity) => (
-                  <button
-                    key={intensity}
-                    onClick={() => handleColorToggle(intensity)}
-                    className={`px-3 py-1 text-xs rounded-full ${
-                      selectedColors.includes(intensity)
-                        ? "bg-gray-900 text-white shadow-md"
-                        : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+            {/* Fancy Intensities - Only show if fancy colors are selected */}
+            {(() => {
+              // Check if any fancy color is selected
+              const hasFancyColorSelected = selectedColors.some(
+                (color) => !color.startsWith("Fancy") && !/^[D-M]$/.test(color)
+              );
+
+              return (
+                <div className="mb-4">
+                  <h4
+                    className={`text-sm font-medium mb-2 ${
+                      hasFancyColorSelected ? "text-gray-700" : "text-gray-400"
                     }`}
                   >
-                    {intensity}
-                  </button>
-                ))}
-              </div>
-            </div>
+                    Fancy Intensities
+                    {!hasFancyColorSelected && (
+                      <span className="ml-2 text-xs italic">
+                        (Select a fancy color first)
+                      </span>
+                    )}
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {colors
+                      .filter((color) => color.startsWith("Fancy"))
+                      .map((intensity) => (
+                        <button
+                          key={intensity}
+                          onClick={() =>
+                            hasFancyColorSelected &&
+                            handleColorToggle(intensity)
+                          }
+                          className={`px-3 py-1 text-xs rounded-full ${
+                            selectedColors.includes(intensity)
+                              ? "bg-gray-900 text-white shadow-md"
+                              : hasFancyColorSelected
+                              ? "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                              : "bg-gray-50 text-gray-400 cursor-not-allowed"
+                          }`}
+                          disabled={!hasFancyColorSelected}
+                        >
+                          {intensity}
+                        </button>
+                      ))}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         )}
 
@@ -406,15 +440,10 @@ const QuickFilters = ({
                   </span>
                   <input
                     type="number"
-                    min={0}
-                    max={1000000}
-                    value={minPrice || ''}
-                    onChange={(e) => handlePriceChange(e.target.value, maxPrice)}
-                    onBlur={(e) => {
-                      if (!e.target.value) {
-                        handlePriceChange(0, maxPrice);
-                      }
-                    }}
+                    value={minPrice === "" ? "" : minPrice}
+                    onChange={(e) =>
+                      handlePriceChange(e.target.value, maxPrice)
+                    }
                     className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
                     placeholder="Min"
                   />
@@ -428,15 +457,10 @@ const QuickFilters = ({
                   </span>
                   <input
                     type="number"
-                    min={0}
-                    max={1000000}
-                    value={maxPrice || ''}
-                    onChange={(e) => handlePriceChange(minPrice, e.target.value)}
-                    onBlur={(e) => {
-                      if (!e.target.value) {
-                        handlePriceChange(minPrice, 100000);
-                      }
-                    }}
+                    value={maxPrice === "" ? "" : maxPrice}
+                    onChange={(e) =>
+                      handlePriceChange(minPrice, e.target.value)
+                    }
                     className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
                     placeholder="Max"
                   />
@@ -454,16 +478,9 @@ const QuickFilters = ({
               <div className="flex-1">
                 <input
                   type="number"
-                  min={0}
-                  max={60}
                   step="0.01"
-                  value={minCarat || ''}
+                  value={minCarat === "" ? "" : minCarat}
                   onChange={(e) => handleCaratChange(e.target.value, maxCarat)}
-                  onBlur={(e) => {
-                    if (!e.target.value) {
-                      handleCaratChange(0, maxCarat);
-                    }
-                  }}
                   className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                   placeholder="Min"
                 />
@@ -472,16 +489,9 @@ const QuickFilters = ({
               <div className="flex-1">
                 <input
                   type="number"
-                  min={0}
-                  max={60}
                   step="0.01"
-                  value={maxCarat || ''}
+                  value={maxCarat === "" ? "" : maxCarat}
                   onChange={(e) => handleCaratChange(minCarat, e.target.value)}
-                  onBlur={(e) => {
-                    if (!e.target.value) {
-                      handleCaratChange(minCarat, 10);
-                    }
-                  }}
                   className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                   placeholder="Max"
                 />
@@ -551,10 +561,10 @@ const QuickFilters = ({
             <button
               onClick={() => {
                 // Reset local state
-                setMinPrice(0);
-                setMaxPrice(100000);
-                setMinCarat(0);
-                setMaxCarat(10);
+                setMinPrice("");
+                setMaxPrice("");
+                setMinCarat("");
+                setMaxCarat("");
                 // Call the clearFilters function
                 onClearFilters();
               }}

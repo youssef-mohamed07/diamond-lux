@@ -41,10 +41,24 @@ const Diamond = () => {
   // Define filter options data
   const colorOptions = ["D", "E", "F", "G", "H", "I", "J", "K", "L", "M"];
   const fancyColorOptions = [
-    "Yellow", "Orange", "Pink", "Blue", "Green", "Purple", "Brown", "Gray", "Black"
+    "Yellow",
+    "Orange",
+    "Pink",
+    "Blue",
+    "Green",
+    "Purple",
+    "Brown",
+    "Gray",
+    "Black",
   ];
   const fancyIntensityOptions = [
-    "Fancy Light", "Fancy Very Light", "Fancy", "Fancy Intense", "Fancy Deep", "Fancy Vivid", "Fancy Dark"
+    "Fancy Light",
+    "Fancy Very Light",
+    "Fancy",
+    "Fancy Intense",
+    "Fancy Deep",
+    "Fancy Vivid",
+    "Fancy Dark",
   ];
   const cutOptions = ["EX", "VG", "G", "F", "P", "ID"]; // EX=Excellent, VG=Very Good, G=Good, F=Fair, P=Poor
   const clarityOptions = [
@@ -88,8 +102,8 @@ const Diamond = () => {
       const currentShapes = Array.isArray(filters.shape)
         ? filters.shape.map(String)
         : filters.shape
-          ? [String(filters.shape)]
-          : [];
+        ? [String(filters.shape)]
+        : [];
 
       if (currentShapes.includes(shapeId)) {
         // If the shape is already selected and it's the only one, remove the filter
@@ -128,37 +142,51 @@ const Diamond = () => {
       const currentColors = Array.isArray(filters.col)
         ? filters.col
         : filters.col
-          ? filters.col.split(",")
-          : [];
+        ? filters.col.split(",")
+        : [];
 
       const currentFancyIntensities = Array.isArray(filters.fancyIntensity)
         ? filters.fancyIntensity
         : filters.fancyIntensity
-          ? filters.fancyIntensity.split(",")
-          : [];
+        ? filters.fancyIntensity.split(",")
+        : [];
 
-      if (currentColors.includes(colorValue) || currentFancyIntensities.includes(colorValue)) {
+      if (
+        currentColors.includes(colorValue) ||
+        currentFancyIntensities.includes(colorValue)
+      ) {
         // If the color is already selected and it's the only one, remove the filter
-        if (currentColors.length === 1 || currentFancyIntensities.length === 1) {
+        if (
+          currentColors.length === 1 ||
+          currentFancyIntensities.length === 1
+        ) {
           const updatedFilters = { ...filters };
           delete updatedFilters.col;
           delete updatedFilters.fancyIntensity;
           updateFilters(updatedFilters);
         } else {
           // If multiple colors are selected, remove just this one
-          const newColors = currentColors.filter(color => color !== colorValue);
-          const newFancyIntensities = currentFancyIntensities.filter(intensity => intensity !== colorValue);
-          
+          const newColors = currentColors.filter(
+            (color) => color !== colorValue
+          );
+          const newFancyIntensities = currentFancyIntensities.filter(
+            (intensity) => intensity !== colorValue
+          );
+
           const updatedFilters = { ...filters };
           if (newColors.length > 0) updatedFilters.col = newColors;
-          if (newFancyIntensities.length > 0) updatedFilters.fancyIntensity = newFancyIntensities;
+          if (newFancyIntensities.length > 0)
+            updatedFilters.fancyIntensity = newFancyIntensities;
           updateFilters(updatedFilters);
         }
       } else {
         // If it's a new color, add it to existing selections
         const updatedFilters = { ...filters };
         if (fancyIntensityOptions.includes(colorValue)) {
-          updatedFilters.fancyIntensity = [...currentFancyIntensities, colorValue];
+          updatedFilters.fancyIntensity = [
+            ...currentFancyIntensities,
+            colorValue,
+          ];
         } else {
           updatedFilters.col = [...currentColors, colorValue];
         }
@@ -167,11 +195,16 @@ const Diamond = () => {
     } else {
       // Multiple colors were passed, use as is
       const updatedFilters = { ...filters };
-      const regularColors = selectedColors.filter(color => !fancyIntensityOptions.includes(color));
-      const fancyIntensities = selectedColors.filter(color => fancyIntensityOptions.includes(color));
-      
+      const regularColors = selectedColors.filter(
+        (color) => !fancyIntensityOptions.includes(color)
+      );
+      const fancyIntensities = selectedColors.filter((color) =>
+        fancyIntensityOptions.includes(color)
+      );
+
       if (regularColors.length > 0) updatedFilters.col = regularColors;
-      if (fancyIntensities.length > 0) updatedFilters.fancyIntensity = fancyIntensities;
+      if (fancyIntensities.length > 0)
+        updatedFilters.fancyIntensity = fancyIntensities;
       updateFilters(updatedFilters);
     }
   };
@@ -190,8 +223,8 @@ const Diamond = () => {
       const currentCuts = Array.isArray(filters.cut)
         ? filters.cut
         : filters.cut
-          ? filters.cut.split(",")
-          : [];
+        ? filters.cut.split(",")
+        : [];
 
       if (currentCuts.includes(cutValue)) {
         // If the cut is already selected and it's the only one, remove the filter
@@ -229,8 +262,8 @@ const Diamond = () => {
       const currentClarities = Array.isArray(filters.clar)
         ? filters.clar
         : filters.clar
-          ? filters.clar.split(",")
-          : [];
+        ? filters.clar.split(",")
+        : [];
 
       if (currentClarities.includes(clarityValue)) {
         // If the clarity is already selected and it's the only one, remove the filter
@@ -266,7 +299,7 @@ const Diamond = () => {
       delete updatedFilters.minPrice;
     }
 
-    if (max !== 999999) {
+    if (max !== 9999999) {
       updatedFilters.maxPrice = max;
     } else {
       delete updatedFilters.maxPrice;
@@ -312,8 +345,8 @@ const Diamond = () => {
       const currentPolishes = Array.isArray(filters.pol)
         ? filters.pol
         : filters.pol
-          ? filters.pol.split(",")
-          : [];
+        ? filters.pol.split(",")
+        : [];
 
       if (currentPolishes.includes(polishValue)) {
         // If the polish is already selected and it's the only one, remove the filter
@@ -353,8 +386,8 @@ const Diamond = () => {
       const currentSymmetries = Array.isArray(filters.symm)
         ? filters.symm
         : filters.symm
-          ? filters.symm.split(",")
-          : [];
+        ? filters.symm.split(",")
+        : [];
 
       if (currentSymmetries.includes(symmetryValue)) {
         // If the symmetry is already selected and it's the only one, remove the filter
@@ -396,8 +429,8 @@ const Diamond = () => {
       const currentLabs = Array.isArray(filters.lab)
         ? filters.lab
         : filters.lab
-          ? filters.lab.split(",")
-          : [];
+        ? filters.lab.split(",")
+        : [];
 
       if (currentLabs.includes(labValue)) {
         // If the lab is already selected and it's the only one, remove the filter
@@ -435,8 +468,8 @@ const Diamond = () => {
       const currentFluorescences = Array.isArray(filters.flu)
         ? filters.flu
         : filters.flu
-          ? filters.flu.split(",")
-          : [];
+        ? filters.flu.split(",")
+        : [];
 
       if (currentFluorescences.includes(fluorescenceValue)) {
         // If the fluorescence is already selected and it's the only one, remove the filter
@@ -604,7 +637,8 @@ const Diamond = () => {
     setError(null);
     const updatedFilters = { ...filters };
     // Set the correct product type based on the selected type
-    updatedFilters.productType = type === "lab" ? "lab_diamond" : "natural_diamond";
+    updatedFilters.productType =
+      type === "lab" ? "lab_diamond" : "natural_diamond";
 
     // Reset to first page when changing diamond type
     setPaginationKey((prev) => prev + 1);
@@ -706,59 +740,67 @@ const Diamond = () => {
   const selectedShapes = Array.isArray(filters.shape)
     ? filters.shape.map(String)
     : filters.shape
-      ? filters.shape.split(",").map(String)
-      : [];
+    ? filters.shape.split(",").map(String)
+    : [];
 
   const selectedColors = [
-    ...(Array.isArray(filters.col) ? filters.col : filters.col ? filters.col.split(",") : []),
-    ...(Array.isArray(filters.fancyIntensity) ? filters.fancyIntensity : filters.fancyIntensity ? filters.fancyIntensity.split(",") : [])
+    ...(Array.isArray(filters.col)
+      ? filters.col
+      : filters.col
+      ? filters.col.split(",")
+      : []),
+    ...(Array.isArray(filters.fancyIntensity)
+      ? filters.fancyIntensity
+      : filters.fancyIntensity
+      ? filters.fancyIntensity.split(",")
+      : []),
   ];
 
   const selectedCuts = Array.isArray(filters.cut)
     ? filters.cut
     : filters.cut
-      ? filters.cut.split(",")
-      : [];
+    ? filters.cut.split(",")
+    : [];
 
   const selectedClarities = Array.isArray(filters.clar)
     ? filters.clar
     : filters.clar
-      ? filters.clar.split(",")
-      : [];
+    ? filters.clar.split(",")
+    : [];
 
   const priceRange = [
     filters.minPrice !== undefined ? Number(filters.minPrice) : 0,
-    filters.maxPrice !== undefined ? Number(filters.maxPrice) : 999999
+    filters.maxPrice !== undefined ? Number(filters.maxPrice) : 99999999,
   ];
 
   const caratRange = [
-    filters.minCarat !== undefined ? Number(filters.minCarat) : 0,
-    filters.maxCarat !== undefined ? Number(filters.maxCarat) : 10
+    filters.minCarat !== undefined ? Number(filters.minCarat) : 0.1,
+    filters.maxCarat !== undefined ? Number(filters.maxCarat) : 1,
   ];
 
   const selectedPolishes = Array.isArray(filters.pol)
     ? filters.pol
     : filters.pol
-      ? filters.pol.split(",")
-      : [];
+    ? filters.pol.split(",")
+    : [];
 
   const selectedSymmetries = Array.isArray(filters.symm)
     ? filters.symm
     : filters.symm
-      ? filters.symm.split(",")
-      : [];
+    ? filters.symm.split(",")
+    : [];
 
   const selectedLabs = Array.isArray(filters.lab)
     ? filters.lab
     : filters.lab
-      ? filters.lab.split(",")
-      : [];
+    ? filters.lab.split(",")
+    : [];
 
   const selectedFluorescences = Array.isArray(filters.flu)
     ? filters.flu
     : filters.flu
-      ? filters.flu.split(",")
-      : [];
+    ? filters.flu.split(",")
+    : [];
 
   const tableRange = [filters.minTable || 0, filters.maxTable || 100];
 
@@ -787,19 +829,21 @@ const Diamond = () => {
           <div className="flex flex-wrap gap-4 mb-6 justify-center">
             <button
               onClick={() => handleDiamondTypeChange("lab")}
-              className={`px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-300 transform hover:scale-105 ${diamondType === "lab"
-                ? "bg-black text-white shadow-lg hover:bg-gray-900"
-                : "bg-white text-gray-700 hover:bg-gray-900 hover:text-white border border-gray-200"
-                }`}
+              className={`px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-300 transform hover:scale-105 ${
+                diamondType === "lab"
+                  ? "bg-black text-white shadow-lg hover:bg-gray-900"
+                  : "bg-white text-gray-700 hover:bg-gray-900 hover:text-white border border-gray-200"
+              }`}
             >
               Lab Grown
             </button>
             <button
               onClick={() => handleDiamondTypeChange("natural")}
-              className={`px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-300 transform hover:scale-105 ${diamondType === "natural"
-                ? "bg-black text-white shadow-lg hover:bg-gray-900"
-                : "bg-white text-gray-700 hover:bg-gray-900 hover:text-white border border-gray-200"
-                }`}
+              className={`px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-300 transform hover:scale-105 ${
+                diamondType === "natural"
+                  ? "bg-black text-white shadow-lg hover:bg-gray-900"
+                  : "bg-white text-gray-700 hover:bg-gray-900 hover:text-white border border-gray-200"
+              }`}
             >
               Natural
             </button>
@@ -820,7 +864,11 @@ const Diamond = () => {
             categories={diamondShapes}
             selectedCategories={selectedShapes}
             onCategoryChange={handleShapeChange}
-            colors={[...colorOptions, ...fancyColorOptions, ...fancyIntensityOptions]}
+            colors={[
+              ...colorOptions,
+              ...fancyColorOptions,
+              ...fancyIntensityOptions,
+            ]}
             selectedColors={selectedColors}
             onColorChange={handleColorChange}
             priceRange={priceRange}
@@ -862,7 +910,11 @@ const Diamond = () => {
               selectedCategories={selectedShapes}
               onCategoryChange={handleShapeChange}
               categories={diamondShapes}
-              colors={[...colorOptions, ...fancyColorOptions, ...fancyIntensityOptions]}
+              colors={[
+                ...colorOptions,
+                ...fancyColorOptions,
+                ...fancyIntensityOptions,
+              ]}
               selectedColors={selectedColors}
               onColorChange={handleColorChange}
               priceRange={priceRange}
@@ -934,7 +986,8 @@ const Diamond = () => {
                 <div className="text-sm text-gray-500">
                   {!isProductsLoading && pagination.totalCount > 0 && (
                     <span>
-                      Showing {diamonds.length} of {pagination.totalCount} diamonds
+                      Showing {diamonds.length} of {pagination.totalCount}{" "}
+                      diamonds
                     </span>
                   )}
                 </div>
@@ -988,13 +1041,26 @@ const Diamond = () => {
               {!isProductsLoading && (!diamonds || diamonds.length === 0) && (
                 <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
                   <div className="w-16 h-16 mb-4 text-gray-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
                     </svg>
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">No Diamonds Found</h3>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    No Diamonds Found
+                  </h3>
                   <p className="text-gray-600 max-w-md">
-                    We couldn't find any diamonds matching your criteria. Try adjusting your filters or search terms.
+                    We couldn't find any diamonds matching your criteria. Try
+                    adjusting your filters or search terms.
                   </p>
                   <button
                     onClick={handleClearFilters}
@@ -1041,7 +1107,8 @@ const Diamond = () => {
               {/* Summary */}
               {!isProductsLoading && pagination.totalCount > 0 && (
                 <div className="mt-4 text-center text-gray-500 text-sm">
-                  Showing {(pagination.currentPage - 1) * pagination.limit + 1} to{" "}
+                  Showing {(pagination.currentPage - 1) * pagination.limit + 1}{" "}
+                  to{" "}
                   {Math.min(
                     pagination.currentPage * pagination.limit,
                     pagination.totalCount

@@ -4,6 +4,7 @@ import { FaChevronDown } from "react-icons/fa";
 import axios from "axios";
 import { useContext } from "react";
 import { ShopContext } from "../context/ShopContext";
+import { FaArrowRight } from "react-icons/fa6";
 
 const CategoryShapes = () => {
   const { products } = useContext(ShopContext);
@@ -159,9 +160,11 @@ const CategoryShapes = () => {
                   selectedCategory === category._id ? "ring-2 ring-black" : ""
                 }`}
               >
-                <div className={`bg-gray-50 rounded-lg overflow-hidden h-[70px] w-[70px] text-center transition-all group-hover:shadow-md flex items-center justify-center ${
-                  selectedCategory === category._id ? "bg-gray-100" : ""
-                }`}>
+                <div
+                  className={`bg-gray-50 rounded-lg overflow-hidden h-[70px] w-[70px] text-center transition-all group-hover:shadow-md flex items-center justify-center ${
+                    selectedCategory === category._id ? "bg-gray-100" : ""
+                  }`}
+                >
                   {category.image ? (
                     <img
                       src={`${backendURL_WITHOUT_API}/uploads/diamond-shapes/${category.image}`}
@@ -205,9 +208,13 @@ const CategoryShapes = () => {
                     </div>
                   )}
                 </div>
-                <p className={`mt-2 text-xs sm:text-sm text-center font-medium ${
-                  selectedCategory === category._id ? "text-black font-bold" : "text-gray-800"
-                }`}>
+                <p
+                  className={`mt-2 text-xs sm:text-sm text-center font-medium ${
+                    selectedCategory === category._id
+                      ? "text-black font-bold"
+                      : "text-gray-800"
+                  }`}
+                >
                   {category.name}
                 </p>
               </div>
