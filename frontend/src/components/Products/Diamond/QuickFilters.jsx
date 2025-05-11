@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { getImageUrl } from "../../../../utils/imageHelper";
-import DoubleRangeSlider from '../DoubleRangeSlider';
 
 const QuickFilters = ({
   categories,
@@ -75,12 +74,20 @@ const QuickFilters = ({
 
   // Handle price change with debounce
   const handlePriceChange = (min, max) => {
-    setMinPrice(min);
-    setMaxPrice(max);
+    // Validate and format the values
+    const formattedMin = Math.max(0, Math.min(Number(min) || 0, 1000000));
+    const formattedMax = Math.max(0, Math.min(Number(max) || 100000, 1000000));
+
+    // Ensure min doesn't exceed max
+    const finalMin = Math.min(formattedMin, formattedMax);
+    const finalMax = Math.max(formattedMin, formattedMax);
+
+    setMinPrice(finalMin);
+    setMaxPrice(finalMax);
 
     // Use setTimeout to debounce the API call
     const timer = setTimeout(() => {
-      onPriceChange({ min, max });
+      onPriceChange({ min: finalMin, max: finalMax });
     }, 500); // 500ms debounce
 
     return () => clearTimeout(timer);
@@ -88,12 +95,20 @@ const QuickFilters = ({
 
   // Handle carat change with debounce
   const handleCaratChange = (min, max) => {
-    setMinCarat(min);
-    setMaxCarat(max);
+    // Validate and format the values
+    const formattedMin = Math.max(0, Math.min(Number(min) || 0, 60));
+    const formattedMax = Math.max(0, Math.min(Number(max) || 10, 60));
+
+    // Ensure min doesn't exceed max
+    const finalMin = Math.min(formattedMin, formattedMax);
+    const finalMax = Math.max(formattedMin, formattedMax);
+
+    setMinCarat(finalMin);
+    setMaxCarat(finalMax);
 
     // Use setTimeout to debounce the API call
     const timer = setTimeout(() => {
-      onCaratChange({ min, max });
+      onCaratChange({ min: finalMin, max: finalMax });
     }, 500); // 500ms debounce
 
     return () => clearTimeout(timer);
@@ -378,41 +393,100 @@ const QuickFilters = ({
 
         {/* 2x2 Grid for Price/Carat and Cut/Clarity */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-4">
-          {/* Price Range Slider */}
+          {/* Price Range */}
           <div>
             <h3 className="text-lg font-medium text-gray-900 mb-4">
               Price Range
             </h3>
-            <DoubleRangeSlider
-              min={0}
-              max={1000000}
-              step={1000}
-              value={[minPrice, maxPrice]}
-              onChange={(range) => {
-                setMinPrice(range.min);
-                setMaxPrice(range.max);
-                onPriceChange(range);
-              }}
-              prefix="$ "
-            />
+            <div className="flex items-center space-x-4">
+              <div className="flex-1">
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                    $
+                  </span>
+                  <input
+                    type="number"
+                    min={0}
+                    max={1000000}
+                    value={minPrice || ''}
+                    onChange={(e) => handlePriceChange(e.target.value, maxPrice)}
+                    onBlur={(e) => {
+                      if (!e.target.value) {
+                        handlePriceChange(0, maxPrice);
+                      }
+                    }}
+                    className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
+                    placeholder="Min"
+                  />
+                </div>
+              </div>
+              <div className="text-gray-400">to</div>
+              <div className="flex-1">
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                    $
+                  </span>
+                  <input
+                    type="number"
+                    min={0}
+                    max={1000000}
+                    value={maxPrice || ''}
+                    onChange={(e) => handlePriceChange(minPrice, e.target.value)}
+                    onBlur={(e) => {
+                      if (!e.target.value) {
+                        handlePriceChange(minPrice, 100000);
+                      }
+                    }}
+                    className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
+                    placeholder="Max"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Carat Range Slider */}
+          {/* Carat Range */}
           <div>
             <h3 className="text-lg font-medium text-gray-900 mb-4">
               Carat Range
             </h3>
-            <DoubleRangeSlider
-              min={0.01}
-              max={60}
-              step={0.01}
-              value={[minCarat, maxCarat]}
-              onChange={(range) => {
-                setMinCarat(range.min);
-                setMaxCarat(range.max);
-                onCaratChange(range);
-              }}
-            />
+            <div className="flex items-center space-x-4">
+              <div className="flex-1">
+                <input
+                  type="number"
+                  min={0}
+                  max={60}
+                  step="0.01"
+                  value={minCarat || ''}
+                  onChange={(e) => handleCaratChange(e.target.value, maxCarat)}
+                  onBlur={(e) => {
+                    if (!e.target.value) {
+                      handleCaratChange(0, maxCarat);
+                    }
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                  placeholder="Min"
+                />
+              </div>
+              <div className="text-gray-400">to</div>
+              <div className="flex-1">
+                <input
+                  type="number"
+                  min={0}
+                  max={60}
+                  step="0.01"
+                  value={maxCarat || ''}
+                  onChange={(e) => handleCaratChange(minCarat, e.target.value)}
+                  onBlur={(e) => {
+                    if (!e.target.value) {
+                      handleCaratChange(minCarat, 10);
+                    }
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                  placeholder="Max"
+                />
+              </div>
+            </div>
           </div>
 
           {/* Cut Filter */}

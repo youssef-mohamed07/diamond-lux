@@ -175,7 +175,7 @@ const MobileFilterPanel = ({
           {/* Price Range */}
           <div className="pb-4 border-b border-gray-200">
             <h3 className="text-lg font-medium mb-3">Price Range</h3>
-            <div className="flex items-center">
+            <div className="flex items-center space-x-4">
               <div className="flex-1">
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
@@ -184,18 +184,24 @@ const MobileFilterPanel = ({
                   <input
                     type="number"
                     min={0}
-                    placeholder="Min"
-                    defaultValue={priceRange[0]}
+                    max={1000000}
+                    value={priceRange[0] || ''}
                     onChange={(e) => {
-                      const min = Number(e.target.value);
-                      const max = priceRange[1];
+                      const min = Math.max(0, Math.min(Number(e.target.value) || 0, 1000000));
+                      const max = Math.max(0, Math.min(Number(priceRange[1]) || 100000, 1000000));
                       onPriceChange({ min, max });
                     }}
+                    onBlur={(e) => {
+                      if (!e.target.value) {
+                        onPriceChange({ min: 0, max: priceRange[1] });
+                      }
+                    }}
                     className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
+                    placeholder="Min"
                   />
                 </div>
               </div>
-              <div className="mx-2 text-gray-400">to</div>
+              <div className="text-gray-400">to</div>
               <div className="flex-1">
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
@@ -204,14 +210,20 @@ const MobileFilterPanel = ({
                   <input
                     type="number"
                     min={0}
-                    placeholder="Max"
-                    defaultValue={priceRange[1] < 100000 ? priceRange[1] : ""}
+                    max={1000000}
+                    value={priceRange[1] || ''}
                     onChange={(e) => {
-                      const min = priceRange[0];
-                      const max = Number(e.target.value);
+                      const min = Math.max(0, Math.min(Number(priceRange[0]) || 0, 1000000));
+                      const max = Math.max(0, Math.min(Number(e.target.value) || 100000, 1000000));
                       onPriceChange({ min, max });
                     }}
+                    onBlur={(e) => {
+                      if (!e.target.value) {
+                        onPriceChange({ min: priceRange[0], max: 100000 });
+                      }
+                    }}
                     className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
+                    placeholder="Max"
                   />
                 </div>
               </div>
@@ -221,36 +233,48 @@ const MobileFilterPanel = ({
           {/* Carat Range */}
           <div className="pb-4 border-b border-gray-200">
             <h3 className="text-lg font-medium mb-3">Carat Range</h3>
-            <div className="flex items-center">
+            <div className="flex items-center space-x-4">
               <div className="flex-1">
                 <input
                   type="number"
                   min={0}
+                  max={60}
                   step="0.01"
-                  placeholder="Min"
-                  defaultValue={caratRange[0]}
+                  value={caratRange[0] || ''}
                   onChange={(e) => {
-                    const min = Number(e.target.value);
-                    const max = caratRange[1];
+                    const min = Math.max(0, Math.min(Number(e.target.value) || 0, 60));
+                    const max = Math.max(0, Math.min(Number(caratRange[1]) || 10, 60));
                     onCaratChange({ min, max });
                   }}
+                  onBlur={(e) => {
+                    if (!e.target.value) {
+                      onCaratChange({ min: 0, max: caratRange[1] });
+                    }
+                  }}
                   className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                  placeholder="Min"
                 />
               </div>
-              <div className="mx-2 text-gray-400">to</div>
+              <div className="text-gray-400">to</div>
               <div className="flex-1">
                 <input
                   type="number"
                   min={0}
+                  max={60}
                   step="0.01"
-                  placeholder="Max"
-                  defaultValue={caratRange[1] < 10 ? caratRange[1] : ""}
+                  value={caratRange[1] || ''}
                   onChange={(e) => {
-                    const min = caratRange[0];
-                    const max = Number(e.target.value);
+                    const min = Math.max(0, Math.min(Number(caratRange[0]) || 0, 60));
+                    const max = Math.max(0, Math.min(Number(e.target.value) || 10, 60));
                     onCaratChange({ min, max });
                   }}
+                  onBlur={(e) => {
+                    if (!e.target.value) {
+                      onCaratChange({ min: caratRange[0], max: 10 });
+                    }
+                  }}
                   className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                  placeholder="Max"
                 />
               </div>
             </div>
