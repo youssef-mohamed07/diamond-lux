@@ -61,12 +61,16 @@ function normalizeShapeName(csvShape) {
   };
 
   const csvShapeUpper = csvShape.trim().toUpperCase();
-  return shapeMapping[csvShapeUpper] || shapesMap[csvShapeUpper.toLowerCase()] || "round";
+  return (
+    shapeMapping[csvShapeUpper] ||
+    shapesMap[csvShapeUpper.toLowerCase()] ||
+    "round"
+  );
 }
 
 // Function to parse color values into color and fancy intensity
 function parseColorValue(colorValue) {
-  if (!colorValue) return { color: 'N/A', fancyIntensity: null };
+  if (!colorValue) return { color: "N/A", fancyIntensity: null };
 
   // Handle regular D-Z colors
   if (/^[D-Z]$/.test(colorValue)) {
@@ -74,14 +78,15 @@ function parseColorValue(colorValue) {
   }
 
   // Handle fancy colors
-  const fancyPattern = /^(Fancy\s+)?(Light|Very\s+Light|Intense|Deep|Vivid|Dark)?\s*([A-Za-z\s]+)$/i;
+  const fancyPattern =
+    /^(Fancy\s+)?(Light|Very\s+Light|Intense|Deep|Vivid|Dark)?\s*([A-Za-z\s]+)$/i;
   const match = colorValue.match(fancyPattern);
 
   if (match) {
     const [_, isFancy, intensity, color] = match;
     return {
       color: color.trim(),
-      fancyIntensity: intensity ? intensity.trim() : null
+      fancyIntensity: intensity ? intensity.trim() : null,
     };
   }
 
@@ -95,19 +100,34 @@ function validateProductData(item, type) {
 
   // Basic validation
   if (!item.carats || !item.col || !item.clar) {
-    log(`Invalid product data: Missing required fields for ${item.stock_id || item.ID}`, "warning");
+    log(
+      `Invalid product data: Missing required fields for ${
+        item.stock_id || item.ID
+      }`,
+      "warning"
+    );
     return null;
   }
 
   // Clean and format data
   return {
     // Basic product info
-    title: `${shape || 'Round'} ${type === "lab" ? "Lab" : "Natural"} Diamond - ${item.carats}ct ${item.col} ${item.clar}`,
-    description: `Beautiful ${shape || 'Round'} ${type === "lab" ? "Lab" : "Natural"} Diamond with ${item.carats} carats, ${item.col} color, and ${item.clar} clarity.`,
+    title: `${shape || "Round"} ${
+      type === "lab" ? "Lab" : "Natural"
+    } Diamond - ${item.carats}ct ${item.col} ${item.clar}`,
+    description: `Beautiful ${shape || "Round"} ${
+      type === "lab" ? "Lab" : "Natural"
+    } Diamond with ${item.carats} carats, ${item.col} color, and ${
+      item.clar
+    } clarity.`,
     price: parseFloat(item.price) || 0,
-    category: shape || 'round',
-    imageCover: item.image || `https://via.placeholder.com/300x300?text=${encodeURIComponent(shape || 'Diamond')}`,
-    images: [item.image || `https://via.placeholder.com/300x300?text=${encodeURIComponent(shape || 'Diamond')}`],
+    category: shape || "round",
+    imageCover: item.image || `https://placehold.co//300x300`,
+    images: [
+      item.image ||
+        `https://placehold.co//300x300
+        )}`,
+    ],
     isPopular: false,
 
     // Product type
@@ -116,39 +136,39 @@ function validateProductData(item, type) {
     // Diamond specific
     stockId: item.stock_id || item.ID,
     reportNo: item.ReportNo,
-    shape: shape || 'round',
+    shape: shape || "round",
     carats: parseFloat(item.carats) || 0,
     col: color, // Store the base color
     fancyIntensity: fancyIntensity, // Store the fancy intensity separately
-    clar: item.clar || 'N/A',
-    cut: item.cut || 'N/A',
-    pol: item.pol || 'N/A',
-    symm: item.symm || 'N/A',
-    flo: item.flo || 'NON',
-    floCol: item.floCol || '',
+    clar: item.clar || "N/A",
+    cut: item.cut || "N/A",
+    pol: item.pol || "N/A",
+    symm: item.symm || "N/A",
+    flo: item.flo || "NON",
+    floCol: item.floCol || "",
     length: parseFloat(item.length) || 0,
     width: parseFloat(item.width) || 0,
     height: parseFloat(item.height) || 0,
     depth: parseFloat(item.depth) || 0,
     table: parseFloat(item.table) || 0,
-    culet: item.culet || '',
-    lab: item.lab || '',
-    certificate_url: item.pdf || '',
-    certificate_number: item.ReportNo || '',
-    girdle: item.girdle || '',
-    eyeClean: item.eyeClean || '',
-    brown: item.brown === 'Yes',
-    green: item.green === 'Yes',
-    milky: item.milky === 'Yes',
+    culet: item.culet || "",
+    lab: item.lab || "",
+    certificate_url: item.pdf || "",
+    certificate_number: item.ReportNo || "",
+    girdle: item.girdle || "",
+    eyeClean: item.eyeClean || "",
+    brown: item.brown === "Yes",
+    green: item.green === "Yes",
+    milky: item.milky === "Yes",
     pricePerCarat: parseFloat(item.price_per_carat) || 0,
     discount: parseFloat(item.discount) || 0,
-    video: item.video || '',
-    pdf: item.pdf || '',
-    mineOfOrigin: item.mine_of_origin || '',
-    canadaMarkEligible: item.canada_mark_eligible === 'true',
-    isReturnable: item.is_returnable === 'Y',
+    video: item.video || "",
+    pdf: item.pdf || "",
+    mineOfOrigin: item.mine_of_origin || "",
+    canadaMarkEligible: item.canada_mark_eligible === "true",
+    isReturnable: item.is_returnable === "Y",
     markupPrice: parseFloat(item.markup_price) || 0,
-    markupCurrency: item.markup_currency || 'USD'
+    markupCurrency: item.markup_currency || "USD",
   };
 }
 
@@ -177,8 +197,8 @@ async function connectToDatabase() {
 async function processBatch(batch, type) {
   try {
     const products = batch
-      .map(item => validateProductData(item, type))
-      .filter(product => product !== null);
+      .map((item) => validateProductData(item, type))
+      .filter((product) => product !== null);
 
     if (products.length === 0) {
       log("No valid products to insert", "warning");
@@ -195,8 +215,11 @@ async function processBatch(batch, type) {
       } catch (error) {
         log(`Error inserting sub-batch: ${error.message}`, "error");
         if (error.writeErrors) {
-          error.writeErrors.forEach(writeError => {
-            log(`Write error for document: ${JSON.stringify(writeError.err)}`, "error");
+          error.writeErrors.forEach((writeError) => {
+            log(
+              `Write error for document: ${JSON.stringify(writeError.err)}`,
+              "error"
+            );
           });
         }
       }
@@ -255,7 +278,7 @@ async function main() {
     // Clear existing diamonds
     log("Clearing existing diamonds...");
     await Product.deleteMany({
-      productType: { $in: ["lab_diamond", "natural_diamond"] }
+      productType: { $in: ["lab_diamond", "natural_diamond"] },
     });
     log("Existing diamonds cleared");
 

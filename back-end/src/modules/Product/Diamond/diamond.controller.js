@@ -4,11 +4,6 @@ import { buildDiamondFilterQuery } from "./diamond.utils.js";
 
 const getDiamondProducts = catchError(async (req, res, next) => {
   try {
-    console.log("=== Diamond Products Request ===");
-    console.log("Request URL:", req.originalUrl);
-    console.log("Request Query:", req.query);
-    console.log("Request Headers:", req.headers);
-
     const page = Math.max(1, parseInt(req.query.page) || 1);
     const limit = Math.min(80, Math.max(1, parseInt(req.query.limit) || 12));
     const skip = (page - 1) * limit;
@@ -44,18 +39,18 @@ const getDiamondProducts = catchError(async (req, res, next) => {
     if (req.query.search) {
       const searchTerm = req.query.search.trim();
       const searchFields = [
-        'title',
-        'description',
-        'stockId',
-        'reportNo',
-        'shape',
-        'col',
-        'clar',
-        'cut',
-        'pol',
-        'symm',
-        'flo',
-        'lab'
+        "title",
+        "description",
+        "stockId",
+        "reportNo",
+        "shape",
+        "col",
+        "clar",
+        "cut",
+        "pol",
+        "symm",
+        "flo",
+        "lab",
       ];
 
       // If there are existing filters, we need to combine them with the search
@@ -63,19 +58,19 @@ const getDiamondProducts = catchError(async (req, res, next) => {
         filterQuery.$and = [
           { ...filterQuery },
           {
-            $or: searchFields.map(field => ({
-              [field]: { $regex: searchTerm, $options: 'i' }
-            }))
-          }
+            $or: searchFields.map((field) => ({
+              [field]: { $regex: searchTerm, $options: "i" },
+            })),
+          },
         ];
         // Remove the original filter query since it's now part of $and
-        Object.keys(filterQuery).forEach(key => {
-          if (key !== '$and') delete filterQuery[key];
+        Object.keys(filterQuery).forEach((key) => {
+          if (key !== "$and") delete filterQuery[key];
         });
       } else {
         // If no other filters, just use the search
-        filterQuery.$or = searchFields.map(field => ({
-          [field]: { $regex: searchTerm, $options: 'i' }
+        filterQuery.$or = searchFields.map((field) => ({
+          [field]: { $regex: searchTerm, $options: "i" },
         }));
       }
     }

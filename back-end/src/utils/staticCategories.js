@@ -38,7 +38,6 @@ const DIAMOND_CATEGORIES = [
   { _id: "half_moon", name: "Half Moon", image: "half_moon.webp" },
   { _id: "rose_cut", name: "Rose Cut", image: "rose_cut.webp" },
   // Adding missing shapes from the list
-  { _id: "square", name: "Square", image: "square.webp" },
   { _id: "cushion", name: "Cushion", image: "cushion.webp" },
   {
     _id: "tapered_baguette",
@@ -47,10 +46,7 @@ const DIAMOND_CATEGORIES = [
   },
   { _id: "bullet", name: "Bullet", image: "bullet.webp" },
   { _id: "briolette", name: "Briolette", image: "briolette.webp" },
-  { _id: "nonagonal", name: "Nonagonal", image: "nonagonal.webp" },
-  { _id: "heptagonal", name: "Heptagonal", image: "heptagonal.webp" },
   { _id: "calf", name: "Calf", image: "calf.webp" },
-  { _id: "other", name: "Other", image: "other.webp" },
 ];
 
 export { DIAMOND_CATEGORIES };

@@ -36,10 +36,28 @@ const ShopContextProvider = (props) => {
     }
   }, [token]);
 
+  // Initialize guestWishlist in state
+  const [guestWishlist, setGuestWishlist] = useState(() => {
+    if (!token) {
+      const savedGuestWishlist = localStorage.getItem("guestWishlist");
+      return savedGuestWishlist ? JSON.parse(savedGuestWishlist) : [];
+    }
+    return [];
+  });
+
+  // Update localStorage when guestWishlist changes
+  useEffect(() => {
+    if (!token && guestWishlist.length > 0) {
+      localStorage.setItem("guestWishlist", JSON.stringify(guestWishlist));
+    }
+  }, [guestWishlist, token]);
+
   const value = {
     products,
     categories,
     wishlist,
+    guestWishlist,
+    setGuestWishlist,
     addItemToWishlist,
     removeItemFromWishlist,
     clearAllWishlist,

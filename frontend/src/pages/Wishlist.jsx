@@ -4,54 +4,21 @@ import { ShopContext } from "../context/ShopContext";
 import { FaArrowLeft, FaTrash, FaPlus, FaMinus } from "react-icons/fa";
 import NewsletterBox from "../components/NewsletterBox";
 import { toast } from "react-toastify";
-import { getWishlist } from "../api/wishlistApi";
+import { getWishlist } from "../../api/wishlistApi";
 
 const Wishlist = () => {
-  const { products, wishlist, removeItemFromWishlist, updateWishlistItem, currency } =
-    useContext(ShopContext);
-
-  const location = useLocation();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [wishlistItems, setWishlistItems] = useState([]);
 
-  // Force refetch wishlist on page load
   useEffect(() => {
-    const fetchLatestWishlist = async () => {
-      try {
-        const response = await getWishlist();
-        console.log("[Wishlist Page] Forced refetch, wishlist:", response);
-      } catch (err) {
-        console.error("[Wishlist Page] Error refetching wishlist:", err);
-      }
+    const fetchWishlist = async () => {
+      const response = await getWishlist();
+      console.log(response);
+
+      setWishlistItems(response.wishlist.wishlistItems);
     };
-    fetchLatestWishlist();
+    fetchWishlist();
   }, []);
-
-  // Scroll to top when page loads
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-
-  // Update wishlist items when wishlist or products change
-  useEffect(() => {
-    if (products.length > 0 && wishlist?.wishlistItems) {
-      const items = wishlist.wishlistItems.map((item) => {
-        const product = products.find((p) => p._id === item.product);
-        if (product) {
-          return {
-            ...product,
-            quantity: item.quantity,
-          };
-        }
-        return null;
-      }).filter(Boolean);
-      setWishlistItems(items);
-      setLoading(false);
-    } else if (!wishlist?.wishlistItems) {
-      setWishlistItems([]);
-      setLoading(false);
-    }
-  }, [products, wishlist]);
 
   // Calculate total price based on quantities
   const subtotal = wishlistItems.reduce(
@@ -61,8 +28,16 @@ const Wishlist = () => {
 
   const handleRemoveItem = async (productId) => {
     try {
-      await removeItemFromWishlist(productId);
-      toast.success("Item removed from wishlist");
+      if (token) {
+        await removeItemFromWishlist(productId);
+        toast.success("Item removed from wishlist");
+      } else {
+        // Handle guest wishlist item removal
+        setGuestWishlist((prev) =>
+          prev.filter((item) => item.productId !== productId)
+        );
+        toast.success("Item removed from wishlist");
+      }
     } catch (error) {
       toast.error("Failed to remove item from wishlist");
     }
@@ -71,9 +46,20 @@ const Wishlist = () => {
   // Increase quantity
   const increaseQuantity = async (productId) => {
     try {
-      const item = wishlistItems.find(item => item._id === productId);
-      if (item) {
-        await updateWishlistItem(productId, item.quantity + 1);
+      if (token) {
+        const item = wishlistItems.find((item) => item._id === productId);
+        if (item) {
+          await updateWishlistItem(productId, item.quantity + 1);
+        }
+      } else {
+        // Handle guest wishlist quantity increase
+        setGuestWishlist((prev) =>
+          prev.map((item) =>
+            item.productId === productId
+              ? { ...item, quantity: item.quantity + 1 }
+              : item
+          )
+        );
       }
     } catch (error) {
       toast.error("Failed to update quantity");
@@ -83,9 +69,20 @@ const Wishlist = () => {
   // Decrease quantity
   const decreaseQuantity = async (productId) => {
     try {
-      const item = wishlistItems.find(item => item._id === productId);
-      if (item && item.quantity > 1) {
-        await updateWishlistItem(productId, item.quantity - 1);
+      if (token) {
+        const item = wishlistItems.find((item) => item._id === productId);
+        if (item && item.quantity > 1) {
+          await updateWishlistItem(productId, item.quantity - 1);
+        }
+      } else {
+        // Handle guest wishlist quantity decrease
+        setGuestWishlist((prev) =>
+          prev.map((item) =>
+            item.productId === productId && item.quantity > 1
+              ? { ...item, quantity: item.quantity - 1 }
+              : item
+          )
+        );
       }
     } catch (error) {
       toast.error("Failed to update quantity");
@@ -97,7 +94,17 @@ const Wishlist = () => {
     try {
       // Ensure quantity is a valid number and at least 1
       const quantity = Math.max(1, parseInt(newQuantity) || 1);
-      await updateWishlistItem(productId, quantity);
+
+      if (token) {
+        await updateWishlistItem(productId, quantity);
+      } else {
+        // Handle guest wishlist direct quantity update
+        setGuestWishlist((prev) =>
+          prev.map((item) =>
+            item.productId === productId ? { ...item, quantity } : item
+          )
+        );
+      }
     } catch (error) {
       toast.error("Failed to update quantity");
     }
@@ -258,7 +265,7 @@ const Wishlist = () => {
                         <div className="flex-shrink-0 h-16 w-16">
                           <img
                             className="h-16 w-16 rounded-md object-cover"
-                            src={product.image}
+                            src={product.imageCover}
                             alt={product.name}
                           />
                         </div>
