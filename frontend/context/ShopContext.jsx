@@ -14,6 +14,7 @@ const ShopContextProvider = (props) => {
     addItemToWishlist,
     removeItemFromWishlist,
     clearAllWishlist,
+    updateWishlistItem,
   } = useWishlist(token);
 
   const value = {
@@ -23,6 +24,7 @@ const ShopContextProvider = (props) => {
     addItemToWishlist,
     removeItemFromWishlist,
     clearAllWishlist,
+    updateWishlistItem,
     currency,
     setToken,
     token,

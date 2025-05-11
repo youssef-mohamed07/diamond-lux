@@ -4,8 +4,8 @@ import { ShopContext } from "../../context/ShopContext";
 import { motion, AnimatePresence } from "framer-motion";
 
 const WishlistButton = ({ className, isHomePage, scrolled }) => {
-  const { favorites } = useContext(ShopContext);
-  const count = favorites.length;
+  const { wishlist } = useContext(ShopContext);
+  const count = wishlist?.wishlistItems?.length || 0;
 
   // Determine text color based on page and scroll state
   const textColor = isHomePage && !scrolled ? "text-white" : "text-gray-700";

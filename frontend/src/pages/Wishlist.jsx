@@ -6,7 +6,7 @@ import NewsletterBox from "../components/NewsletterBox";
 import { toast } from "react-toastify";
 
 const Wishlist = () => {
-  const { products, favorites, removeFromFavorites, currency } =
+  const { products, wishlist, removeItemFromWishlist, currency } =
     useContext(ShopContext);
 
   const location = useLocation();
@@ -19,18 +19,22 @@ const Wishlist = () => {
     window.scrollTo(0, 0);
   }, []);
 
-  // Update wishlist items when favorites or products change
+  // Update wishlist items when wishlist or products change
   useEffect(() => {
-    if (products.length > 0) {
-      const items = products
-        .filter((product) => favorites.includes(product._id))
-        .map((product) => ({
-          ...product,
-          quantity: 1, // Default quantity
-        }));
+    if (products.length > 0 && wishlist?.wishlistItems) {
+      const items = wishlist.wishlistItems.map((item) => {
+        const product = products.find((p) => p._id === item.product);
+        if (product) {
+          return {
+            ...product,
+            quantity: item.quantity,
+          };
+        }
+        return null;
+      }).filter(Boolean);
       setWishlistItems(items);
     }
-  }, [products, favorites]);
+  }, [products, wishlist]);
 
   // Calculate total price based on quantities
   const subtotal = wishlistItems.reduce(
@@ -38,41 +42,48 @@ const Wishlist = () => {
     0
   );
 
-  const handleRemoveItem = (productId) => {
-    removeFromFavorites(productId);
-    toast.success("Item removed from wishlist");
+  const handleRemoveItem = async (productId) => {
+    try {
+      await removeItemFromWishlist(productId);
+      toast.success("Item removed from wishlist");
+    } catch (error) {
+      toast.error("Failed to remove item from wishlist");
+    }
   };
 
   // Increase quantity
-  const increaseQuantity = (productId) => {
-    setWishlistItems((prev) =>
-      prev.map((item) =>
-        item._id === productId ? { ...item, quantity: item.quantity + 1 } : item
-      )
-    );
+  const increaseQuantity = async (productId) => {
+    try {
+      const item = wishlistItems.find(item => item._id === productId);
+      if (item) {
+        await updateWishlistItem(productId, item.quantity + 1);
+      }
+    } catch (error) {
+      toast.error("Failed to update quantity");
+    }
   };
 
   // Decrease quantity
-  const decreaseQuantity = (productId) => {
-    setWishlistItems((prev) =>
-      prev.map((item) =>
-        item._id === productId && item.quantity > 1
-          ? { ...item, quantity: item.quantity - 1 }
-          : item
-      )
-    );
+  const decreaseQuantity = async (productId) => {
+    try {
+      const item = wishlistItems.find(item => item._id === productId);
+      if (item && item.quantity > 1) {
+        await updateWishlistItem(productId, item.quantity - 1);
+      }
+    } catch (error) {
+      toast.error("Failed to update quantity");
+    }
   };
 
   // Update quantity directly
-  const updateQuantity = (productId, newQuantity) => {
-    // Ensure quantity is a valid number and at least 1
-    const quantity = Math.max(1, parseInt(newQuantity) || 1);
-
-    setWishlistItems((prev) =>
-      prev.map((item) =>
-        item._id === productId ? { ...item, quantity } : item
-      )
-    );
+  const updateQuantity = async (productId, newQuantity) => {
+    try {
+      // Ensure quantity is a valid number and at least 1
+      const quantity = Math.max(1, parseInt(newQuantity) || 1);
+      await updateWishlistItem(productId, quantity);
+    } catch (error) {
+      toast.error("Failed to update quantity");
+    }
   };
 
   return (
