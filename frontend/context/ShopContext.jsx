@@ -24,7 +24,7 @@ const ShopContextProvider = (props) => {
     addItemToWishlist,
     removeItemFromWishlist,
     clearAllWishlist,
-    updateWishlistItem,
+    updateWishlistItemQuantity,
   } = useWishlist(token);
 
   // Update localStorage when token changes
@@ -43,7 +43,7 @@ const ShopContextProvider = (props) => {
     addItemToWishlist,
     removeItemFromWishlist,
     clearAllWishlist,
-    updateWishlistItem,
+    updateWishlistItem: updateWishlistItemQuantity,
     currency,
     setToken,
     token,

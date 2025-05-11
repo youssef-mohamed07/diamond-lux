@@ -38,9 +38,7 @@ const Product = () => {
     products,
     diamondProducts,
     currency,
-    addToFavorites,
-    removeFromFavorites,
-    isInFavorites,
+    addItemToWishlist,
   } = useContext(ShopContext);
 
   const [product, setProduct] = useState(null);
@@ -147,13 +145,13 @@ const Product = () => {
     }, 200);
   };
 
-  const handleToggleWishlist = () => {
-    if (isInFavorites(productId)) {
-      removeFromFavorites(productId);
-      toast.success("Removed from wishlist");
-    } else {
-      addToFavorites(productId);
+  const handleAddToWishlist = async () => {
+    try {
+      await addItemToWishlist(productId, 1);
       toast.success("Added to wishlist");
+      navigate("/wishlist");
+    } catch (error) {
+      toast.error("Failed to add to wishlist");
     }
   };
 
@@ -222,8 +220,6 @@ const Product = () => {
       </div>
     );
   }
-
-  const isFavorite = isInFavorites(productId);
 
   // Check if description is valid and meaningful
   const hasValidDescription =
@@ -1101,20 +1097,11 @@ const Product = () => {
               {/* Wishlist Button */}
               <div className="flex justify-end mb-8">
                 <button
-                  onClick={handleToggleWishlist}
-                  className="flex items-center justify-center px-6 py-3 border border-gray-300 rounded-md shadow-sm text-base font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                  onClick={handleAddToWishlist}
+                  className="flex items-center gap-2 px-4 py-2 rounded bg-gray-900 text-white hover:bg-gray-800 transition-colors"
                 >
-                  {isFavorite ? (
-                    <>
-                      <FaHeart className="text-red-500 mr-2" />
-                      <span>Remove from Wishlist</span>
-                    </>
-                  ) : (
-                    <>
-                      <FaRegHeart className="mr-2" />
-                      <span>Add to Wishlist</span>
-                    </>
-                  )}
+                  <FaHeart className="text-red-500" />
+                  <span>Add to Wishlist</span>
                 </button>
               </div>
             </div>
