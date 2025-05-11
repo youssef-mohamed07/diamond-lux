@@ -4,6 +4,7 @@ import { ShopContext } from "../context/ShopContext";
 import { FaArrowLeft, FaTrash, FaPlus, FaMinus } from "react-icons/fa";
 import NewsletterBox from "../components/NewsletterBox";
 import { toast } from "react-toastify";
+import { getWishlist } from "../api/wishlistApi";
 
 const Wishlist = () => {
   const { products, wishlist, removeItemFromWishlist, updateWishlistItem, currency } =
@@ -12,6 +13,19 @@ const Wishlist = () => {
   const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [wishlistItems, setWishlistItems] = useState([]);
+
+  // Force refetch wishlist on page load
+  useEffect(() => {
+    const fetchLatestWishlist = async () => {
+      try {
+        const response = await getWishlist();
+        console.log("[Wishlist Page] Forced refetch, wishlist:", response);
+      } catch (err) {
+        console.error("[Wishlist Page] Error refetching wishlist:", err);
+      }
+    };
+    fetchLatestWishlist();
+  }, []);
 
   // Scroll to top when page loads
   useEffect(() => {

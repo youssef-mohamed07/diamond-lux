@@ -31,9 +31,9 @@ export const useWishlist = (token) => {
       }
 
       try {
-        console.log("Fetching wishlist...");
+        console.log("Fetching wishlist with token:", token);
         const response = await getWishlist();
-        console.log("Wishlist response:", response);
+        console.log("Wishlist response from API:", response);
         setWishlist(response.wishlist);
         setLoading(false);
       } catch (error) {
@@ -53,10 +53,11 @@ export const useWishlist = (token) => {
 
     try {
       console.log("Adding item to wishlist:", { productId, quantity });
-      await addToWishlist(productId, quantity);
-      console.log("Item added successfully, fetching updated wishlist");
+      const addResponse = await addToWishlist(productId, quantity);
+      console.log("Add to wishlist API response:", addResponse);
+      console.log("Fetching updated wishlist after add...");
       const response = await getWishlist();
-      console.log("Updated wishlist response:", response);
+      console.log("Updated wishlist response after add:", response);
       setWishlist(response.wishlist);
       return response.wishlist;
     } catch (error) {
