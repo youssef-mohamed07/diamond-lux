@@ -1,31 +1,18 @@
 import React, { useContext, useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ShopContext } from "../context/ShopContext";
+import { ShopContext } from "../../context/ShopContext";
 import { FaArrowLeft, FaTrash, FaPlus, FaMinus } from "react-icons/fa";
 import NewsletterBox from "../components/NewsletterBox";
 import { toast } from "react-toastify";
-import { getWishlist } from "../api/wishlistApi";
 
 const Wishlist = () => {
-  const { products, wishlist, removeItemFromWishlist, updateWishlistItem, currency } =
+  const { products, wishlist, removeItemFromWishlist, currency } =
     useContext(ShopContext);
 
   const location = useLocation();
-  const [loading, setLoading] = useState(true);
-  const [wishlistItems, setWishlistItems] = useState([]);
 
-  // Force refetch wishlist on page load
-  useEffect(() => {
-    const fetchLatestWishlist = async () => {
-      try {
-        const response = await getWishlist();
-        console.log("[Wishlist Page] Forced refetch, wishlist:", response);
-      } catch (err) {
-        console.error("[Wishlist Page] Error refetching wishlist:", err);
-      }
-    };
-    fetchLatestWishlist();
-  }, []);
+  // State to track wishlist items with quantities
+  const [wishlistItems, setWishlistItems] = useState([]);
 
   // Scroll to top when page loads
   useEffect(() => {
@@ -34,22 +21,14 @@ const Wishlist = () => {
 
   // Update wishlist items when wishlist or products change
   useEffect(() => {
-    if (products.length > 0 && wishlist?.wishlistItems) {
-      const items = wishlist.wishlistItems.map((item) => {
-        const product = products.find((p) => p._id === item.product);
-        if (product) {
-          return {
-            ...product,
-            quantity: item.quantity,
-          };
-        }
-        return null;
-      }).filter(Boolean);
+    if (products.length > 0) {
+      const items = products
+        .filter((product) => wishlist.includes(product._id))
+        .map((product) => ({
+          ...product,
+          quantity: 1, // Default quantity
+        }));
       setWishlistItems(items);
-      setLoading(false);
-    } else if (!wishlist?.wishlistItems) {
-      setWishlistItems([]);
-      setLoading(false);
     }
   }, [products, wishlist]);
 
@@ -59,60 +38,42 @@ const Wishlist = () => {
     0
   );
 
-  const handleRemoveItem = async (productId) => {
-    try {
-      await removeItemFromWishlist(productId);
-      toast.success("Item removed from wishlist");
-    } catch (error) {
-      toast.error("Failed to remove item from wishlist");
-    }
+  const handleRemoveItem = (productId) => {
+    removeItemFromWishlist(productId);
+    toast.success("Item removed from wishlist");
   };
 
   // Increase quantity
-  const increaseQuantity = async (productId) => {
-    try {
-      const item = wishlistItems.find(item => item._id === productId);
-      if (item) {
-        await updateWishlistItem(productId, item.quantity + 1);
-      }
-    } catch (error) {
-      toast.error("Failed to update quantity");
-    }
+  const increaseQuantity = (productId) => {
+    setWishlistItems((prev) =>
+      prev.map((item) =>
+        item._id === productId ? { ...item, quantity: item.quantity + 1 } : item
+      )
+    );
   };
 
   // Decrease quantity
-  const decreaseQuantity = async (productId) => {
-    try {
-      const item = wishlistItems.find(item => item._id === productId);
-      if (item && item.quantity > 1) {
-        await updateWishlistItem(productId, item.quantity - 1);
-      }
-    } catch (error) {
-      toast.error("Failed to update quantity");
-    }
+  const decreaseQuantity = (productId) => {
+    setWishlistItems((prev) =>
+      prev.map((item) =>
+        item._id === productId && item.quantity > 1
+          ? { ...item, quantity: item.quantity - 1 }
+          : item
+      )
+    );
   };
 
   // Update quantity directly
-  const updateQuantity = async (productId, newQuantity) => {
-    try {
-      // Ensure quantity is a valid number and at least 1
-      const quantity = Math.max(1, parseInt(newQuantity) || 1);
-      await updateWishlistItem(productId, quantity);
-    } catch (error) {
-      toast.error("Failed to update quantity");
-    }
-  };
+  const updateQuantity = (productId, newQuantity) => {
+    // Ensure quantity is a valid number and at least 1
+    const quantity = Math.max(1, parseInt(newQuantity) || 1);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen pt-24 md:pt-32 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading wishlist...</p>
-        </div>
-      </div>
+    setWishlistItems((prev) =>
+      prev.map((item) =>
+        item._id === productId ? { ...item, quantity } : item
+      )
     );
-  }
+  };
 
   return (
     <div className="bg-white min-h-screen pt-24 md:pt-32">
@@ -258,7 +219,7 @@ const Wishlist = () => {
                         <div className="flex-shrink-0 h-16 w-16">
                           <img
                             className="h-16 w-16 rounded-md object-cover"
-                            src={product.image}
+                            src={product.imageCover}
                             alt={product.name}
                           />
                         </div>
@@ -294,7 +255,7 @@ const Wishlist = () => {
                             onChange={(e) =>
                               updateQuantity(product._id, e.target.value)
                             }
-                            className="w-12 text-center border-x border-gray-300 py-1"
+                            className="w-12 text-center border-x border-gray-300"
                             min="1"
                           />
                           <button
@@ -304,12 +265,9 @@ const Wishlist = () => {
                             <FaPlus />
                           </button>
                         </div>
-                        <div className="text-sm font-medium">
-                          Total:{" "}
-                          <span className="text-gray-900">
-                            {currency}
-                            {(product.price * product.quantity).toFixed(2)}
-                          </span>
+                        <div className="text-sm font-medium text-gray-900">
+                          Total: {currency}
+                          {(product.price * product.quantity).toFixed(2)}
                         </div>
                       </div>
                     </div>
@@ -318,42 +276,37 @@ const Wishlist = () => {
               </div>
             </div>
 
-            <div className="bg-gray-50 rounded-lg p-6 border border-gray-200 h-fit">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">
-                Wishlist Summary
-              </h2>
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Total Items</span>
-                  <span className="font-medium">
-                    {wishlistItems.reduce(
-                      (total, item) => total + item.quantity,
-                      0
-                    )}
-                  </span>
+            {/* Order Summary */}
+            <div className="lg:col-span-1">
+              <div className="bg-gray-50 rounded-lg p-6 sticky top-24">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                  Order Summary
+                </h2>
+                <div className="space-y-4">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Subtotal</span>
+                    <span className="text-gray-900 font-medium">
+                      {currency}
+                      {subtotal.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="border-t border-gray-200 pt-4">
+                    <div className="flex justify-between">
+                      <span className="text-lg font-semibold text-gray-900">
+                        Total
+                      </span>
+                      <span className="text-lg font-semibold text-gray-900">
+                        {currency}
+                        {subtotal.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Total Value</span>
-                  <span className="font-medium">
-                    {currency}
-                    {subtotal.toFixed(2)}
-                  </span>
-                </div>
-              </div>
-
-              <div className="mt-6">
-                <Link
-                  to="/products"
-                  className="w-full inline-block text-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-gradient-to-br from-gray-900 via-gray-800 to-black hover:from-gray-800 hover:to-gray-700"
-                >
-                  Continue Shopping
-                </Link>
               </div>
             </div>
           </div>
         )}
       </div>
-
       <NewsletterBox />
     </div>
   );
