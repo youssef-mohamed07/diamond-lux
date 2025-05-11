@@ -4,7 +4,6 @@ import { ShopContext } from "../context/ShopContext";
 import { FaArrowLeft, FaTrash, FaPlus, FaMinus } from "react-icons/fa";
 import NewsletterBox from "../components/NewsletterBox";
 import { toast } from "react-toastify";
-<<<<<<< HEAD
 import axios from "axios";
 
 const Wishlist = () => {
@@ -66,65 +65,12 @@ const Wishlist = () => {
     }
   }, [products, wishlist, guestWishlist, token]);
 
-=======
-import { getWishlist } from "../../api/wishlistApi";
-
-const Wishlist = () => {
-  const [loading, setLoading] = useState(false);
-  const [wishlistItems, setWishlistItems] = useState([]);
-
-  useEffect(() => {
-    const fetchWishlist = async () => {
-      const response = await getWishlist();
-      console.log(response);
-
-      setWishlistItems(response.wishlist.wishlistItems);
-    };
-    fetchWishlist();
-  }, []);
-
->>>>>>> 1f507461e4be5a265347551e65b251c30916c168
   // Calculate total price based on quantities
   const subtotal = wishlistItems.reduce(
     (total, product) => total + product.price * product.quantity,
     0
   );
 
-<<<<<<< HEAD
-  const handleRemoveItem = (productId) => {
-    removeItemFromWishlist(productId);
-    toast.success("Item removed from wishlist");
-  };
-
-  // Increase quantity
-  const increaseQuantity = (productId) => {
-    setWishlistItems((prev) =>
-      prev.map((item) =>
-        item._id === productId ? { ...item, quantity: item.quantity + 1 } : item
-      )
-    );
-  };
-
-  // Decrease quantity
-  const decreaseQuantity = (productId) => {
-    setWishlistItems((prev) =>
-      prev.map((item) =>
-        item._id === productId && item.quantity > 1
-          ? { ...item, quantity: item.quantity - 1 }
-          : item
-      )
-    );
-  };
-
-  // Update quantity directly
-  const updateQuantity = (productId, newQuantity) => {
-    const quantity = Math.max(1, parseInt(newQuantity) || 1);
-    setWishlistItems((prev) =>
-      prev.map((item) =>
-        item._id === productId ? { ...item, quantity } : item
-      )
-    );
-=======
   const handleRemoveItem = async (productId) => {
     try {
       if (token) {
@@ -207,7 +153,6 @@ const Wishlist = () => {
     } catch (error) {
       toast.error("Failed to update quantity");
     }
->>>>>>> 1f507461e4be5a265347551e65b251c30916c168
   };
 
   if (loading) {

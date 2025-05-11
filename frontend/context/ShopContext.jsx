@@ -1,4 +1,4 @@
-import { createContext, useState } from "react";
+import { createContext, useState, useEffect } from "react";
 import { useProducts } from "../hooks/useProducts";
 import { useWishlist } from "../hooks/useWishlist";
 
@@ -16,8 +16,6 @@ const ShopContextProvider = (props) => {
     clearAllWishlist,
   } = useWishlist(token);
 
-<<<<<<< HEAD
-=======
   // Update localStorage when token changes
   useEffect(() => {
     if (token) {
@@ -43,7 +41,6 @@ const ShopContextProvider = (props) => {
     }
   }, [guestWishlist, token]);
 
->>>>>>> 1f507461e4be5a265347551e65b251c30916c168
   const value = {
     products,
     categories,
