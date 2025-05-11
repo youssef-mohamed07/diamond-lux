@@ -388,10 +388,10 @@ const QuickFilters = ({
               max={1000000}
               step={1000}
               value={[minPrice, maxPrice]}
-              onChange={([min, max]) => {
-                setMinPrice(min);
-                setMaxPrice(max);
-                onPriceChange({ min, max });
+              onChange={(range) => {
+                setMinPrice(range.min);
+                setMaxPrice(range.max);
+                onPriceChange(range);
               }}
               prefix="$ "
             />
@@ -407,10 +407,10 @@ const QuickFilters = ({
               max={60}
               step={0.01}
               value={[minCarat, maxCarat]}
-              onChange={([min, max]) => {
-                setMinCarat(min);
-                setMaxCarat(max);
-                onCaratChange({ min, max });
+              onChange={(range) => {
+                setMinCarat(range.min);
+                setMaxCarat(range.max);
+                onCaratChange(range);
               }}
             />
           </div>

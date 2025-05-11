@@ -133,12 +133,6 @@ const CategoryShapes = () => {
     });
   };
 
-  // Handle view all click
-  const handleViewAllClick = () => {
-    setSelectedCategory(null);
-    navigate("/products/diamond");
-  };
-
   return (
     <div className="py-12 px-4 sm:px-6 lg:px-8 bg-white">
       <div className="max-w-7xl mx-auto">
@@ -239,16 +233,6 @@ const CategoryShapes = () => {
               />
             </button>
           )}
-          <button
-            onClick={handleViewAllClick}
-            className={`inline-flex items-center px-4 py-2 border text-sm font-medium rounded-md ${
-              selectedCategory === null
-                ? "bg-black text-white border-black"
-                : "bg-white text-black border-black hover:bg-gray-50"
-            } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black`}
-          >
-            View All Diamonds
-          </button>
         </div>
       </div>
     </div>

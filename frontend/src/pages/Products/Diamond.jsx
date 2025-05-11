@@ -259,36 +259,42 @@ const Diamond = () => {
   const handlePriceChange = ({ min, max }) => {
     const updatedFilters = { ...filters };
 
-    if (min > 0) {
+    // Only update if the values are different from default
+    if (min !== 0) {
       updatedFilters.minPrice = min;
     } else {
       delete updatedFilters.minPrice;
     }
 
-    if (max < 100000) {
+    if (max !== 999999) {
       updatedFilters.maxPrice = max;
     } else {
       delete updatedFilters.maxPrice;
     }
 
+    // Force a page reset when price changes
+    changePage(1);
     updateFilters(updatedFilters);
   };
 
   const handleCaratChange = ({ min, max }) => {
     const updatedFilters = { ...filters };
 
-    if (min > 0) {
+    // Only update if the values are different from default
+    if (min !== 0) {
       updatedFilters.minCarat = min;
     } else {
       delete updatedFilters.minCarat;
     }
 
-    if (max < 10) {
+    if (max !== 10) {
       updatedFilters.maxCarat = max;
     } else {
       delete updatedFilters.maxCarat;
     }
 
+    // Force a page reset when carat changes
+    changePage(1);
     updateFilters(updatedFilters);
   };
 
@@ -720,9 +726,15 @@ const Diamond = () => {
       ? filters.clar.split(",")
       : [];
 
-  const priceRange = [filters.minPrice || 0, filters.maxPrice || 999999];
+  const priceRange = [
+    filters.minPrice !== undefined ? Number(filters.minPrice) : 0,
+    filters.maxPrice !== undefined ? Number(filters.maxPrice) : 999999
+  ];
 
-  const caratRange = [filters.minCarat || 0, filters.maxCarat || 10];
+  const caratRange = [
+    filters.minCarat !== undefined ? Number(filters.minCarat) : 0,
+    filters.maxCarat !== undefined ? Number(filters.maxCarat) : 10
+  ];
 
   const selectedPolishes = Array.isArray(filters.pol)
     ? filters.pol
