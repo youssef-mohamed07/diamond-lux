@@ -1,7 +1,6 @@
 import axiosInstance from "../utils/axiosInstance";
 
 export const sendWishlistEmail = async (formData) => {
-  // 🔥 Auto-transform dynamic form fields
   const transformedData = {
     ...formData,
   };
@@ -20,9 +19,11 @@ export const sendWishlistEmail = async (formData) => {
 
 export const getWishlist = async () => {
   try {
+    console.log("Making GET request to /wishlist");
     const response = await axiosInstance.get("/wishlist", {
       withCredentials: true,
     });
+    console.log("GET /wishlist response:", response.data);
     return response.data;
   } catch (error) {
     console.error("Wishlist API error:", error);
@@ -37,7 +38,8 @@ export const getWishlist = async () => {
 };
 
 export const addToWishlist = async (productId, quantity) => {
-  await axiosInstance.post(
+  console.log("Making POST request to /wishlist with:", { productId, quantity });
+  const response = await axiosInstance.post(
     "/wishlist",
     {
       wishlistItems: [{ product: productId, quantity }],
@@ -46,16 +48,20 @@ export const addToWishlist = async (productId, quantity) => {
       withCredentials: true,
     }
   );
+  console.log("POST /wishlist response:", response.data);
+  return response.data;
 };
 
 export const removeFromWishlist = async (itemId) => {
   try {
+    console.log("Making DELETE request to /wishlist/item/", itemId);
     const response = await axiosInstance.delete(
       `/wishlist/item/${itemId}/remove`,
       {
         withCredentials: true,
       }
     );
+    console.log("DELETE /wishlist/item response:", response.data);
     return response.data;
   } catch (error) {
     console.error("Remove item error:", error);
@@ -64,12 +70,16 @@ export const removeFromWishlist = async (itemId) => {
 };
 
 export const clearWishlist = async () => {
-  await axiosInstance.delete("/wishlist", {
+  console.log("Making DELETE request to /wishlist");
+  const response = await axiosInstance.delete("/wishlist", {
     withCredentials: true,
   });
+  console.log("DELETE /wishlist response:", response.data);
+  return response.data;
 };
 
 export const updateWishlistItem = async (itemId, quantity) => {
+  console.log("Making PUT request to /wishlist/item/", itemId, "with quantity:", quantity);
   const response = await axiosInstance.put(
     `/wishlist/item/${itemId}/update`,
     {
@@ -79,5 +89,6 @@ export const updateWishlistItem = async (itemId, quantity) => {
       withCredentials: true,
     }
   );
+  console.log("PUT /wishlist/item response:", response.data);
   return response.data;
 };

@@ -25,12 +25,15 @@ export const useWishlist = (token) => {
   useEffect(() => {
     const fetchWishlist = async () => {
       if (!token) {
+        console.log("No token available, skipping wishlist fetch");
         setLoading(false);
         return;
       }
 
       try {
+        console.log("Fetching wishlist...");
         const response = await getWishlist();
+        console.log("Wishlist response:", response);
         setWishlist(response.wishlist);
         setLoading(false);
       } catch (error) {
@@ -44,12 +47,16 @@ export const useWishlist = (token) => {
 
   const addItemToWishlist = async (productId, quantity = 1) => {
     if (!token) {
+      console.log("No token available, cannot add to wishlist");
       throw new Error("User not authenticated");
     }
 
     try {
+      console.log("Adding item to wishlist:", { productId, quantity });
       await addToWishlist(productId, quantity);
+      console.log("Item added successfully, fetching updated wishlist");
       const response = await getWishlist();
+      console.log("Updated wishlist response:", response);
       setWishlist(response.wishlist);
       return response.wishlist;
     } catch (error) {
@@ -60,12 +67,16 @@ export const useWishlist = (token) => {
 
   const removeItemFromWishlist = async (productId) => {
     if (!token) {
+      console.log("No token available, cannot remove from wishlist");
       throw new Error("User not authenticated");
     }
 
     try {
+      console.log("Removing item from wishlist:", productId);
       await removeFromWishlist(productId);
+      console.log("Item removed successfully, fetching updated wishlist");
       const response = await getWishlist();
+      console.log("Updated wishlist response:", response);
       setWishlist(response.wishlist);
       return response.wishlist;
     } catch (error) {
@@ -76,10 +87,12 @@ export const useWishlist = (token) => {
 
   const clearAllWishlist = async () => {
     if (!token) {
+      console.log("No token available, cannot clear wishlist");
       throw new Error("User not authenticated");
     }
 
     try {
+      console.log("Clearing wishlist");
       await clearWishlist();
       setWishlist({ wishlistItems: [], totalWishlistprice: 0 });
     } catch (error) {
@@ -90,12 +103,16 @@ export const useWishlist = (token) => {
 
   const updateWishlistItemQuantity = async (productId, quantity) => {
     if (!token) {
+      console.log("No token available, cannot update wishlist item");
       throw new Error("User not authenticated");
     }
 
     try {
+      console.log("Updating wishlist item quantity:", { productId, quantity });
       await updateWishlistItem(productId, quantity);
+      console.log("Quantity updated successfully, fetching updated wishlist");
       const response = await getWishlist();
+      console.log("Updated wishlist response:", response);
       setWishlist(response.wishlist);
       return response.wishlist;
     } catch (error) {
