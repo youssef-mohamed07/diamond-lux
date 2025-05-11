@@ -160,11 +160,17 @@ const Wishlist = () => {
 
   const handleSendWishlist = async (formData) => {
     try {
-      const currentWishlist = token ? wishlist : guestWishlist;
+      // Format wishlist items for email
+      const itemsDetails = wishlistItems.map(item => 
+        `${item.imageCover}||${item.name}||${item.quantity}||${currency}${(item.price * item.quantity).toFixed(2)}`
+      ).join('@@');
+
       const wishlistData = {
         ...formData,
-        wishlistItems: currentWishlist,
+        itemsDetails,
+        totalValue: `${currency}${subtotal.toFixed(2)}`
       };
+
       await sendWishlistEmail(wishlistData);
       toast.success("Wishlist sent successfully!");
       setShowWishlistForm(false);

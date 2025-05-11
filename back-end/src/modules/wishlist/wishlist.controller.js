@@ -9,6 +9,12 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const sendWishlistEmail = catchError(async (req, res, next) => {
+  // Check if email configuration is set up
+  if (!process.env.TRANSPORTER_USER || !process.env.TRANSPORTER_PASS || !process.env.OWNER_EMAIL) {
+    console.error("Email configuration is missing. Please set up TRANSPORTER_USER, TRANSPORTER_PASS, and OWNER_EMAIL in your .env file");
+    return next(new AppError("Email service is not configured. Please contact the administrator.", 500));
+  }
+
   const userId = req.session?.userId; // Ensure session exists
   let wishlistItemsHtml = "";
   let totalPrice = 0;
