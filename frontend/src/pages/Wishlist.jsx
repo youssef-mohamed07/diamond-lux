@@ -5,6 +5,8 @@ import { FaArrowLeft, FaTrash, FaPlus, FaMinus } from "react-icons/fa";
 import NewsletterBox from "../components/NewsletterBox";
 import { toast } from "react-toastify";
 import axios from "axios";
+import WishlistForm from "../components/ui/WishlistForm";
+import { sendWishlistEmail } from "../../api/wishlistApi";
 
 const Wishlist = () => {
   const { products, wishlist, guestWishlist, token, removeItemFromWishlist, currency, backendUrl } =
@@ -13,6 +15,7 @@ const Wishlist = () => {
   const location = useLocation();
   const [wishlistItems, setWishlistItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showWishlistForm, setShowWishlistForm] = useState(false);
 
   // Scroll to top when page loads
   useEffect(() => {
@@ -155,6 +158,22 @@ const Wishlist = () => {
     }
   };
 
+  const handleSendWishlist = async (formData) => {
+    try {
+      const currentWishlist = token ? wishlist : guestWishlist;
+      const wishlistData = {
+        ...formData,
+        wishlistItems: currentWishlist,
+      };
+      await sendWishlistEmail(wishlistData);
+      toast.success("Wishlist sent successfully!");
+      setShowWishlistForm(false);
+    } catch (error) {
+      console.error("Error sending wishlist:", error);
+      toast.error("Failed to send wishlist. Please try again.");
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen pt-24 md:pt-32 flex items-center justify-center">
@@ -172,7 +191,7 @@ const Wishlist = () => {
           </h1>
           <Link
             to="/products/diamond"
-            className="text-gray-600 hover:text-gray-900 flex items-center self-start sm:self-auto"
+            className="text-gray-600 hover:text-gray-900 flex items-center"
           >
             <FaArrowLeft className="mr-2" />
             Continue Shopping
@@ -389,6 +408,16 @@ const Wishlist = () => {
                       </span>
                     </div>
                   </div>
+                  {wishlistItems.length > 0 && (
+                    <div className="pt-4">
+                      <button
+                        onClick={() => setShowWishlistForm(true)}
+                        className="w-full bg-black text-white px-6 py-3 rounded-md hover:bg-gray-800 transition-colors"
+                      >
+                        Send Wishlist
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -396,6 +425,12 @@ const Wishlist = () => {
         )}
       </div>
       <NewsletterBox />
+      {showWishlistForm && (
+        <WishlistForm
+          onSubmit={handleSendWishlist}
+          onClose={() => setShowWishlistForm(false)}
+        />
+      )}
     </div>
   );
 };
