@@ -87,7 +87,7 @@ export const ShopContextProvider = (props) => {
   const [globalCaratRange, setGlobalCaratRange] = useState([0, 100]);
   const [globalPriceRange, setGlobalPriceRange] = useState([0, 1000000]);
   const [globalSortType, setGlobalSortType] = useState("relevant");
-  
+
   // Filtered product results
   const [filteredProducts, setFilteredProducts] = useState({
     all: [],
@@ -119,7 +119,7 @@ export const ShopContextProvider = (props) => {
       // Find max price and carat for ranges
       const maxProductPrice = Math.max(...products.map((p) => p.price || 0));
       const maxProductCarat = Math.max(...products.map((p) => p.carats || 0));
-      
+
       setMaxPrice(maxProductPrice > 0 ? maxProductPrice : 100000);
       setMaxCarat(maxProductCarat > 0 ? maxProductCarat : 20);
       setGlobalPriceRange([0, maxProductPrice > 0 ? maxProductPrice : 100000]);
@@ -127,19 +127,25 @@ export const ShopContextProvider = (props) => {
 
       // Extract unique values
       setUniqueDiamondTypes([
-        ...new Set(products.filter((p) => p.shape || p.diamondType)
-          .map((p) => p.shape || p.diamondType))
+        ...new Set(
+          products
+            .filter((p) => p.shape || p.diamondType)
+            .map((p) => p.shape || p.diamondType)
+        ),
       ]);
-      
+
       setUniqueMetals([
-        ...new Set(products.filter((p) => p.metal).map((p) => p.metal))
+        ...new Set(products.filter((p) => p.metal).map((p) => p.metal)),
       ]);
-      
+
       setUniqueMetalColors([
-        ...new Set(products.filter((p) => p.col || p.metalColor)
-          .map((p) => p.col || p.metalColor))
+        ...new Set(
+          products
+            .filter((p) => p.col || p.metalColor)
+            .map((p) => p.col || p.metalColor)
+        ),
       ]);
-      
+
       const categoryIds = [...new Set(products.map((p) => p.category))];
       setUniqueCategories(categoryIds);
     }
@@ -148,74 +154,86 @@ export const ShopContextProvider = (props) => {
   // Apply global filters to all product types
   useEffect(() => {
     if (products.length === 0) return;
-    
+
     // Filter function for any product type
     const applyFilters = (productList) => {
       let filtered = [...productList];
-      
+
       // Apply search filter
       if (globalSearchQuery) {
         filtered = filtered.filter((product) =>
           product.title?.toLowerCase().includes(globalSearchQuery.toLowerCase())
         );
       }
-      
+
       // Apply category filter
       if (globalSelectedCategories.length > 0) {
         filtered = filtered.filter((product) =>
           globalSelectedCategories.includes(product.category)
         );
       }
-      
+
       // Apply diamond type/shape filter
       if (globalDiamondTypes.length > 0) {
-        filtered = filtered.filter((product) =>
-          (product.shape && globalDiamondTypes.includes(product.shape)) ||
-          (product.diamondType && globalDiamondTypes.includes(product.diamondType))
+        filtered = filtered.filter(
+          (product) =>
+            (product.shape && globalDiamondTypes.includes(product.shape)) ||
+            (product.diamondType &&
+              globalDiamondTypes.includes(product.diamondType))
         );
       }
-      
+
       // Apply metal filter
       if (globalMetals.length > 0) {
-        filtered = filtered.filter((product) =>
-          product.metal && globalMetals.includes(product.metal)
+        filtered = filtered.filter(
+          (product) => product.metal && globalMetals.includes(product.metal)
         );
       }
-      
+
       // Apply metal color filter
       if (globalMetalColors.length > 0) {
-        filtered = filtered.filter((product) =>
-          (product.col && globalMetalColors.includes(product.col)) ||
-          (product.metalColor && globalMetalColors.includes(product.metalColor))
+        filtered = filtered.filter(
+          (product) =>
+            (product.col && globalMetalColors.includes(product.col)) ||
+            (product.metalColor &&
+              globalMetalColors.includes(product.metalColor))
         );
       }
-      
+
       // Carat range filter
       filtered = filtered.filter((product) => {
         if (!product.carats) return true;
         const caratValue = parseFloat(product.carats);
         if (isNaN(caratValue)) return true;
-        return caratValue >= globalCaratRange[0] && caratValue <= globalCaratRange[1];
+        return (
+          caratValue >= globalCaratRange[0] && caratValue <= globalCaratRange[1]
+        );
       });
-      
+
       // Price range filter
       filtered = filtered.filter((product) => {
         if (!product.price) return true;
         const priceValue = parseFloat(product.price);
         if (isNaN(priceValue)) return true;
-        return priceValue >= globalPriceRange[0] && priceValue <= globalPriceRange[1];
+        return (
+          priceValue >= globalPriceRange[0] && priceValue <= globalPriceRange[1]
+        );
       });
-      
+
       // Apply sorting
       if (globalSortType === "low-high") {
-        filtered.sort((a, b) => parseFloat(a.price || 0) - parseFloat(b.price || 0));
+        filtered.sort(
+          (a, b) => parseFloat(a.price || 0) - parseFloat(b.price || 0)
+        );
       } else if (globalSortType === "high-low") {
-        filtered.sort((a, b) => parseFloat(b.price || 0) - parseFloat(a.price || 0));
+        filtered.sort(
+          (a, b) => parseFloat(b.price || 0) - parseFloat(a.price || 0)
+        );
       }
-      
+
       return filtered;
     };
-    
+
     // Apply filters to all product types
     setFilteredProducts({
       all: applyFilters(products),
@@ -225,7 +243,6 @@ export const ShopContextProvider = (props) => {
       necklaces: applyFilters(necklaces),
       bracelets: applyFilters(bracelets),
     });
-    
   }, [
     products,
     diamondProducts,
@@ -258,7 +275,7 @@ export const ShopContextProvider = (props) => {
   // Toggle a filter value (add or remove)
   const toggleGlobalFilter = (value, currentArray, setterFunction) => {
     if (currentArray.includes(value)) {
-      setterFunction(currentArray.filter(item => item !== value));
+      setterFunction(currentArray.filter((item) => item !== value));
     } else {
       setterFunction([...currentArray, value]);
     }
@@ -279,7 +296,7 @@ export const ShopContextProvider = (props) => {
     const fetchUser = async () => {
       if (token) {
         try {
-          const response = await axios.get(`${backendUrl}/api/users/me`, {
+          const response = await axios.get(`${backendUrl}/users/me`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           setUser(response.data);
@@ -417,10 +434,10 @@ export const ShopContextProvider = (props) => {
       bracelets,
       products: filteredProducts.all, // Use the filtered products
       productsLoading,
-      
+
       // Global filtered products
       filteredProducts,
-      
+
       // Global filter states
       globalSearchQuery,
       setGlobalSearchQuery,
@@ -438,7 +455,7 @@ export const ShopContextProvider = (props) => {
       setGlobalPriceRange,
       globalSortType,
       setGlobalSortType,
-      
+
       // Global filter metadata
       uniqueCategories,
       uniqueDiamondTypes,
@@ -446,11 +463,11 @@ export const ShopContextProvider = (props) => {
       uniqueMetalColors,
       maxCarat,
       maxPrice,
-      
+
       // Global filter functions
       clearGlobalFilters,
       toggleGlobalFilter,
-      
+
       wishlist,
       guestWishlist,
       wishlistItemsCount,

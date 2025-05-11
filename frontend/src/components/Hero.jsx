@@ -14,7 +14,9 @@ const Hero = () => {
   const [currentImage, setCurrentImage] = useState(0);
   const [homeData, setHomeData] = useState(null);
   const [heroTitle, setHeroTitle] = useState("Discover Timeless Elegance");
-  const [heroSubtitle, setSubtitle] = useState("Explore our exquisite collection of diamonds");
+  const [heroSubtitle, setSubtitle] = useState(
+    "Explore our exquisite collection of diamonds"
+  );
   const [heroButtonText, setButtonText] = useState("Explore Collection");
   const [heroImages, setHeroImages] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -35,7 +37,7 @@ const Hero = () => {
       try {
         setIsLoading(true);
         setError(null);
-        
+
         const response = await axios.get(
           `${import.meta.env.VITE_BACKEND_URL || "http://localhost:3000"}/home`
         );
@@ -47,7 +49,9 @@ const Hero = () => {
         const { home } = response.data;
 
         setHeroTitle(home.Title || "Discover Timeless Elegance");
-        setSubtitle(home.subtitle || "Explore our exquisite collection of diamonds");
+        setSubtitle(
+          home.subtitle || "Explore our exquisite collection of diamonds"
+        );
         setButtonText(home.buttonText || "Explore Collection");
         setHeroImages(home.imagesCover || []);
         setHomeData(response.data);
@@ -98,8 +102,8 @@ const Hero = () => {
       <div className="relative h-[90vh] w-full overflow-hidden bg-gray-100 flex items-center justify-center">
         <div className="text-center p-4">
           <p className="text-red-500 mb-4">{error}</p>
-          <button 
-            onClick={() => window.location.reload()} 
+          <button
+            onClick={() => window.location.reload()}
             className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800"
           >
             Retry
@@ -133,9 +137,6 @@ const Hero = () => {
                       src={image}
                       alt="Luxury Diamond"
                       className="w-full h-full object-cover object-center"
-                      onError={(e) => {
-                        e.target.src = "https://via.placeholder.com/1920x1080?text=Luxury+Diamond";
-                      }}
                     />
                   </motion.div>
                 )

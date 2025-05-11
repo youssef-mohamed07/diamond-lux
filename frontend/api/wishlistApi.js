@@ -16,14 +16,19 @@ export const sendWishlistEmail = async (formData) => {
 
 export const getWishlist = async () => {
   try {
+<<<<<<< HEAD
     console.log("Fetching wishlist from API...");
     const response = await axiosInstance.get("/wishlist", {
       withCredentials: true,
     });
     console.log("Wishlist API response:", response.data);
+=======
+    const response = await axiosInstance.get("/wishlist", {
+      withCredentials: true,
+    });
+>>>>>>> 1f507461e4be5a265347551e65b251c30916c168
     return response.data;
   } catch (error) {
-    console.error("Wishlist API error:", error);
     if (error.response && error.response.status === 404) {
       return { wishlist: { wishlistItems: [] } };
     }
@@ -31,6 +36,7 @@ export const getWishlist = async () => {
   }
 };
 
+<<<<<<< HEAD
 export const addToWishlist = async (productId) => {
   try {
     console.log("Adding to wishlist:", productId);
@@ -45,24 +51,43 @@ export const addToWishlist = async (productId) => {
     console.error("Add to wishlist error:", error);
     throw error;
   }
+=======
+export const addToWishlist = async (productId, quantity) => {
+  const response = await axiosInstance.post(
+    "/wishlist",
+    {
+      wishlistItems: [{ product: productId, quantity }],
+    },
+    {
+      withCredentials: true,
+    }
+  );
+  return response.data;
+>>>>>>> 1f507461e4be5a265347551e65b251c30916c168
 };
 
 export const removeFromWishlist = async (productId) => {
   try {
+<<<<<<< HEAD
     console.log("Removing from wishlist:", productId);
+=======
+>>>>>>> 1f507461e4be5a265347551e65b251c30916c168
     const response = await axiosInstance.delete(
       `/wishlist/item/${productId}/remove`,
       { withCredentials: true }
     );
+<<<<<<< HEAD
     console.log("Remove from wishlist API response:", response.data);
+=======
+>>>>>>> 1f507461e4be5a265347551e65b251c30916c168
     return response.data;
   } catch (error) {
-    console.error("Remove item error:", error);
     throw error;
   }
 };
 
 export const clearWishlist = async () => {
+<<<<<<< HEAD
   try {
     console.log("Clearing wishlist");
     const response = await axiosInstance.delete("/wishlist/clear", {
@@ -90,4 +115,23 @@ export const updateWishlistItem = async (itemId, quantity) => {
     console.error("Update wishlist item error:", error);
     throw error;
   }
+=======
+  const response = await axiosInstance.delete("/wishlist", {
+    withCredentials: true,
+  });
+  return response.data;
+};
+
+export const updateWishlistItem = async (itemId, quantity) => {
+  const response = await axiosInstance.put(
+    `/wishlist/item/${itemId}/update`,
+    {
+      quantity,
+    },
+    {
+      withCredentials: true,
+    }
+  );
+  return response.data;
+>>>>>>> 1f507461e4be5a265347551e65b251c30916c168
 };

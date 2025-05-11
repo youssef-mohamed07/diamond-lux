@@ -14,12 +14,16 @@ export const useWishlist = (token) => {
   useEffect(() => {
     const fetchWishlist = async () => {
       if (!token) {
+<<<<<<< HEAD
         console.log("No token, skipping wishlist fetch");
+=======
+>>>>>>> 1f507461e4be5a265347551e65b251c30916c168
         setLoading(false);
         return;
       }
 
       try {
+<<<<<<< HEAD
         console.log("Fetching wishlist...");
         const response = await getWishlist();
         console.log("Wishlist response:", response);
@@ -36,6 +40,12 @@ export const useWishlist = (token) => {
       } catch (error) {
         console.error("Error fetching wishlist:", error);
         setWishlist([]);
+=======
+        const response = await getWishlist();
+        setWishlist(response.wishlist);
+        setLoading(false);
+      } catch (error) {
+>>>>>>> 1f507461e4be5a265347551e65b251c30916c168
         setLoading(false);
       }
     };
@@ -43,6 +53,7 @@ export const useWishlist = (token) => {
     fetchWishlist();
   }, [token]);
 
+<<<<<<< HEAD
   const addItemToWishlist = async (productId) => {
     try {
       if (token) {
@@ -61,11 +72,25 @@ export const useWishlist = (token) => {
     } catch (error) {
       console.error("Error adding item to wishlist:", error);
       toast.error("Failed to add item to wishlist");
+=======
+  const addItemToWishlist = async (productId, quantity = 1) => {
+    if (!token) {
+      throw new Error("User not authenticated");
+    }
+
+    try {
+      await addToWishlist(productId, quantity);
+      const response = await getWishlist();
+      setWishlist(response.wishlist);
+      return response.wishlist;
+    } catch (error) {
+>>>>>>> 1f507461e4be5a265347551e65b251c30916c168
       throw error;
     }
   };
 
   const removeItemFromWishlist = async (productId) => {
+<<<<<<< HEAD
     try {
       if (token) {
         console.log("Removing item from wishlist:", productId);
@@ -83,11 +108,24 @@ export const useWishlist = (token) => {
     } catch (error) {
       console.error("Error removing item from wishlist:", error);
       toast.error("Failed to remove item from wishlist");
+=======
+    if (!token) {
+      throw new Error("User not authenticated");
+    }
+
+    try {
+      await removeFromWishlist(productId);
+      const response = await getWishlist();
+      setWishlist(response.wishlist);
+      return response.wishlist;
+    } catch (error) {
+>>>>>>> 1f507461e4be5a265347551e65b251c30916c168
       throw error;
     }
   };
 
   const clearAllWishlist = async () => {
+<<<<<<< HEAD
     try {
       if (token) {
         console.log("Clearing wishlist");
@@ -98,6 +136,31 @@ export const useWishlist = (token) => {
     } catch (error) {
       console.error("Error clearing wishlist:", error);
       toast.error("Failed to clear wishlist");
+=======
+    if (!token) {
+      throw new Error("User not authenticated");
+    }
+
+    try {
+      await clearWishlist();
+      setWishlist({ wishlistItems: [], totalWishlistprice: 0 });
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const updateWishlistItemQuantity = async (productId, quantity) => {
+    if (!token) {
+      throw new Error("User not authenticated");
+    }
+
+    try {
+      await updateWishlistItem(productId, quantity);
+      const response = await getWishlist();
+      setWishlist(response.wishlist);
+      return response.wishlist;
+    } catch (error) {
+>>>>>>> 1f507461e4be5a265347551e65b251c30916c168
       throw error;
     }
   };
