@@ -5,7 +5,7 @@ import RelatedProducts from "../components/RelatedProducts";
 import { ShopContext } from "../context/ShopContext";
 import { toast } from "react-toastify";
 import NewsletterBox from "../components/NewsletterBox";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { getImageUrl } from "../../utils/imageHelper";
 import {
   FaHeart,
@@ -39,6 +39,8 @@ const Product = () => {
     diamondProducts,
     currency,
     addItemToWishlist,
+    removeItemFromWishlist,
+    wishlist
   } = useContext(ShopContext);
 
   const [product, setProduct] = useState(null);
@@ -47,6 +49,7 @@ const Product = () => {
   const [isImageTransitioning, setIsImageTransitioning] = useState(false);
   const [activeTab, setActiveTab] = useState("details");
   const [error, setError] = useState(null);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -145,14 +148,25 @@ const Product = () => {
     }, 200);
   };
 
-  const handleAddToWishlist = async () => {
+  const handleToggleWishlist = async () => {
+    setWishlistLoading(true);
     try {
-      await addItemToWishlist(productId, 1);
-      toast.success("Added to wishlist");
-      navigate("/wishlist");
+      if (isInWishlist(productId)) {
+        await removeItemFromWishlist(productId);
+        toast.success("Removed from wishlist");
+      } else {
+        await addItemToWishlist(productId, 1);
+        toast.success("Added to wishlist");
+      }
     } catch (error) {
-      toast.error("Failed to add to wishlist");
+      toast.error("Something went wrong!");
+    } finally {
+      setWishlistLoading(false);
     }
+  };
+
+  const isInWishlist = (productId) => {
+    return wishlist?.includes(productId) || false;
   };
 
   const getResponsiveLoupe360Url = (url) => {
@@ -220,6 +234,8 @@ const Product = () => {
       </div>
     );
   }
+
+  const isFavorite = isInWishlist(productId);
 
   // Check if description is valid and meaningful
   const hasValidDescription =
@@ -1097,11 +1113,44 @@ const Product = () => {
               {/* Wishlist Button */}
               <div className="flex justify-end mb-8">
                 <button
-                  onClick={handleAddToWishlist}
-                  className="flex items-center gap-2 px-4 py-2 rounded bg-gray-900 text-white hover:bg-gray-800 transition-colors"
+                  onClick={handleToggleWishlist}
+                  disabled={wishlistLoading}
+                  className={`flex items-center justify-center px-6 py-3 border border-gray-300 rounded-md shadow-sm text-base font-medium text-gray-700 hover:bg-gray-50 transition-colors ${wishlistLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
-                  <FaHeart className="text-red-500" />
-                  <span>Add to Wishlist</span>
+                  <AnimatePresence mode="wait" initial={false}>
+                    {isInWishlist(productId) ? (
+                      <motion.span
+                        key="filled-heart"
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.8, opacity: 0 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                        className="mr-2"
+                      >
+                        <FaHeart className="text-red-500" />
+                      </motion.span>
+                    ) : (
+                      <motion.span
+                        key="outline-heart"
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.8, opacity: 0 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                        className="mr-2"
+                      >
+                        <FaRegHeart />
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                  <span>
+                    {isInWishlist(productId)
+                      ? wishlistLoading
+                        ? "Removing..."
+                        : "Remove from Wishlist"
+                      : wishlistLoading
+                      ? "Adding..."
+                      : "Add to Wishlist"}
+                  </span>
                 </button>
               </div>
             </div>

@@ -308,41 +308,37 @@ const Navbar = () => {
             </NavLink>
           </div>
 
-          {/* Right side icons */}
-          <div className="flex items-center space-x-1 md:space-x-4">
-            {/* Wishlist link */}
-            <div className="relative">
-              <Link
-                to="/wishlist"
-                className={`relative p-2 rounded-full ${
-                  isHomePage && !scrolled
-                    ? "text-white hover:bg-white/10"
-                    : "text-gray-700 hover:bg-gray-100"
-                } transition-colors`}
-                aria-label="Wishlist"
-              >
-                <WishlistButton isHomePage={isHomePage} scrolled={scrolled} />
-              </Link>
-            </div>
+          {/* Right Section - Cart and Wishlist */}
+          <div className="flex items-center space-x-6">
+            <Link
+              to="/wishlist"
+              className={`${
+                isHomePage && !scrolled
+                  ? "text-white hover:text-gray-200"
+                  : "text-gray-700 hover:text-gray-900"
+              } transition-colors duration-200`}
+            >
+              <WishlistButton isHomePage={isHomePage} scrolled={scrolled} />
+            </Link>
+          </div>
 
-            {/* Mobile menu button */}
-            <div className="md:hidden">
-              <button
-                onClick={() => setVisible(!visible)}
-                className={`p-2 rounded-full ${
-                  isHomePage && !scrolled
-                    ? "text-white hover:bg-white/10"
-                    : "text-gray-700 hover:bg-gray-100"
-                } transition-colors`}
-                aria-label={visible ? "Close menu" : "Open menu"}
-              >
-                {visible ? (
-                  <FaTimes className="h-6 w-6" />
-                ) : (
-                  <FaBars className="h-6 w-6" />
-                )}
-              </button>
-            </div>
+          {/* Mobile menu button */}
+          <div className="md:hidden">
+            <button
+              onClick={() => setVisible(!visible)}
+              className={`p-2 rounded-full ${
+                isHomePage && !scrolled
+                  ? "text-white hover:bg-white/10"
+                  : "text-gray-700 hover:bg-gray-100"
+              } transition-colors`}
+              aria-label={visible ? "Close menu" : "Open menu"}
+            >
+              {visible ? (
+                <FaTimes className="h-6 w-6" />
+              ) : (
+                <FaBars className="h-6 w-6" />
+              )}
+            </button>
           </div>
         </div>
       </div>

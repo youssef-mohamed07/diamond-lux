@@ -127,6 +127,7 @@ const CategoryShapes = () => {
     const searchParams = new URLSearchParams();
     searchParams.set("category", categoryId);
     searchParams.set("page", "1");
+    searchParams.set("type", "lab"); // Set default type to lab grown
 
     navigate({
       pathname: "/products/diamond",

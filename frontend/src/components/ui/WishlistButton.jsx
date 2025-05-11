@@ -1,11 +1,11 @@
 import React, { useContext } from "react";
-import { FaCartShopping } from "react-icons/fa6";
+import { FaHeart } from "react-icons/fa";
 import { ShopContext } from "../../context/ShopContext";
 import { motion, AnimatePresence } from "framer-motion";
 
 const WishlistButton = ({ className, isHomePage, scrolled }) => {
-  const { favorites } = useContext(ShopContext);
-  const count = favorites.length;
+  const { wishlist, guestWishlist, token } = useContext(ShopContext);
+  const count = token ? wishlist.length : guestWishlist.length;
 
   // Determine text color based on page and scroll state
   const textColor = isHomePage && !scrolled ? "text-white" : "text-gray-700";
@@ -14,11 +14,10 @@ const WishlistButton = ({ className, isHomePage, scrolled }) => {
     <div
       className={`relative inline-flex items-center justify-center text-center align-middle ${className}`}
     >
-      <FaCartShopping
+      <FaHeart
         className={`${
-          count > 0 ? "" : textColor
-        } transition-colors duration-200 text-center`}
-        style={{ width: "1.25rem", height: "1.25rem" }}
+          count > 0 ? "text-red-500" : textColor
+        } transition-colors duration-200 text-center text-xl`}
       />
 
       <AnimatePresence>
@@ -28,7 +27,7 @@ const WishlistButton = ({ className, isHomePage, scrolled }) => {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
             transition={{ type: "spring", stiffness: 500, damping: 30 }}
-            className="absolute -top-1.5 -right-1.5 bg-gradient-to-r from-gray-900 to-gray-800 text-white text-[10px] font-medium rounded-full min-w-[16px] h-4 flex items-center justify-center px-1 shadow-md"
+            className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center shadow-md"
           >
             {count > 99 ? "99+" : count}
           </motion.div>

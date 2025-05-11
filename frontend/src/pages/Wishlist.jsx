@@ -1,36 +1,69 @@
 import React, { useContext, useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ShopContext } from "../../context/ShopContext";
+import { ShopContext } from "../context/ShopContext";
 import { FaArrowLeft, FaTrash, FaPlus, FaMinus } from "react-icons/fa";
 import NewsletterBox from "../components/NewsletterBox";
 import { toast } from "react-toastify";
+import axios from "axios";
 
 const Wishlist = () => {
-  const { products, wishlist, removeItemFromWishlist, currency } =
+  const { products, wishlist, guestWishlist, token, removeItemFromWishlist, currency, backendUrl } =
     useContext(ShopContext);
 
   const location = useLocation();
-
-  // State to track wishlist items with quantities
   const [wishlistItems, setWishlistItems] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   // Scroll to top when page loads
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  // Update wishlist items when wishlist or products change
+  // Fetch products if not available in context
+  useEffect(() => {
+    const fetchProducts = async () => {
+      if (products.length === 0) {
+        try {
+          console.log("Fetching products from:", `${backendUrl}/product`);
+          const response = await axios.get(`${backendUrl}/product`);
+          if (response.data && response.data.Products) {
+            const currentWishlist = token ? wishlist : guestWishlist;
+            console.log("Current wishlist:", currentWishlist);
+            console.log("Available products:", response.data.Products.length);
+            
+            const items = response.data.Products
+              .filter((product) => currentWishlist.includes(product._id))
+              .map((product) => ({
+                ...product,
+                quantity: 1,
+              }));
+            console.log("Filtered wishlist items:", items);
+            setWishlistItems(items);
+          }
+        } catch (error) {
+          console.error("Error fetching products:", error);
+          toast.error("Failed to load products. Please try again later.");
+        }
+      }
+      setLoading(false);
+    };
+
+    fetchProducts();
+  }, [products, wishlist, guestWishlist, token, backendUrl]);
+
+  // Update wishlist items when products or wishlist changes
   useEffect(() => {
     if (products.length > 0) {
+      const currentWishlist = token ? wishlist : guestWishlist;
       const items = products
-        .filter((product) => wishlist.includes(product._id))
+        .filter((product) => currentWishlist.includes(product._id))
         .map((product) => ({
           ...product,
-          quantity: 1, // Default quantity
+          quantity: 1,
         }));
       setWishlistItems(items);
     }
-  }, [products, wishlist]);
+  }, [products, wishlist, guestWishlist, token]);
 
   // Calculate total price based on quantities
   const subtotal = wishlistItems.reduce(
@@ -65,15 +98,21 @@ const Wishlist = () => {
 
   // Update quantity directly
   const updateQuantity = (productId, newQuantity) => {
-    // Ensure quantity is a valid number and at least 1
     const quantity = Math.max(1, parseInt(newQuantity) || 1);
-
     setWishlistItems((prev) =>
       prev.map((item) =>
         item._id === productId ? { ...item, quantity } : item
       )
     );
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen pt-24 md:pt-32 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white min-h-screen pt-24 md:pt-32">

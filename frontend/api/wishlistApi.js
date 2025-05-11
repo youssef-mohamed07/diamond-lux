@@ -1,67 +1,60 @@
 import axiosInstance from "../utils/axiosInstance";
 
 export const sendWishlistEmail = async (formData) => {
-  const transformedData = {
-    ...formData,
-  };
-
-  const response = await axiosInstance.post(
-    "/wishlist/send-email",
-    transformedData,
-    { withCredentials: true }
-  );
-
-  if (response.status === 200) {
+  try {
+    const response = await axiosInstance.post(
+      "/wishlist/send-email",
+      formData,
+      { withCredentials: true }
+    );
     return response.data;
+  } catch (error) {
+    console.error("Error sending wishlist email:", error);
+    throw error;
   }
-  throw new Error(response.data?.message || "Failed to send email");
 };
 
 export const getWishlist = async () => {
   try {
-    console.log("Making GET request to /wishlist");
+    console.log("Fetching wishlist from API...");
     const response = await axiosInstance.get("/wishlist", {
       withCredentials: true,
     });
-    console.log("GET /wishlist response:", response.data);
+    console.log("Wishlist API response:", response.data);
     return response.data;
   } catch (error) {
     console.error("Wishlist API error:", error);
     if (error.response && error.response.status === 404) {
-      return {
-        wishlist: { wishlistItems: [], totalWishlistprice: 0 },
-        message: "No wishlist found",
-      };
+      return { wishlist: { wishlistItems: [] } };
     }
     throw error;
   }
 };
 
-export const addToWishlist = async (productId, quantity) => {
-  console.log("Making POST request to /wishlist with:", { productId, quantity });
-  const response = await axiosInstance.post(
-    "/wishlist",
-    {
-      wishlistItems: [{ product: productId, quantity }],
-    },
-    {
-      withCredentials: true,
-    }
-  );
-  console.log("POST /wishlist response:", response.data);
-  return response.data;
+export const addToWishlist = async (productId) => {
+  try {
+    console.log("Adding to wishlist:", productId);
+    const response = await axiosInstance.post(
+      "/wishlist",
+      { productId },
+      { withCredentials: true }
+    );
+    console.log("Add to wishlist API response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Add to wishlist error:", error);
+    throw error;
+  }
 };
 
-export const removeFromWishlist = async (itemId) => {
+export const removeFromWishlist = async (productId) => {
   try {
-    console.log("Making DELETE request to /wishlist/item/", itemId);
+    console.log("Removing from wishlist:", productId);
     const response = await axiosInstance.delete(
-      `/wishlist/item/${itemId}/remove`,
-      {
-        withCredentials: true,
-      }
+      `/wishlist/item/${productId}/remove`,
+      { withCredentials: true }
     );
-    console.log("DELETE /wishlist/item response:", response.data);
+    console.log("Remove from wishlist API response:", response.data);
     return response.data;
   } catch (error) {
     console.error("Remove item error:", error);
@@ -70,25 +63,31 @@ export const removeFromWishlist = async (itemId) => {
 };
 
 export const clearWishlist = async () => {
-  console.log("Making DELETE request to /wishlist");
-  const response = await axiosInstance.delete("/wishlist", {
-    withCredentials: true,
-  });
-  console.log("DELETE /wishlist response:", response.data);
-  return response.data;
+  try {
+    console.log("Clearing wishlist");
+    const response = await axiosInstance.delete("/wishlist/clear", {
+      withCredentials: true
+    });
+    console.log("Clear wishlist API response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Clear wishlist error:", error);
+    throw error;
+  }
 };
 
 export const updateWishlistItem = async (itemId, quantity) => {
-  console.log("Making PUT request to /wishlist/item/", itemId, "with quantity:", quantity);
-  const response = await axiosInstance.put(
-    `/wishlist/item/${itemId}/update`,
-    {
-      quantity,
-    },
-    {
-      withCredentials: true,
-    }
-  );
-  console.log("PUT /wishlist/item response:", response.data);
-  return response.data;
+  try {
+    console.log("Updating wishlist item:", itemId, "quantity:", quantity);
+    const response = await axiosInstance.patch(
+      `/wishlist/item/${itemId}`,
+      { quantity },
+      { withCredentials: true }
+    );
+    console.log("Update wishlist item API response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Update wishlist item error:", error);
+    throw error;
+  }
 };

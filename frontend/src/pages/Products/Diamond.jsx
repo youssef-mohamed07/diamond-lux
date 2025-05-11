@@ -719,6 +719,7 @@ const Diamond = () => {
     const limit = parseInt(params.get("limit")) || 12;
     const type = params.get("type");
     const search = params.get("search");
+    const category = params.get("category");
 
     // Set initial values
     if (type && ["lab", "natural"].includes(type)) {
@@ -729,6 +730,13 @@ const Diamond = () => {
     if (search) {
       setSearchTerm(search);
       handleSearch(search);
+    }
+
+    // Handle category/shape filter from URL
+    if (category) {
+      const updatedFilters = { ...filters };
+      updatedFilters.shape = [category];
+      updateFilters(updatedFilters);
     }
 
     // Set initial pagination
