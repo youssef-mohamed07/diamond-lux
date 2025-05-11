@@ -1,5 +1,4 @@
-import { useState, useEffect, useContext } from "react";
-import axios from "axios";
+import { useState, useEffect } from "react";
 import {
   getWishlist,
   addToWishlist,
@@ -19,13 +18,9 @@ const emailWishlist = async (email) => {
   }
 };
 
-export const useWishlist = () => {
-  const backendUrl =
-    import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+export const useWishlist = (token) => {
   const [wishlist, setWishlist] = useState(null);
   const [loading, setLoading] = useState(true);
-  const token =
-    localStorage.getItem("token") || sessionStorage.getItem("token");
 
   useEffect(() => {
     const fetchWishlist = async () => {
@@ -35,12 +30,8 @@ export const useWishlist = () => {
       }
 
       try {
-        const response = await axios.get(`${backendUrl}/api/wishlist`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setWishlist(response.data);
+        const response = await getWishlist();
+        setWishlist(response.wishlist);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching wishlist:", error);
@@ -49,7 +40,7 @@ export const useWishlist = () => {
     };
 
     fetchWishlist();
-  }, [token, backendUrl]);
+  }, [token]);
 
   const addItemToWishlist = async (productId, quantity = 1) => {
     if (!token) {
@@ -57,18 +48,10 @@ export const useWishlist = () => {
     }
 
     try {
-      const response = await axios.post(
-        `${backendUrl}/api/wishlist`,
-        { productId, quantity },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      setWishlist(response.data);
-      return response.data;
+      await addToWishlist(productId, quantity);
+      const response = await getWishlist();
+      setWishlist(response.wishlist);
+      return response.wishlist;
     } catch (error) {
       console.error("Error adding item to wishlist:", error);
       throw error;
@@ -81,16 +64,10 @@ export const useWishlist = () => {
     }
 
     try {
-      const response = await axios.delete(
-        `${backendUrl}/api/wishlist/${productId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      setWishlist(response.data);
-      return response.data;
+      await removeFromWishlist(productId);
+      const response = await getWishlist();
+      setWishlist(response.wishlist);
+      return response.wishlist;
     } catch (error) {
       console.error("Error removing item from wishlist:", error);
       throw error;
@@ -103,13 +80,8 @@ export const useWishlist = () => {
     }
 
     try {
-      const response = await axios.delete(`${backendUrl}/api/wishlist`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setWishlist(response.data);
-      return response.data;
+      await clearWishlist();
+      setWishlist({ wishlistItems: [], totalWishlistprice: 0 });
     } catch (error) {
       console.error("Error clearing wishlist:", error);
       throw error;
@@ -122,17 +94,10 @@ export const useWishlist = () => {
     }
 
     try {
-      const response = await axios.patch(
-        `${backendUrl}/api/wishlist/${productId}`,
-        { quantity },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      setWishlist(response.data);
-      return response.data;
+      await updateWishlistItem(productId, quantity);
+      const response = await getWishlist();
+      setWishlist(response.wishlist);
+      return response.wishlist;
     } catch (error) {
       console.error("Error updating wishlist item quantity:", error);
       throw error;

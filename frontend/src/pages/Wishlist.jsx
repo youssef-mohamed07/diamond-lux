@@ -6,12 +6,11 @@ import NewsletterBox from "../components/NewsletterBox";
 import { toast } from "react-toastify";
 
 const Wishlist = () => {
-  const { products, wishlist, removeItemFromWishlist, currency } =
+  const { products, wishlist, removeItemFromWishlist, updateWishlistItem, currency } =
     useContext(ShopContext);
 
   const location = useLocation();
-
-  // State to track wishlist items with quantities
+  const [loading, setLoading] = useState(true);
   const [wishlistItems, setWishlistItems] = useState([]);
 
   // Scroll to top when page loads
@@ -33,6 +32,10 @@ const Wishlist = () => {
         return null;
       }).filter(Boolean);
       setWishlistItems(items);
+      setLoading(false);
+    } else if (!wishlist?.wishlistItems) {
+      setWishlistItems([]);
+      setLoading(false);
     }
   }, [products, wishlist]);
 
@@ -85,6 +88,17 @@ const Wishlist = () => {
       toast.error("Failed to update quantity");
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen pt-24 md:pt-32 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading wishlist...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white min-h-screen pt-24 md:pt-32">
