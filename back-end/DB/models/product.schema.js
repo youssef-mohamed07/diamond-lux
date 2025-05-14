@@ -24,7 +24,7 @@ const schema = new Schema(
     // Jewelry specific
     jewelryType: {
       type: String,
-      enum: ["earrings", "necklace", "bracelet"],
+      enum: ["earrings", "necklace", "bracelet","engagement_ring", "wedding_band"],
     },
     metal: String,
     metalColor: String,
