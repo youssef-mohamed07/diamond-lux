@@ -22,6 +22,8 @@ import diamondRouter from "./modules/Product/Diamond/diamond.router.js";
 import earringRouter from "./modules/Product/Jewelry/Earrings/earring.router.js";
 import necklaceRouter from "./modules/Product/Jewelry/Necklaces/necklace.router.js";
 import braceletRouter from "./modules/Product/Jewelry/Bracelets/bracelet.router.js";
+import engagement_ringRouter from "./modules/Product/Jewelry/Engagement_Rings/Engagement_Rings.router.js";
+import wedding_bandRouter from "./modules/Product/Jewelry/Wedding_Bands/Wedding_Bands.router.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -73,6 +75,8 @@ export const bootstrap = (app) => {
   app.use("/api/product", earringRouter);
   app.use("/api/product", necklaceRouter);
   app.use("/api/product", braceletRouter);
+  app.use("/api/product", engagement_ringRouter);
+  app.use("/api/product", wedding_bandRouter);
 
   app.use("/api/event", EventRouter);
   app.use("/api/user", UserRouter);
