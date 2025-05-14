@@ -1,6 +1,5 @@
 import { createContext, useState, useEffect, useMemo } from "react";
 import { useProducts } from "../../hooks/useProducts";
-import { useWishlist } from "../../hooks/useWishlist";
 import axios from "axios";
 import { toast } from "react-toastify";
 
@@ -8,7 +7,9 @@ export const ShopContext = createContext(null);
 
 export const ShopContextProvider = (props) => {
   // Ensure backendUrl doesn't end with a slash
-  const backendUrl = (import.meta.env.VITE_BACKEND_URL || "http://localhost:3000").replace(/\/$/, "");
+  const backendUrl = (
+    import.meta.env.VITE_BACKEND_URL || "http://localhost:3000"
+  ).replace(/\/$/, "");
 
   // Products
   const {
@@ -23,41 +24,9 @@ export const ShopContextProvider = (props) => {
     earrings,
     necklaces,
     bracelets,
+    engagementRings,
+    weddingBands,
   } = useProducts();
-
-  // Auth
-  const [token, setToken] = useState(localStorage.getItem("token") || "");
-  const [user, setUser] = useState(null);
-
-  // Load all products when component mounts
-  useEffect(() => {
-    const loadAllProducts = async () => {
-      try {
-        console.log("Fetching products from:", `${backendUrl}/product`);
-        const response = await axios.get(`${backendUrl}/product`);
-        if (response.data && response.data.Products) {
-          setFilteredProducts(prev => ({
-            ...prev,
-            all: response.data.Products
-          }));
-        }
-      } catch (error) {
-        console.error("Error loading products:", error);
-        toast.error("Failed to load products. Please try again later.");
-      }
-    };
-
-    loadAllProducts();
-  }, [backendUrl]);
-
-  // Cart/Wishlist
-  const {
-    wishlist,
-    loading: wishlistLoading,
-    addItemToWishlist: addToWishlistServer,
-    removeItemFromWishlist: removeFromWishlistServer,
-    clearAllWishlist: clearWishlistServer,
-  } = useWishlist(token);
 
   // Guest wishlist
   const [guestWishlist, setGuestWishlist] = useState(() => {
@@ -66,7 +35,7 @@ export const ShopContextProvider = (props) => {
   });
 
   // Calculate wishlist items count
-  const wishlistItemsCount = token ? wishlist.length : guestWishlist.length;
+  const wishlistItemsCount = guestWishlist.length;
 
   // Favorites (wishlist)
   const [favorites, setFavorites] = useState(() => {
@@ -112,6 +81,37 @@ export const ShopContextProvider = (props) => {
 
   // Currency
   const [currency, setCurrency] = useState("$");
+
+  // Load all products when component mounts
+  useEffect(() => {
+    const loadAllProducts = async () => {
+      try {
+        console.log("Fetching products from:", `${backendUrl}/product`);
+        const response = await axios.get(`${backendUrl}/product`);
+        if (response.data && response.data.Products) {
+          setFilteredProducts((prev) => ({
+            ...prev,
+            all: response.data.Products,
+          }));
+        }
+      } catch (error) {
+        console.error("Error loading products:", error);
+        toast.error("Failed to load products. Please try again later.");
+      }
+    };
+
+    loadAllProducts();
+  }, [backendUrl]);
+
+  // Save guest wishlist to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem("guestWishlist", JSON.stringify(guestWishlist));
+  }, [guestWishlist]);
+
+  // Save favorites to localStorage
+  useEffect(() => {
+    localStorage.setItem("favorites", JSON.stringify(favorites));
+  }, [favorites]);
 
   // Extract unique filter values when products load
   useEffect(() => {
@@ -281,49 +281,11 @@ export const ShopContextProvider = (props) => {
     }
   };
 
-  // Save guest wishlist to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem("guestWishlist", JSON.stringify(guestWishlist));
-  }, [guestWishlist]);
-
-  // Save favorites to localStorage
-  useEffect(() => {
-    localStorage.setItem("favorites", JSON.stringify(favorites));
-  }, [favorites]);
-
-  // Get user data if token exists
-  useEffect(() => {
-    const fetchUser = async () => {
-      if (token) {
-        try {
-          const response = await axios.get(`${backendUrl}/users/me`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          setUser(response.data);
-        } catch (error) {
-          console.error("Error fetching user:", error);
-          // If token is invalid, clear it
-          if (error.response && error.response.status === 401) {
-            logout();
-          }
-        }
-      }
-    };
-
-    fetchUser();
-  }, [token, backendUrl]);
-
   // Add item to wishlist
-  const addItemToWishlist = async (productId) => {
+  const addItemToWishlist = async (productId, quantity = 1) => {
     try {
-      if (token) {
-        // If logged in, add to server wishlist
-        await addToWishlistServer(productId);
-      } else {
-        // If guest, add to local storage wishlist
-        if (!guestWishlist.includes(productId)) {
-          setGuestWishlist([...guestWishlist, productId]);
-        }
+      if (!isInWishlist(productId)) {
+        setGuestWishlist([...guestWishlist, { productId, quantity }]);
       }
       toast.success("Item added to wishlist");
     } catch (error) {
@@ -335,13 +297,9 @@ export const ShopContextProvider = (props) => {
   // Remove item from wishlist
   const removeItemFromWishlist = async (productId) => {
     try {
-      if (token) {
-        // If logged in, remove from server wishlist
-        await removeFromWishlistServer(productId);
-      } else {
-        // If guest, remove from local storage wishlist
-        setGuestWishlist(guestWishlist.filter(id => id !== productId));
-      }
+      setGuestWishlist(
+        guestWishlist.filter((item) => item.productId !== productId)
+      );
       toast.success("Item removed from wishlist");
     } catch (error) {
       console.error("Error removing item from wishlist:", error);
@@ -349,16 +307,24 @@ export const ShopContextProvider = (props) => {
     }
   };
 
+  // Update wishlist item quantity
+  const updateWishlistQuantity = async (productId, quantity) => {
+    try {
+      setGuestWishlist((prevWishlist) =>
+        prevWishlist.map((item) =>
+          item.productId === productId ? { ...item, quantity } : item
+        )
+      );
+    } catch (error) {
+      console.error("Error updating wishlist quantity:", error);
+      toast.error("Failed to update quantity");
+    }
+  };
+
   // Clear wishlist
   const clearWishlist = async () => {
     try {
-      if (token) {
-        // If logged in, clear server wishlist
-        await clearWishlistServer();
-      } else {
-        // If guest, clear local storage wishlist
-        setGuestWishlist([]);
-      }
+      setGuestWishlist([]);
       toast.success("Wishlist cleared");
     } catch (error) {
       console.error("Error clearing wishlist:", error);
@@ -368,10 +334,7 @@ export const ShopContextProvider = (props) => {
 
   // Check if product is in wishlist
   const isInWishlist = (productId) => {
-    if (token) {
-      return wishlist.includes(productId);
-    }
-    return guestWishlist.includes(productId);
+    return guestWishlist.some((item) => item.productId === productId);
   };
 
   // Add to favorites (wishlist)
@@ -389,35 +352,6 @@ export const ShopContextProvider = (props) => {
   // Check if product is in favorites
   const isInFavorites = (productId) => {
     return favorites.includes(productId);
-  };
-
-  // Login
-  const login = (newToken, userData) => {
-    localStorage.setItem("token", newToken);
-    setToken(newToken);
-    setUser(userData);
-
-    // If there are guest items, merge them with user's wishlist
-    if (guestWishlist.length > 0) {
-      Promise.all(
-        guestWishlist.map((productId) => addToWishlistServer(productId))
-      )
-        .then(() => {
-          // Clear guest wishlist after merging
-          setGuestWishlist([]);
-          toast.success("Your wishlist items have been saved to your account");
-        })
-        .catch((error) => {
-          console.error("Error merging guest wishlist:", error);
-        });
-    }
-  };
-
-  // Logout
-  const logout = () => {
-    localStorage.removeItem("token");
-    setToken("");
-    setUser(null);
   };
 
   // Context value
@@ -468,18 +402,22 @@ export const ShopContextProvider = (props) => {
       clearGlobalFilters,
       toggleGlobalFilter,
 
-      wishlist,
+      // Wishlist management
       guestWishlist,
       wishlistItemsCount,
-      wishlistLoading,
-      token,
-      user,
-      login,
-      logout,
+      addItemToWishlist,
+      removeItemFromWishlist,
+      updateWishlistQuantity,
+      clearWishlist,
+      isInWishlist,
+
+      // Favorites
       favorites,
       addToFavorites,
       removeFromFavorites,
       isInFavorites,
+
+      // UI settings
       currency,
       setCurrency,
       search,
@@ -490,10 +428,6 @@ export const ShopContextProvider = (props) => {
       setSelectedDiamondCategory,
       diamondShapes,
       setDiamondShapes,
-      addItemToWishlist,
-      removeItemFromWishlist,
-      clearWishlist,
-      isInWishlist,
     }),
     [
       products,
@@ -522,12 +456,8 @@ export const ShopContextProvider = (props) => {
       uniqueMetalColors,
       maxCarat,
       maxPrice,
-      wishlist,
       guestWishlist,
       wishlistItemsCount,
-      wishlistLoading,
-      token,
-      user,
       favorites,
       currency,
       search,

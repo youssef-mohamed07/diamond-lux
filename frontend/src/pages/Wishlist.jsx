@@ -8,11 +8,18 @@ import axios from "axios";
 import WishlistForm from "../components/ui/WishlistForm";
 import { sendWishlistEmail } from "../../api/wishlistApi";
 
-const Wishlist = () => {
-  const { products, wishlist, guestWishlist, token, removeItemFromWishlist, currency, backendUrl } =
-    useContext(ShopContext);
+const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
-  const location = useLocation();
+const Wishlist = () => {
+  const {
+    products,
+    guestWishlist,
+    addItemToWishlist,
+    removeItemFromWishlist,
+    updateWishlistQuantity,
+    currency,
+  } = useContext(ShopContext);
+
   const [wishlistItems, setWishlistItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showWishlistForm, setShowWishlistForm] = useState(false);
@@ -27,20 +34,16 @@ const Wishlist = () => {
     const fetchProducts = async () => {
       if (products.length === 0) {
         try {
-          console.log("Fetching products from:", `${backendUrl}/product`);
           const response = await axios.get(`${backendUrl}/product`);
           if (response.data && response.data.Products) {
-            const currentWishlist = token ? wishlist : guestWishlist;
-            console.log("Current wishlist:", currentWishlist);
-            console.log("Available products:", response.data.Products.length);
-            
-            const items = response.data.Products
-              .filter((product) => currentWishlist.includes(product._id))
-              .map((product) => ({
-                ...product,
-                quantity: 1,
-              }));
-            console.log("Filtered wishlist items:", items);
+            const items = response.data.Products.filter((product) =>
+              guestWishlist.some((item) => item.productId === product._id)
+            ).map((product) => ({
+              ...product,
+              quantity:
+                guestWishlist.find((item) => item.productId === product._id)
+                  ?.quantity || 1,
+            }));
             setWishlistItems(items);
           }
         } catch (error) {
@@ -52,21 +55,24 @@ const Wishlist = () => {
     };
 
     fetchProducts();
-  }, [products, wishlist, guestWishlist, token, backendUrl]);
+  }, [products, guestWishlist, backendUrl]);
 
   // Update wishlist items when products or wishlist changes
   useEffect(() => {
     if (products.length > 0) {
-      const currentWishlist = token ? wishlist : guestWishlist;
       const items = products
-        .filter((product) => currentWishlist.includes(product._id))
+        .filter((product) =>
+          guestWishlist.some((item) => item.productId === product._id)
+        )
         .map((product) => ({
           ...product,
-          quantity: 1,
+          quantity:
+            guestWishlist.find((item) => item.productId === product._id)
+              ?.quantity || 1,
         }));
       setWishlistItems(items);
     }
-  }, [products, wishlist, guestWishlist, token]);
+  }, [products, guestWishlist]);
 
   // Calculate total price based on quantities
   const subtotal = wishlistItems.reduce(
@@ -76,38 +82,38 @@ const Wishlist = () => {
 
   const handleRemoveItem = async (productId) => {
     try {
-      if (token) {
-        await removeItemFromWishlist(productId);
-        toast.success("Item removed from wishlist");
-      } else {
-        // Handle guest wishlist item removal
-        setGuestWishlist((prev) =>
-          prev.filter((item) => item.productId !== productId)
-        );
-        toast.success("Item removed from wishlist");
-      }
+      console.log("Removing item from wishlist:", productId);
+      await removeItemFromWishlist(productId);
+      toast.success("Item removed from wishlist");
     } catch (error) {
       toast.error("Failed to remove item from wishlist");
     }
   };
 
-  // Increase quantity
-  const increaseQuantity = async (productId) => {
+  // Update wishlist item quantity
+  const updateWishlistItem = (productId, quantity) => {
     try {
-      if (token) {
-        const item = wishlistItems.find((item) => item._id === productId);
-        if (item) {
-          await updateWishlistItem(productId, item.quantity + 1);
-        }
-      } else {
-        // Handle guest wishlist quantity increase
-        setGuestWishlist((prev) =>
-          prev.map((item) =>
-            item.productId === productId
-              ? { ...item, quantity: item.quantity + 1 }
-              : item
-          )
-        );
+      // Update UI optimistically
+      setWishlistItems((prevItems) =>
+        prevItems.map((item) =>
+          item._id === productId ? { ...item, quantity } : item
+        )
+      );
+
+      // Update in context/storage
+      updateWishlistQuantity(productId, quantity);
+    } catch (error) {
+      console.error("Error updating wishlist item:", error);
+      toast.error("Failed to update quantity");
+    }
+  };
+
+  // Increase quantity
+  const increaseQuantity = (productId) => {
+    try {
+      const item = wishlistItems.find((item) => item._id === productId);
+      if (item) {
+        updateWishlistItem(productId, item.quantity + 1);
       }
     } catch (error) {
       toast.error("Failed to update quantity");
@@ -115,22 +121,11 @@ const Wishlist = () => {
   };
 
   // Decrease quantity
-  const decreaseQuantity = async (productId) => {
+  const decreaseQuantity = (productId) => {
     try {
-      if (token) {
-        const item = wishlistItems.find((item) => item._id === productId);
-        if (item && item.quantity > 1) {
-          await updateWishlistItem(productId, item.quantity - 1);
-        }
-      } else {
-        // Handle guest wishlist quantity decrease
-        setGuestWishlist((prev) =>
-          prev.map((item) =>
-            item.productId === productId && item.quantity > 1
-              ? { ...item, quantity: item.quantity - 1 }
-              : item
-          )
-        );
+      const item = wishlistItems.find((item) => item._id === productId);
+      if (item && item.quantity > 1) {
+        updateWishlistItem(productId, item.quantity - 1);
       }
     } catch (error) {
       toast.error("Failed to update quantity");
@@ -138,21 +133,11 @@ const Wishlist = () => {
   };
 
   // Update quantity directly
-  const updateQuantity = async (productId, newQuantity) => {
+  const updateQuantity = (productId, newQuantity) => {
     try {
       // Ensure quantity is a valid number and at least 1
       const quantity = Math.max(1, parseInt(newQuantity) || 1);
-
-      if (token) {
-        await updateWishlistItem(productId, quantity);
-      } else {
-        // Handle guest wishlist direct quantity update
-        setGuestWishlist((prev) =>
-          prev.map((item) =>
-            item.productId === productId ? { ...item, quantity } : item
-          )
-        );
-      }
+      updateWishlistItem(productId, quantity);
     } catch (error) {
       toast.error("Failed to update quantity");
     }
@@ -161,14 +146,19 @@ const Wishlist = () => {
   const handleSendWishlist = async (formData) => {
     try {
       // Format wishlist items for email
-      const itemsDetails = wishlistItems.map(item => 
-        `${item.imageCover}||${item.name}||${item.quantity}||${currency}${(item.price * item.quantity).toFixed(2)}`
-      ).join('@@');
+      const itemsDetails = wishlistItems
+        .map(
+          (item) =>
+            `${item.imageCover}||${item.name}||${item.quantity}||${currency}${(
+              item.price * item.quantity
+            ).toFixed(2)}`
+        )
+        .join("@@");
 
       const wishlistData = {
         ...formData,
         itemsDetails,
-        totalValue: `${currency}${subtotal.toFixed(2)}`
+        totalValue: `${currency}${subtotal.toFixed(2)}`,
       };
 
       await sendWishlistEmail(wishlistData);

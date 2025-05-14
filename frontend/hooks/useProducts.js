@@ -17,6 +17,8 @@ export const useProducts = () => {
   const [earrings, setEarrings] = useState([]);
   const [necklaces, setNecklaces] = useState([]);
   const [bracelets, setBracelets] = useState([]);
+  const [engagementRings, setEngagementRings] = useState([]);
+  const [weddingBands, setWeddingBands] = useState([]);
   const [popularProducts, setPopularProducts] = useState([]);
   const [categories, setCategories] = useState([]);
 
@@ -128,6 +130,8 @@ export const useProducts = () => {
     earrings,
     necklaces,
     bracelets,
+    engagementRings,
+    weddingBands,
     popularProducts,
     categories,
   };

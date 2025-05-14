@@ -12,7 +12,13 @@ const AddProductVal = Joi.object({
 
   // Jewelry type validation (required only if productType is jewelry)
   jewelryType: Joi.string()
-    .valid("earrings", "necklace", "bracelet")
+    .valid(
+      "earrings",
+      "necklace",
+      "bracelet",
+      "engagement_ring",
+      "wedding_band"
+    )
     .when("productType", {
       is: "jewelry",
       then: Joi.required(),

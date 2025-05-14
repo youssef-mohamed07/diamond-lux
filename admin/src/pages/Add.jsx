@@ -383,6 +383,8 @@ const Add = ({ token }) => {
                   <option value="earrings">Earrings</option>
                   <option value="necklace">Necklace</option>
                   <option value="bracelet">Bracelet</option>
+                  <option value="engagement_ring">Engagement Ring</option>
+                  <option value="wedding_band">Wedding Band</option>
                 </select>
               </div>
             )}

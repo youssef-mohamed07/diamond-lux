@@ -242,6 +242,42 @@ const Navbar = () => {
                             Necklaces
                           </Link>
                         </motion.div>
+                        <motion.div
+                          custom={3}
+                          variants={menuItemVariants}
+                          initial="hidden"
+                          animate="visible"
+                          exit="exit"
+                        >
+                          <Link
+                            to="/products/jewellery/wedding-bands"
+                            className="block px-4 py-2 text-sm text-white/90 hover:text-white hover:bg-white/10 transition-all duration-200"
+                            onClick={() => {
+                              setShowCollections(false);
+                              setShowJewellery(false);
+                            }}
+                          >
+                            Wedding Bands
+                          </Link>
+                        </motion.div>
+                        <motion.div
+                          custom={3}
+                          variants={menuItemVariants}
+                          initial="hidden"
+                          animate="visible"
+                          exit="exit"
+                        >
+                          <Link
+                            to="/products/jewellery/engagement-rings"
+                            className="block px-4 py-2 text-sm text-white/90 hover:text-white hover:bg-white/10 transition-all duration-200"
+                            onClick={() => {
+                              setShowCollections(false);
+                              setShowJewellery(false);
+                            }}
+                          >
+                            Engagement Rings
+                          </Link>
+                        </motion.div>
                       </>
                     ) : (
                       <>
