@@ -125,6 +125,13 @@ export const getAllDiamondProducts = async (
       totalPages = data.meta.totalPages || 1;
       totalCount = data.meta.totalCount || 0;
       productsPerPage = data.meta.limit || limit;
+    } else if (data.totalPages && data.totalProductsCount) {
+      // Handle pagination data at the root level of the response
+      currentPage = data.currentPage || page;
+      totalPages = data.totalPages || 1;
+      totalCount = data.totalProductsCount || 0;
+      productsPerPage = data.productsPerPage || limit;
+      console.log('Found pagination data at root level:', { currentPage, totalPages, totalCount, productsPerPage });
     }
 
     const result = {

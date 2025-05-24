@@ -10,7 +10,6 @@ import { ShopContext } from "../../../context/ShopContext.jsx";
 import Title from "../../../components/Title";
 import GalleryItem from "../../../components/Home/GalleryItem";
 import { assets } from "../../../assets/assets";
-import { useCategories } from "../../../../hooks/useCategories.js";
 import NewsletterBox from "../../../components/NewsletterBox";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -28,47 +27,20 @@ import {
 import { Link } from "react-router-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { debounce } from "lodash";
+import { debounce } from "../../../../utils/debounce";
 
 const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const backendURL_WITHOUT_API = VITE_BACKEND_URL.replace("/api", "");
-
-const colorOptions = ["D", "E", "F", "G", "H", "I", "J", "K", "L", "M"];
-const fancyColorOptions = [
-  "Yellow",
-  "Orange",
-  "Pink",
-  "Blue",
-  "Green",
-  "Purple",
-  "Brown",
-  "Gray",
-  "Black",
-];
-const fancyIntensityOptions = [
-  "Fancy Light",
-  "Fancy Very Light",
-  "Fancy",
-  "Fancy Intense",
-  "Fancy Deep",
-  "Fancy Vivid",
-  "Fancy Dark",
-];
 
 const EngagementRings = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const query = searchParams.get("q") || "";
-  const categoryParam = searchParams.get("category") || "";
 
-  // Data store - Get engagement rings from ShopContext
+  // Data store - Get wedding bands from ShopContext
   const { engagementRings } = useContext(ShopContext);
 
-  // Core filtering states
-  const [selectedCategories, setSelectedCategories] = useState(
-    categoryParam ? [categoryParam] : []
-  );
   const [searchQuery, setSearchQuery] = useState(query || "");
   const [products, setProducts] = useState([]);
   const [filterProducts, setFilterProducts] = useState([]);
@@ -101,13 +73,8 @@ const EngagementRings = () => {
   const [maxPrice, setMaxPrice] = useState(100000);
 
   // Unique values for filter options
-  const [uniqueDiamondTypes, setUniqueDiamondTypes] = useState([]);
   const [uniqueMetals, setUniqueMetals] = useState([]);
   const [uniqueMetalColors, setUniqueMetalColors] = useState([]);
-
-  const categories = useCategories();
-  // Filter categories to only include those with associated products
-  const [filteredCategories, setFilteredCategories] = useState([]);
 
   // Define sort options
   const sortOptions = [
@@ -123,8 +90,6 @@ const EngagementRings = () => {
   const currentPageRef = useRef(currentPage);
   const limitRef = useRef(limit);
   const searchQueryRef = useRef(searchQuery);
-  const selectedCategoriesRef = useRef(selectedCategories);
-  const diamondTypesRef = useRef(diamondTypes);
   const metalsRef = useRef(metals);
   const metalColorsRef = useRef(metalColors);
   const caratRangeRef = useRef(caratRange);
@@ -138,8 +103,6 @@ const EngagementRings = () => {
     currentPageRef.current = currentPage;
     limitRef.current = limit;
     searchQueryRef.current = searchQuery;
-    selectedCategoriesRef.current = selectedCategories;
-    diamondTypesRef.current = diamondTypes;
     metalsRef.current = metals;
     metalColorsRef.current = metalColors;
     caratRangeRef.current = caratRange;
@@ -151,75 +114,55 @@ const EngagementRings = () => {
     currentPage,
     limit,
     searchQuery,
-    selectedCategories,
-    diamondTypes,
     metals,
     metalColors,
     caratRange,
     priceRange,
     sortType,
     maxCarat,
-    maxPrice,
+    maxPrice
   ]);
 
   // Function to extract unique filter values from products
-  const extractUniqueFilterValues = useCallback(
-    (products) => {
-      if (!products || products.length === 0) return;
+  const extractUniqueFilterValues = useCallback((products) => {
+    if (!products || products.length === 0) return;
 
-      // Extract unique diamond types
-      const uniqueDiamondTypesSet = new Set();
-      products.forEach((product) => {
-        if (product.diamondType) uniqueDiamondTypesSet.add(product.diamondType);
-      });
-      setUniqueDiamondTypes(Array.from(uniqueDiamondTypesSet));
+    // Extract unique metals
+    const uniqueMetalsSet = new Set();
+    products.forEach(product => {
+      if (product.metal) uniqueMetalsSet.add(product.metal);
+    });
+    setUniqueMetals(Array.from(uniqueMetalsSet));
 
-      // Extract unique metals
-      const uniqueMetalsSet = new Set();
-      products.forEach((product) => {
-        if (product.metal) uniqueMetalsSet.add(product.metal);
-      });
-      setUniqueMetals(Array.from(uniqueMetalsSet));
+    // Extract unique metal colors
+    const uniqueMetalColorsSet = new Set();
+    products.forEach(product => {
+      if (product.metalColor) uniqueMetalColorsSet.add(product.metalColor);
+    });
+    setUniqueMetalColors(Array.from(uniqueMetalColorsSet));
 
-      // Extract unique metal colors
-      const uniqueMetalColorsSet = new Set();
-      products.forEach((product) => {
-        if (product.metalColor) uniqueMetalColorsSet.add(product.metalColor);
-      });
-      setUniqueMetalColors(Array.from(uniqueMetalColorsSet));
+    // Find max price and carat for ranges
+    const maxProductPrice = Math.max(...products.map(p => p.price || 0));
+    const maxProductCarat = Math.max(...products.map(p => p.carats || 0));
 
-      // Find max price and carat for ranges
-      const maxProductPrice = Math.max(...products.map((p) => p.price || 0));
-      const maxProductCarat = Math.max(...products.map((p) => p.carats || 0));
+    // Ensure reasonable default values
+    const defaultMaxPrice = maxProductPrice > 0 ? maxProductPrice : 100000;
+    const defaultMaxCarat = maxProductCarat > 0 ? maxProductCarat : 20;
 
-      // Ensure reasonable default values
-      const defaultMaxPrice = maxProductPrice > 0 ? maxProductPrice : 100000;
-      const defaultMaxCarat = maxProductCarat > 0 ? maxProductCarat : 20;
+    setMaxPrice(defaultMaxPrice);
+    setMaxCarat(defaultMaxCarat);
 
-      setMaxPrice(defaultMaxPrice);
-      setMaxCarat(defaultMaxCarat);
+    // Only set the range values if they haven't been manually changed
+    if (priceRange[0] === 0 && priceRange[1] === 100000) {
+      setPriceRange([0, defaultMaxPrice]);
+      priceRangeRef.current = [0, defaultMaxPrice];
+    }
 
-      // Only set the range values if they haven't been manually changed
-      if (priceRange[0] === 0 && priceRange[1] === 100000) {
-        setPriceRange([0, defaultMaxPrice]);
-        priceRangeRef.current = [0, defaultMaxPrice];
-      }
-
-      if (caratRange[0] === 0 && caratRange[1] === 20) {
-        setCaratRange([0, defaultMaxCarat]);
-        caratRangeRef.current = [0, defaultMaxCarat];
-      }
-
-      // Filter categories to only include those with associated products
-      if (categories && categories.length > 0) {
-        const usedCategoryIds = new Set(products.map((p) => p.category));
-        setFilteredCategories(
-          categories.filter((category) => usedCategoryIds.has(category._id))
-        );
-      }
-    },
-    [categories, priceRange, caratRange]
-  );
+    if (caratRange[0] === 0 && caratRange[1] === 20) {
+      setCaratRange([0, defaultMaxCarat]);
+      caratRangeRef.current = [0, defaultMaxCarat];
+    }
+  }, [priceRange, caratRange]);
 
   // Fetch products from the API
   const fetchProducts = useCallback(async () => {
@@ -232,59 +175,46 @@ const EngagementRings = () => {
       const params = new URLSearchParams();
 
       // Pagination
-      params.append("page", currentPageRef.current);
-      params.append("limit", limitRef.current);
+      params.append('page', currentPageRef.current);
+      params.append('limit', limitRef.current);
 
       // Search query
       if (searchQueryRef.current) {
-        params.append("search", searchQueryRef.current);
-      }
-
-      // Category
-      if (selectedCategoriesRef.current.length > 0) {
-        params.append("category", selectedCategoriesRef.current.join(","));
-      }
-
-      // Diamond Types
-      if (diamondTypesRef.current.length > 0) {
-        params.append("diamondType", diamondTypesRef.current.join(","));
+        params.append('search', searchQueryRef.current);
       }
 
       // Metals
       if (metalsRef.current.length > 0) {
-        params.append("metal", metalsRef.current.join(","));
+        params.append('metal', metalsRef.current.join(','));
       }
 
       // Metal Colors
       if (metalColorsRef.current.length > 0) {
-        params.append("metalColor", metalColorsRef.current.join(","));
+        params.append('metalColor', metalColorsRef.current.join(','));
       }
 
       // Carat Range
       if (caratRangeRef.current[0] > 0) {
-        params.append("minCarat", caratRangeRef.current[0]);
+        params.append('minCarat', caratRangeRef.current[0]);
       }
       if (caratRangeRef.current[1] < maxCaratRef.current) {
-        params.append("maxCarat", caratRangeRef.current[1]);
+        params.append('maxCarat', caratRangeRef.current[1]);
       }
 
       // Price Range
       if (priceRangeRef.current[0] > 0) {
-        params.append("minPrice", priceRangeRef.current[0]);
+        params.append('minPrice', priceRangeRef.current[0]);
       }
       if (priceRangeRef.current[1] < maxPriceRef.current) {
-        params.append("maxPrice", priceRangeRef.current[1]);
+        params.append('maxPrice', priceRangeRef.current[1]);
       }
 
       // Sort
-      if (sortTypeRef.current !== "relevant") {
-        params.append("sort", sortTypeRef.current);
+      if (sortTypeRef.current !== 'relevant') {
+        params.append('sort', sortTypeRef.current);
       }
 
-      const response = await axios.get(
-        `${VITE_BACKEND_URL}/product/jewelery/engagement_rings`,
-        { params }
-      );
+      const response = await axios.get(`${VITE_BACKEND_URL}/product/jewelery/engagement_rings`, { params });
 
       console.log("Engagement Rings API response:", response.data);
 
@@ -298,7 +228,7 @@ const EngagementRings = () => {
       // Extract unique filter values from the products
       extractUniqueFilterValues(response.data.products);
     } catch (error) {
-      console.error("Error fetching engagement ring products:", error);
+      console.error("Error fetching engagement rings products:", error);
       // Use the engagement rings from context as fallback if API call fails
       if (engagementRings && engagementRings.length > 0) {
         setProducts(engagementRings);
@@ -306,7 +236,6 @@ const EngagementRings = () => {
         setTotalPages(Math.ceil(engagementRings.length / limit));
         setTotalCount(engagementRings.length);
         extractUniqueFilterValues(engagementRings);
-        setIsLoading(false);
       }
     } finally {
       setIsLoading(false);
@@ -315,7 +244,7 @@ const EngagementRings = () => {
       setTimeout(() => {
         window.scrollTo({
           top: scrollPosition,
-          behavior: "auto", // Use 'auto' instead of 'smooth' to prevent visible scrolling
+          behavior: 'auto' // Use 'auto' instead of 'smooth' to prevent visible scrolling
         });
       }, 0);
     }
@@ -364,7 +293,7 @@ const EngagementRings = () => {
     // Calculate a safe minimum that ensures we're at least 0.001 more than the min value
     const newRange = [
       caratRange[0],
-      parseFloat(Math.max(value, caratRange[0] + 0.001).toFixed(2)),
+      parseFloat(Math.max(value, caratRange[0] + 0.001).toFixed(2))
     ];
     setCaratRange(newRange);
     caratRangeRef.current = newRange;
@@ -427,18 +356,14 @@ const EngagementRings = () => {
 
       return () => clearTimeout(timer);
     }
-  }, [diamondTypes, metals, metalColors, selectedCategories, sortType]);
+  }, [diamondTypes, metals, metalColors, sortType]);
 
   // Update URL with current filter state for shareable links
   useEffect(() => {
     const params = new URLSearchParams();
 
     if (searchQuery) {
-      params.append("q", searchQuery);
-    }
-
-    if (selectedCategories.length > 0) {
-      params.append("category", selectedCategories.join(","));
+      params.append('q', searchQuery);
     }
 
     // Only update URL if we have filter parameters
@@ -448,7 +373,7 @@ const EngagementRings = () => {
       // Clear search parameters if we don't have any
       navigate(location.pathname, { replace: true });
     }
-  }, [searchQuery, selectedCategories, navigate, location.pathname]);
+  }, [searchQuery, navigate, location.pathname]);
 
   // Handle page change
   const handlePageChange = (newPage) => {
@@ -462,14 +387,14 @@ const EngagementRings = () => {
     // Fetch new data
     fetchProducts().then(() => {
       // After fetching, scroll to products section instead of top
-      const productsSection = document.querySelector(".products-grid-section");
+      const productsSection = document.querySelector('.products-grid-section');
       if (productsSection) {
-        productsSection.scrollIntoView({ behavior: "smooth" });
+        productsSection.scrollIntoView({ behavior: 'smooth' });
       } else {
         // If products section not found, maintain current position
         window.scrollTo({
           top: scrollPosition,
-          behavior: "auto",
+          behavior: 'auto'
         });
       }
     });
@@ -485,8 +410,6 @@ const EngagementRings = () => {
 
   // Clear all filters and reload results
   const clearFilters = () => {
-    setSelectedCategories([]);
-    setDiamondTypes([]);
     setMetals([]);
     setMetalColors([]);
     setCaratRange([0, maxCarat]);
@@ -496,8 +419,6 @@ const EngagementRings = () => {
     setCurrentPage(1);
 
     // Update refs immediately to avoid stale data
-    selectedCategoriesRef.current = [];
-    diamondTypesRef.current = [];
     metalsRef.current = [];
     metalColorsRef.current = [];
     caratRangeRef.current = [0, maxCarat];
@@ -512,14 +433,12 @@ const EngagementRings = () => {
 
   // Function to reset all filters
   const resetFilters = () => {
-    setDiamondTypes([]);
     setMetals([]);
     setMetalColors([]);
     setCaratRange([0, maxCarat]);
     setPriceRange([0, maxPrice]);
 
     // Update refs immediately
-    diamondTypesRef.current = [];
     metalsRef.current = [];
     metalColorsRef.current = [];
     caratRangeRef.current = [0, maxCarat];
@@ -554,72 +473,72 @@ const EngagementRings = () => {
 
   // Add CSS for range sliders
   const rangeSliderStyles = `
-        .multi-range {
-          position: relative;
-          height: 30px;
-        }
-        
-        .multi-range input[type="range"] {
-          position: absolute;
-          width: 100%;
-          height: 5px;
-          top: 10px;
-          background: none;
-          pointer-events: none;
-        }
-        
-        .multi-range input[type="range"]::-webkit-slider-thumb {
-          pointer-events: auto;
-          -webkit-appearance: none;
-          width: 18px;
-          height: 18px;
-          border-radius: 50%;
-          background: #000;
-          cursor: pointer;
-          margin-top: -6px;
-          z-index: 50;
-          position: relative;
-        }
-        
-        .multi-range input[type="range"]::-moz-range-thumb {
-          pointer-events: auto;
-          width: 18px;
-          height: 18px;
-          border-radius: 50%;
-          background: #000;
-          cursor: pointer;
-          border: none;
-          z-index: 50;
-          position: relative;
-        }
-        
-        .multi-range .range-track {
-          position: absolute;
-          width: 100%;
-          height: 5px;
-          top: 12px;
-          background: #e5e7eb;
-          z-index: 1;
-        }
-        
-        .multi-range .min-slider {
-          z-index: 2;
-        }
-        
-        .multi-range .max-slider {
-          z-index: 3;
-        }
-    
-        /* Hide scrollbar styles */
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-        
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `;
+      .multi-range {
+        position: relative;
+        height: 30px;
+      }
+      
+      .multi-range input[type="range"] {
+        position: absolute;
+        width: 100%;
+        height: 5px;
+        top: 10px;
+        background: none;
+        pointer-events: none;
+      }
+      
+      .multi-range input[type="range"]::-webkit-slider-thumb {
+        pointer-events: auto;
+        -webkit-appearance: none;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #000;
+        cursor: pointer;
+        margin-top: -6px;
+        z-index: 50;
+        position: relative;
+      }
+      
+      .multi-range input[type="range"]::-moz-range-thumb {
+        pointer-events: auto;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #000;
+        cursor: pointer;
+        border: none;
+        z-index: 50;
+        position: relative;
+      }
+      
+      .multi-range .range-track {
+        position: absolute;
+        width: 100%;
+        height: 5px;
+        top: 12px;
+        background: #e5e7eb;
+        z-index: 1;
+      }
+      
+      .multi-range .min-slider {
+        z-index: 2;
+      }
+      
+      .multi-range .max-slider {
+        z-index: 3;
+      }
+  
+      /* Hide scrollbar styles */
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+      
+      .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    `;
 
   // Loading screen
   if (isLoading) {
@@ -630,7 +549,7 @@ const EngagementRings = () => {
           <div className="absolute inset-2 bg-gradient-to-br from-gray-900 via-gray-800 to-black animate-pulse"></div>
         </div>
         <p className="text-lg mt-6 font-medium text-gray-800">
-          Loading exquisite engagement rings...
+          Loading exquisite wedding bands...
         </p>
       </div>
     );
@@ -645,7 +564,7 @@ const EngagementRings = () => {
         <div className="absolute inset-0 z-0 overflow-hidden">
           <img
             src="/images/products-hero-background.jpg"
-            alt="Luxury earrings collection"
+            alt="Luxury wedding bands collection"
             className="w-full h-full object-cover opacity-40"
             onError={(e) => {
               e.target.onerror = null;
@@ -667,14 +586,14 @@ const EngagementRings = () => {
             <div className="flex items-center gap-3 mb-6">
               <div className="h-[1px] w-16 bg-white/80"></div>
               <span className="uppercase tracking-[0.3em] text-sm font-light text-white/90">
-                Luxury Engagement Rings Collection
+                Luxury Wedding Bands Collection
               </span>
             </div>
             <h1 className="text-5xl font-bold sm:text-6xl lg:text-7xl mb-8 tracking-tight">
-              Our Engagement Rings Collection
+              Our Wedding Bands Collection
             </h1>
             <p className="text-xl text-gray-100 max-w-3xl leading-relaxed">
-              Discover our exquisite selection of premium engagement rings, each
+              Discover our exquisite selection of premium wedding bands, each
               piece crafted with exceptional artistry and precision for those
               who appreciate true luxury.
             </p>
@@ -703,19 +622,16 @@ const EngagementRings = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="flex flex-col mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Our Engagement Rings Collection
+            Our Wedding Bands Collection
           </h1>
           <p className="text-lg text-gray-600">
-            Explore our curated selection of exquisite engagement rings
+            Explore our curated selection of exquisite wedding bands
           </p>
         </div>
 
         {/* Search Bar */}
         <div className="w-full mb-8">
-          <form
-            onSubmit={handleSearchSubmit}
-            className="relative flex items-center mb-4"
-          >
+          <form onSubmit={handleSearchSubmit} className="relative flex items-center mb-4">
             <div className="relative flex-grow">
               <input
                 type="text"
@@ -755,128 +671,6 @@ const EngagementRings = () => {
             </h2>
 
             <div className="flex flex-col">
-              {/* Color Filter */}
-              <div className="w-full mb-8">
-                <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center justify-between">
-                  <span>Color</span>
-                </h3>
-                {/* Regular Colors */}
-                <div className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">
-                    Regular Colors
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {colorOptions.map((color) => (
-                      <button
-                        key={color}
-                        onClick={() =>
-                          toggleFilter(
-                            color,
-                            diamondTypes,
-                            setDiamondTypes,
-                            diamondTypesRef
-                          )
-                        }
-                        className={`px-3 py-1 text-xs rounded-full ${
-                          diamondTypes.includes(color)
-                            ? "bg-gray-900 text-white shadow-md"
-                            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                        }`}
-                      >
-                        {color}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                {/* Fancy Colors */}
-                <div className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">
-                    Fancy Colors
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {fancyColorOptions.map((color) => (
-                      <button
-                        key={color}
-                        onClick={() =>
-                          toggleFilter(
-                            color,
-                            diamondTypes,
-                            setDiamondTypes,
-                            diamondTypesRef
-                          )
-                        }
-                        className={`px-3 py-1 text-xs rounded-full ${
-                          diamondTypes.includes(color)
-                            ? "bg-gray-900 text-white shadow-md"
-                            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                        }`}
-                      >
-                        {color}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                {/* Fancy Intensities */}
-                <div className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">
-                    Fancy Intensities
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {fancyIntensityOptions.map((intensity) => (
-                      <button
-                        key={intensity}
-                        onClick={() =>
-                          toggleFilter(
-                            intensity,
-                            diamondTypes,
-                            setDiamondTypes,
-                            diamondTypesRef
-                          )
-                        }
-                        className={`px-3 py-1 text-xs rounded-full ${
-                          diamondTypes.includes(intensity)
-                            ? "bg-gray-900 text-white shadow-md"
-                            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                        }`}
-                      >
-                        {intensity}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Diamond Type Filter */}
-              {uniqueDiamondTypes.length > 0 && (
-                <div className="w-full mb-8">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">
-                    Diamond Type
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {uniqueDiamondTypes.map((type) => (
-                      <button
-                        key={type}
-                        onClick={(e) =>
-                          toggleFilter(
-                            type,
-                            diamondTypes,
-                            setDiamondTypes,
-                            diamondTypesRef
-                          )
-                        }
-                        className={`px-3 py-1 text-xs rounded-full ${
-                          diamondTypes.includes(type)
-                            ? "bg-gray-900 text-white shadow-md"
-                            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                        }`}
-                      >
-                        {type}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               {/* Metal Filter */}
               {uniqueMetals.length > 0 && (
                 <div className="w-full mb-8">
@@ -890,11 +684,10 @@ const EngagementRings = () => {
                         onClick={(e) =>
                           toggleFilter(metal, metals, setMetals, metalsRef)
                         }
-                        className={`px-3 py-1 text-xs rounded-full ${
-                          metals.includes(metal)
-                            ? "bg-gray-900 text-white shadow-md"
-                            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                        }`}
+                        className={`px-3 py-1 text-xs rounded-full ${metals.includes(metal)
+                          ? "bg-gray-900 text-white shadow-md"
+                          : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                          }`}
                       >
                         {metal}
                       </button>
@@ -914,18 +707,12 @@ const EngagementRings = () => {
                       <button
                         key={color}
                         onClick={(e) =>
-                          toggleFilter(
-                            color,
-                            metalColors,
-                            setMetalColors,
-                            metalColorsRef
-                          )
+                          toggleFilter(color, metalColors, setMetalColors, metalColorsRef)
                         }
-                        className={`px-3 py-1 text-xs rounded-full ${
-                          metalColors.includes(color)
-                            ? "bg-gray-900 text-white shadow-md"
-                            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                        }`}
+                        className={`px-3 py-1 text-xs rounded-full ${metalColors.includes(color)
+                          ? "bg-gray-900 text-white shadow-md"
+                          : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                          }`}
                       >
                         {color}
                       </button>
@@ -952,9 +739,7 @@ const EngagementRings = () => {
                           min={0}
                           max={maxPrice}
                           value={priceRange[0]}
-                          onChange={(e) =>
-                            handlePriceMinChange(parseInt(e.target.value))
-                          }
+                          onChange={(e) => handlePriceMinChange(parseInt(e.target.value))}
                           className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
                         />
                       </div>
@@ -970,9 +755,7 @@ const EngagementRings = () => {
                           min={0}
                           max={maxPrice}
                           value={priceRange[1]}
-                          onChange={(e) =>
-                            handlePriceMaxChange(parseInt(e.target.value))
-                          }
+                          onChange={(e) => handlePriceMaxChange(parseInt(e.target.value))}
                           className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
                         />
                       </div>
@@ -993,9 +776,7 @@ const EngagementRings = () => {
                         max={maxCarat}
                         step="0.01"
                         value={caratRange[0]}
-                        onChange={(e) =>
-                          handleCaratMinChange(parseFloat(e.target.value))
-                        }
+                        onChange={(e) => handleCaratMinChange(parseFloat(e.target.value))}
                         className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                       />
                     </div>
@@ -1007,9 +788,7 @@ const EngagementRings = () => {
                         max={maxCarat}
                         step="0.01"
                         value={caratRange[1]}
-                        onChange={(e) =>
-                          handleCaratMaxChange(parseFloat(e.target.value))
-                        }
+                        onChange={(e) => handleCaratMaxChange(parseFloat(e.target.value))}
                         className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                       />
                     </div>
@@ -1056,65 +835,6 @@ const EngagementRings = () => {
 
                     {/* Mobile Quick Filters Section */}
                     <div className="mb-5">
-                      {/* Color Filter */}
-                      <div className="mb-6">
-                        <h3 className="text-base font-medium text-gray-900 mb-3">
-                          Color
-                        </h3>
-                        <div className="flex flex-wrap gap-2">
-                          {colorOptions.map((color) => (
-                            <button
-                              key={color}
-                              onClick={(e) =>
-                                toggleFilter(
-                                  color,
-                                  diamondTypes,
-                                  setDiamondTypes,
-                                  diamondTypesRef
-                                )
-                              }
-                              className={`px-3 py-1 text-xs rounded-full ${
-                                diamondTypes.includes(color)
-                                  ? "bg-gray-900 text-white"
-                                  : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                              }`}
-                            >
-                              {color}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Diamond Type Filter */}
-                      {uniqueDiamondTypes.length > 0 && (
-                        <div className="mb-6">
-                          <h3 className="text-base font-medium text-gray-900 mb-3">
-                            Diamond Type
-                          </h3>
-                          <div className="flex flex-wrap gap-2">
-                            {uniqueDiamondTypes.map((type) => (
-                              <button
-                                key={type}
-                                onClick={(e) =>
-                                  toggleFilter(
-                                    type,
-                                    diamondTypes,
-                                    setDiamondTypes,
-                                    diamondTypesRef
-                                  )
-                                }
-                                className={`px-3 py-1 text-xs rounded-full ${
-                                  diamondTypes.includes(type)
-                                    ? "bg-gray-900 text-white"
-                                    : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                                }`}
-                              >
-                                {type}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
 
                       {/* Metal Filter */}
                       {uniqueMetals.length > 0 && (
@@ -1127,18 +847,12 @@ const EngagementRings = () => {
                               <button
                                 key={metal}
                                 onClick={(e) =>
-                                  toggleFilter(
-                                    metal,
-                                    metals,
-                                    setMetals,
-                                    metalsRef
-                                  )
+                                  toggleFilter(metal, metals, setMetals, metalsRef)
                                 }
-                                className={`px-3 py-1 text-xs rounded-full ${
-                                  metals.includes(metal)
-                                    ? "bg-gray-900 text-white"
-                                    : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                                }`}
+                                className={`px-3 py-1 text-xs rounded-full ${metals.includes(metal)
+                                  ? "bg-gray-900 text-white"
+                                  : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                                  }`}
                               >
                                 {metal}
                               </button>
@@ -1158,18 +872,12 @@ const EngagementRings = () => {
                               <button
                                 key={color}
                                 onClick={(e) =>
-                                  toggleFilter(
-                                    color,
-                                    metalColors,
-                                    setMetalColors,
-                                    metalColorsRef
-                                  )
+                                  toggleFilter(color, metalColors, setMetalColors, metalColorsRef)
                                 }
-                                className={`px-3 py-1 text-xs rounded-full ${
-                                  metalColors.includes(color)
-                                    ? "bg-gray-900 text-white"
-                                    : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                                }`}
+                                className={`px-3 py-1 text-xs rounded-full ${metalColors.includes(color)
+                                  ? "bg-gray-900 text-white"
+                                  : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                                  }`}
                               >
                                 {color}
                               </button>
@@ -1196,11 +904,7 @@ const EngagementRings = () => {
                                   min={0}
                                   max={maxPrice}
                                   value={priceRange[0]}
-                                  onChange={(e) =>
-                                    handlePriceMinChange(
-                                      parseInt(e.target.value)
-                                    )
-                                  }
+                                  onChange={(e) => handlePriceMinChange(parseInt(e.target.value))}
                                   className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
                                 />
                               </div>
@@ -1218,11 +922,7 @@ const EngagementRings = () => {
                                   min={0}
                                   max={maxPrice}
                                   value={priceRange[1]}
-                                  onChange={(e) =>
-                                    handlePriceMaxChange(
-                                      parseInt(e.target.value)
-                                    )
-                                  }
+                                  onChange={(e) => handlePriceMaxChange(parseInt(e.target.value))}
                                   className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
                                 />
                               </div>
@@ -1243,11 +943,7 @@ const EngagementRings = () => {
                                 max={maxCarat}
                                 step="0.01"
                                 value={caratRange[0]}
-                                onChange={(e) =>
-                                  handleCaratMinChange(
-                                    parseFloat(e.target.value)
-                                  )
-                                }
+                                onChange={(e) => handleCaratMinChange(parseFloat(e.target.value))}
                                 className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                               />
                             </div>
@@ -1261,11 +957,7 @@ const EngagementRings = () => {
                                 max={maxCarat}
                                 step="0.01"
                                 value={caratRange[1]}
-                                onChange={(e) =>
-                                  handleCaratMaxChange(
-                                    parseFloat(e.target.value)
-                                  )
-                                }
+                                onChange={(e) => handleCaratMaxChange(parseFloat(e.target.value))}
                                 className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                               />
                             </div>
@@ -1302,47 +994,6 @@ const EngagementRings = () => {
 
               {/* Active Filters */}
               <div className="flex flex-wrap gap-2 mt-2 sm:mt-0">
-                {selectedCategories.map((catId) => {
-                  const categoryObj = filteredCategories.find(
-                    (cat) => cat._id === catId
-                  );
-                  return (
-                    categoryObj && (
-                      <div
-                        key={`cat-${catId}`}
-                        className="flex items-center bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm"
-                      >
-                        <span className="mr-1">
-                          Category: {categoryObj.name}
-                        </span>
-                        <button
-                          onClick={() =>
-                            setSelectedCategories(
-                              selectedCategories.filter((c) => c !== catId)
-                            )
-                          }
-                          className="text-gray-500 hover:text-gray-700"
-                        >
-                          <FaTimes className="h-3 w-3" />
-                        </button>
-                      </div>
-                    )
-                  );
-                })}
-                {diamondTypes.length > 0 && (
-                  <div className="flex items-center bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm">
-                    <span className="mr-1">
-                      Diamond Type{diamondTypes.length > 1 ? "s" : ""}:{" "}
-                      {diamondTypes.length}
-                    </span>
-                    <button
-                      onClick={() => setDiamondTypes([])}
-                      className="text-gray-500 hover:text-gray-700"
-                    >
-                      <FaTimes className="h-3 w-3" />
-                    </button>
-                  </div>
-                )}
                 {metals.length > 0 && (
                   <div className="flex items-center bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm">
                     <span className="mr-1">
@@ -1399,11 +1050,10 @@ const EngagementRings = () => {
                           setCurrentPage(1);
                           setTimeout(() => fetchProducts(), 100);
                         }}
-                        className={`block w-full text-left px-4 py-2 hover:bg-gray-100 ${
-                          sortType === option.value
-                            ? "bg-gray-100 font-medium"
-                            : ""
-                        }`}
+                        className={`block w-full text-left px-4 py-2 hover:bg-gray-100 ${sortType === option.value
+                          ? "bg-gray-100 font-medium"
+                          : ""
+                          }`}
                       >
                         {option.label}
                       </button>
@@ -1418,7 +1068,7 @@ const EngagementRings = () => {
               <div className="flex justify-center items-center h-64">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
               </div>
-            ) : filterProducts.length === 0 && engagementRings?.length === 0 ? (
+            ) : filterProducts.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-64 text-center">
                 <FaGem className="text-gray-300 text-5xl mb-4" />
                 <h3 className="text-xl font-semibold text-gray-700 mb-2">
@@ -1441,18 +1091,19 @@ const EngagementRings = () => {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 products-grid-section">
                 <AnimatePresence>
-                  {(filterProducts.length > 0
-                    ? filterProducts
-                    : engagementRings
-                  ).map((ring, index) => (
+                  {filterProducts.map((engagementRing, index) => (
                     <motion.div
-                      key={ring._id || index}
+                      key={engagementRing._id || index}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.3 }}
                     >
-                      <GalleryItem item={ring} price={true} index={index} />
+                      <GalleryItem
+                        item={engagementRing}
+                        price={true}
+                        index={index}
+                      />
                     </motion.div>
                   ))}
                 </AnimatePresence>
@@ -1470,11 +1121,7 @@ const EngagementRings = () => {
                       }
                     }}
                     disabled={currentPage === 1}
-                    className={`p-2 rounded-md ${
-                      currentPage === 1
-                        ? "text-gray-300 cursor-not-allowed"
-                        : "hover:bg-gray-100 text-gray-500"
-                    }`}
+                    className={`p-2 rounded-md ${currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'hover:bg-gray-100 text-gray-500'}`}
                   >
                     <FaChevronLeft className="h-5 w-5" />
                   </button>
@@ -1495,11 +1142,10 @@ const EngagementRings = () => {
                           onClick={() => {
                             handlePageChange(pageNum);
                           }}
-                          className={`mx-1 px-4 py-2 rounded-md ${
-                            currentPage === pageNum
-                              ? "bg-gray-900 text-white"
-                              : "hover:bg-gray-100"
-                          }`}
+                          className={`mx-1 px-4 py-2 rounded-md ${currentPage === pageNum
+                            ? "bg-gray-900 text-white"
+                            : "hover:bg-gray-100"
+                            }`}
                         >
                           {pageNum}
                         </button>
@@ -1511,11 +1157,7 @@ const EngagementRings = () => {
                       (pageNum === currentPage - 2 && pageNum > 1) ||
                       (pageNum === currentPage + 2 && pageNum < totalPages)
                     ) {
-                      return (
-                        <span key={`ellipsis-${pageNum}`} className="mx-1">
-                          ...
-                        </span>
-                      );
+                      return <span key={`ellipsis-${pageNum}`} className="mx-1">...</span>;
                     }
 
                     return null;
@@ -1528,11 +1170,7 @@ const EngagementRings = () => {
                       }
                     }}
                     disabled={currentPage === totalPages}
-                    className={`p-2 rounded-md ${
-                      currentPage === totalPages
-                        ? "text-gray-300 cursor-not-allowed"
-                        : "hover:bg-gray-100 text-gray-500"
-                    }`}
+                    className={`p-2 rounded-md ${currentPage === totalPages ? 'text-gray-300 cursor-not-allowed' : 'hover:bg-gray-100 text-gray-500'}`}
                   >
                     <FaChevronRight className="h-5 w-5" />
                   </button>

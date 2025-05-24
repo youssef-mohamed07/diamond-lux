@@ -1,7 +1,23 @@
-import { IoMdArrowDropright } from "react-icons/io";
-import React, { useState } from "react";
+import { IoChevronBack, IoChevronForward } from "react-icons/io5";
+import React, { useState, useEffect } from "react";
 
 const Pagination = ({ currentPage, totalPages, onPageChange, loading }) => {
+  // State for window width to handle responsive design
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  // Update windowWidth when window is resized
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Determine how many page buttons to show based on screen size
+  const getMaxVisibleButtons = () => {
+    if (windowWidth < 400) return 3;
+    if (windowWidth < 640) return 5;
+    return 7;
+  };
   // Ensure currentPage and totalPages are valid numbers
   const validCurrentPage = parseInt(currentPage) || 1;
   const validTotalPages = parseInt(totalPages) || 1;
@@ -43,8 +59,10 @@ const Pagination = ({ currentPage, totalPages, onPageChange, loading }) => {
   };
 
   const renderPageNumbers = () => {
-    // If we have 7 or fewer pages, show them all
-    if (validTotalPages <= 7) {
+    const maxVisibleButtons = getMaxVisibleButtons();
+    
+    // If we have fewer pages than the max visible buttons, show them all
+    if (validTotalPages <= maxVisibleButtons) {
       return Array.from({ length: validTotalPages }, (_, i) => i + 1).map(
         (page) => (
           <button
@@ -205,48 +223,81 @@ const Pagination = ({ currentPage, totalPages, onPageChange, loading }) => {
     return pages;
   };
 
-  // Don't render pagination if there's only one page
-  if (validTotalPages <= 1) return null;
+  // Added additional debugging
+  console.log('Pagination component values:', { validCurrentPage, validTotalPages, loading });
+  
+  // Don't render pagination if there's only one page and total count would fit on one page
+  // Commenting out this check temporarily to troubleshoot
+  // if (validTotalPages <= 1) return null;
 
   return (
-    <div className="flex flex-col items-center justify-center mt-8 space-y-4">
+    <nav aria-label="Pagination" className="flex flex-col items-center justify-center mt-8 space-y-4">
       {/* Page buttons */}
       <div className="flex items-center justify-center space-x-2">
+        {/* Previous page button */}
+        <button
+          onClick={() => onPageChange(validCurrentPage - 1)}
+          disabled={loading || validCurrentPage === 1}
+          className={`w-10 h-10 flex items-center justify-center rounded-md transition-all duration-200
+            ${validCurrentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100 focus:ring-2 focus:ring-offset-2 focus:ring-gray-400'}
+          `}
+          aria-label="Previous page"
+        >
+          <IoChevronBack className="w-5 h-5" />
+        </button>
+
         {renderPageNumbers()}
+
+        {/* Next page button */}
+        <button
+          onClick={() => onPageChange(validCurrentPage + 1)}
+          disabled={loading || validCurrentPage === validTotalPages}
+          className={`w-10 h-10 flex items-center justify-center rounded-md transition-all duration-200
+            ${validCurrentPage === validTotalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100 focus:ring-2 focus:ring-offset-2 focus:ring-gray-400'}
+          `}
+          aria-label="Next page"
+        >
+          <IoChevronForward className="w-5 h-5" />
+        </button>
       </div>
 
       {/* Page input form */}
-      <div className="flex items-center space-x-2">
+      <div className="flex flex-wrap items-center justify-center gap-4 px-4">
+        <div className="text-sm text-gray-500">
+          Page {validCurrentPage} of {validTotalPages}
+        </div>
         <form onSubmit={handleInputSubmit} className="flex items-center">
-          <label htmlFor="page-input" className="text-sm text-gray-600 mr-2">
-            Go to page:
-          </label>
-          <input
-            id="page-input"
-            type="text"
-            value={pageInputValue}
-            onChange={handleInputChange}
-            placeholder={validCurrentPage.toString()}
-            className={`w-16 h-10 px-2 py-2 border rounded-md text-center ${
-              inputError ? "border-red-500" : "border-gray-300"
-            }`}
-            disabled={loading}
-          />
-          <button
-            type="submit"
-            className="ml-2 w-16 h-10 px-2 py-2 flex justify-center items-center text-2xl bg-black text-white rounded-md hover:bg-gray-600 transition-all duration-300 disabled:bg-gray-400"
-            disabled={loading || pageInputValue === ""}
-          >
-            <IoMdArrowDropright />
-          </button>
+          <div className="relative">
+            <input
+              id="page-input"
+              type="text"
+              value={pageInputValue}
+              onChange={handleInputChange}
+              className={`w-32 h-10 px-4 py-2 border rounded-l-md  text-sm  ${inputError
+                ? "border-red-500 focus:ring-red-500"
+                : "border-gray-300 focus:ring-black"
+              } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={loading}
+            />
+            <button
+              type="submit"
+              className={`absolute right-0 top-0 h-10 px-4 bg-black text-white rounded-r-md
+                ${loading || pageInputValue === "" ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-800'}
+                transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black`}
+              disabled={loading || pageInputValue === ""}
+              aria-label="Go to specified page"
+            >
+              Go
+            </button>
+          </div>
         </form>
         {inputError && (
-          <p className="text-red-500 text-xs">
-            Please enter a valid page (1-{validTotalPages})
+          <p className="text-red-500 text-xs" role="alert">
+            Please enter a valid page number between 1 and {validTotalPages}
           </p>
         )}
       </div>
-    </div>
+    </nav>
   );
 };
 

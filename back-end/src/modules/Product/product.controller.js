@@ -16,6 +16,7 @@ const AddProduct = catchError(async (req, res) => {
   }
 
   const product = new Product(req.body);
+  console.log(product);
   await product.save();
   res.status(201).json({ message: "Created..", product });
 });

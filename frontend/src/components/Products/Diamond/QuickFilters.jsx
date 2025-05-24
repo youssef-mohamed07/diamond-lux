@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { getImageUrl } from "../../../../utils/imageHelper";
+import { debounce } from "../../../../utils/debounce";
 
 const QuickFilters = ({
   categories,
@@ -72,41 +73,48 @@ const QuickFilters = ({
     }
   }, [selectedCategories, categories]);
 
-  // Handle price change with debounce
-  const handlePriceChange = (min, max) => {
-    // Update local state without immediate validation
-    setMinPrice(min === "" ? "" : Number(min));
-    setMaxPrice(max === "" ? "" : Number(max));
-
-    // Use setTimeout to debounce the API call
-    const timer = setTimeout(() => {
+  // Debounced price change handler
+  const debouncedPriceChange = useCallback(
+    debounce((min, max) => {
       // Only validate when actually making the API call
       const finalMin = min === "" ? 0 : Math.max(0, Number(min) || 0);
-      const finalMax =
-        max === "" ? 99999999 : Math.max(0, Number(max) || 99999999);
+      const finalMax = max === "" ? 99999999 : Math.max(0, Number(max) || 99999999);
 
       onPriceChange({ min: finalMin, max: finalMax });
-    }, 500); // 500ms debounce
+    }, 500),
+    [onPriceChange]
+  );
 
-    return () => clearTimeout(timer);
+  // Handle price change
+  const handlePriceChange = (min, max) => {
+    // Update local state immediately for UI feedback
+    setMinPrice(min === "" ? "" : Number(min));
+    setMaxPrice(max === "" ? "" : Number(max));
+    
+    // Call the debounced function for API updates
+    debouncedPriceChange(min, max);
   };
 
-  // Handle carat change with debounce
-  const handleCaratChange = (min, max) => {
-    // Update local state without immediate validation
-    setMinCarat(min === "" ? "" : Number(min));
-    setMaxCarat(max === "" ? "" : Number(max));
-
-    // Use setTimeout to debounce the API call
-    const timer = setTimeout(() => {
+  // Debounced carat change handler
+  const debouncedCaratChange = useCallback(
+    debounce((min, max) => {
       // Only validate when actually making the API call
       const finalMin = min === "" ? 0 : Math.max(0, Number(min) || 0);
       const finalMax = max === "" ? 1 : Math.max(0, Number(max) || 1);
 
       onCaratChange({ min: finalMin, max: finalMax });
-    }, 500); // 500ms debounce
+    }, 500),
+    [onCaratChange]
+  );
 
-    return () => clearTimeout(timer);
+  // Handle carat change
+  const handleCaratChange = (min, max) => {
+    // Update local state immediately for UI feedback
+    setMinCarat(min === "" ? "" : Number(min));
+    setMaxCarat(max === "" ? "" : Number(max));
+    
+    // Call the debounced function for API updates
+    debouncedCaratChange(min, max);
   };
 
   // Toggle category selection
@@ -548,32 +556,7 @@ const QuickFilters = ({
           )}
         </div>
 
-        {/* Clear All Filters */}
-        {(selectedCategories.length > 0 ||
-          selectedColors.length > 0 ||
-          selectedCuts.length > 0 ||
-          selectedClarities.length > 0 ||
-          minPrice > 0 ||
-          maxPrice < 100000 ||
-          minCarat > 0 ||
-          maxCarat < 10) && (
-          <div className="mt-6 text-center">
-            <button
-              onClick={() => {
-                // Reset local state
-                setMinPrice("");
-                setMaxPrice("");
-                setMinCarat("");
-                setMaxCarat("");
-                // Call the clearFilters function
-                onClearFilters();
-              }}
-              className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium"
-            >
-              Clear All Filters
-            </button>
-          </div>
-        )}
+
       </div>
     </div>
   );

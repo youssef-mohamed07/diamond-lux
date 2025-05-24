@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { debounce } from "../../../../utils/debounce";
 
 const AdvancedFilters = ({
   polishes = [],
@@ -67,69 +68,79 @@ const AdvancedFilters = ({
     setMaxWidth(widthRange[1] || 30);
   }, [widthRange]);
 
-  // Handle table change with debounce
+  // Debounced table change handler
+  const debouncedTableChange = useCallback(
+    debounce((min, max) => {
+      if (onTableChange) onTableChange({ min, max });
+    }, 500),
+    [onTableChange]
+  );
+
+  // Handle table change
   const handleTableChange = (min, max) => {
     setMinTable(min);
     setMaxTable(max);
-
-    // Use setTimeout to debounce the API call
-    const timer = setTimeout(() => {
-      if (onTableChange) onTableChange({ min, max });
-    }, 500); // 500ms debounce
-
-    return () => clearTimeout(timer);
+    debouncedTableChange(min, max);
   };
 
-  // Handle depth change with debounce
+  // Debounced depth change handler
+  const debouncedDepthChange = useCallback(
+    debounce((min, max) => {
+      if (onDepthChange) onDepthChange({ min, max });
+    }, 500),
+    [onDepthChange]
+  );
+
+  // Handle depth change
   const handleDepthChange = (min, max) => {
     setMinDepth(min);
     setMaxDepth(max);
-
-    // Use setTimeout to debounce the API call
-    const timer = setTimeout(() => {
-      if (onDepthChange) onDepthChange({ min, max });
-    }, 500); // 500ms debounce
-
-    return () => clearTimeout(timer);
+    debouncedDepthChange(min, max);
   };
 
-  // Handle L/W ratio change with debounce
+  // Debounced L/W ratio change handler
+  const debouncedLwRatioChange = useCallback(
+    debounce((min, max) => {
+      if (onLwRatioChange) onLwRatioChange({ min, max });
+    }, 500),
+    [onLwRatioChange]
+  );
+
+  // Handle L/W ratio change
   const handleLwRatioChange = (min, max) => {
     setMinLwRatio(min);
     setMaxLwRatio(max);
-
-    // Use setTimeout to debounce the API call
-    const timer = setTimeout(() => {
-      if (onLwRatioChange) onLwRatioChange({ min, max });
-    }, 500); // 500ms debounce
-
-    return () => clearTimeout(timer);
+    debouncedLwRatioChange(min, max);
   };
 
-  // Handle length change with debounce
+  // Debounced length change handler
+  const debouncedLengthChange = useCallback(
+    debounce((min, max) => {
+      if (onLengthChange) onLengthChange({ min, max });
+    }, 500),
+    [onLengthChange]
+  );
+
+  // Handle length change
   const handleLengthChange = (min, max) => {
     setMinLength(min);
     setMaxLength(max);
-
-    // Use setTimeout to debounce the API call
-    const timer = setTimeout(() => {
-      if (onLengthChange) onLengthChange({ min, max });
-    }, 500); // 500ms debounce
-
-    return () => clearTimeout(timer);
+    debouncedLengthChange(min, max);
   };
 
-  // Handle width change with debounce
+  // Debounced width change handler
+  const debouncedWidthChange = useCallback(
+    debounce((min, max) => {
+      if (onWidthChange) onWidthChange({ min, max });
+    }, 500),
+    [onWidthChange]
+  );
+
+  // Handle width change
   const handleWidthChange = (min, max) => {
     setMinWidth(min);
     setMaxWidth(max);
-
-    // Use setTimeout to debounce the API call
-    const timer = setTimeout(() => {
-      if (onWidthChange) onWidthChange({ min, max });
-    }, 500); // 500ms debounce
-
-    return () => clearTimeout(timer);
+    debouncedWidthChange(min, max);
   };
 
   // Custom clear all function for advanced filters

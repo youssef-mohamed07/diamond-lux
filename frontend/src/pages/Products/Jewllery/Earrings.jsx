@@ -4,12 +4,12 @@ import React, {
   useState,
   useCallback,
   useRef,
+  useMemo,
 } from "react";
-import { ShopContext } from "../../../context/ShopContext";
+import { ShopContext } from "../../../context/ShopContext.jsx";
 import Title from "../../../components/Title";
 import GalleryItem from "../../../components/Home/GalleryItem";
 import { assets } from "../../../assets/assets";
-import { useCategories } from "../../../../hooks/useCategories";
 import NewsletterBox from "../../../components/NewsletterBox";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -27,33 +27,20 @@ import {
 import { Link } from "react-router-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { debounce } from "lodash";
+import { debounce } from "../../../../utils/debounce";
 
 const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const backendURL_WITHOUT_API = VITE_BACKEND_URL.replace("/api", "");
-
-const colorOptions = ["D", "E", "F", "G", "H", "I", "J", "K", "L", "M"];
-const fancyColorOptions = [
-  "Yellow", "Orange", "Pink", "Blue", "Green", "Purple", "Brown", "Gray", "Black"
-];
-const fancyIntensityOptions = [
-  "Fancy Light", "Fancy Very Light", "Fancy", "Fancy Intense", "Fancy Deep", "Fancy Vivid", "Fancy Dark"
-];
 
 const Earrings = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const query = searchParams.get("q") || "";
-  const categoryParam = searchParams.get("category") || "";
 
-  // Data store
+  // Data store - Get earrings from ShopContext
   const { earrings } = useContext(ShopContext);
 
-  // Core filtering states
-  const [selectedCategories, setSelectedCategories] = useState(
-    categoryParam ? [categoryParam] : []
-  );
   const [searchQuery, setSearchQuery] = useState(query || "");
   const [products, setProducts] = useState([]);
   const [filterProducts, setFilterProducts] = useState([]);
@@ -86,13 +73,8 @@ const Earrings = () => {
   const [maxPrice, setMaxPrice] = useState(100000);
 
   // Unique values for filter options
-  const [uniqueDiamondTypes, setUniqueDiamondTypes] = useState([]);
   const [uniqueMetals, setUniqueMetals] = useState([]);
   const [uniqueMetalColors, setUniqueMetalColors] = useState([]);
-
-  const categories = useCategories();
-  // Filter categories to only include those with associated products
-  const [filteredCategories, setFilteredCategories] = useState([]);
 
   // Define sort options
   const sortOptions = [
@@ -101,96 +83,37 @@ const Earrings = () => {
     { value: "price:desc", label: "Price: High to Low" },
   ];
 
-  // Fetch products from the API
-  const fetchProducts = useCallback(async () => {
-    // Save current scroll position before loading
-    const scrollPosition = window.scrollY;
+  // Ref to track first mount
+  const isFirstMount = useRef(true);
 
-    setIsLoading(true);
-    try {
-      // Prepare query parameters
-      const params = new URLSearchParams();
+  // Refs for values that shouldn't trigger fetchProducts recreation
+  const currentPageRef = useRef(currentPage);
+  const limitRef = useRef(limit);
+  const searchQueryRef = useRef(searchQuery);
+  const metalsRef = useRef(metals);
+  const metalColorsRef = useRef(metalColors);
+  const caratRangeRef = useRef(caratRange);
+  const priceRangeRef = useRef(priceRange);
+  const sortTypeRef = useRef(sortType);
+  const maxCaratRef = useRef(maxCarat);
+  const maxPriceRef = useRef(maxPrice);
 
-      // Pagination
-      params.append('page', currentPage);
-      params.append('limit', limit);
-
-      // Search query
-      if (searchQuery) {
-        params.append('search', searchQuery);
-      }
-
-      // Category
-      if (selectedCategories.length > 0) {
-        params.append('category', selectedCategories.join(','));
-      }
-
-      // Diamond Types
-      if (diamondTypes.length > 0) {
-        params.append('diamondType', diamondTypes.join(','));
-      }
-
-      // Metals
-      if (metals.length > 0) {
-        params.append('metal', metals.join(','));
-      }
-
-      // Metal Colors
-      if (metalColors.length > 0) {
-        params.append('metalColor', metalColors.join(','));
-      }
-
-      // Carat Range
-      if (caratRange[0] > 0) {
-        params.append('minCarat', caratRange[0]);
-      }
-      if (caratRange[1] < maxCarat) {
-        params.append('maxCarat', caratRange[1]);
-      }
-
-      // Price Range
-      if (priceRange[0] > 0) {
-        params.append('minPrice', priceRange[0]);
-      }
-      if (priceRange[1] < maxPrice) {
-        params.append('maxPrice', priceRange[1]);
-      }
-
-      // Sort
-      if (sortType !== 'relevant') {
-        params.append('sort', sortType);
-      }
-
-      const response = await axios.get(`${VITE_BACKEND_URL}/product/jewelery/earrings`, { params });
-
-      // Update state with the response data
-      setProducts(response.data.products);
-      setFilterProducts(response.data.products);
-      setTotalCount(response.data.totalProductsCount);
-      setTotalPages(response.data.totalPages);
-      setCurrentPage(response.data.currentPage);
-
-      // Extract unique filter values from the products
-      extractUniqueFilterValues(response.data.products);
-    } catch (error) {
-      console.error("Error fetching earring products:", error);
-    } finally {
-      setIsLoading(false);
-
-      // Restore scroll position after loading completes
-      setTimeout(() => {
-        window.scrollTo({
-          top: scrollPosition,
-          behavior: 'auto' // Use 'auto' instead of 'smooth' to prevent visible scrolling
-        });
-      }, 0);
-    }
+  // Update refs when values change
+  useEffect(() => {
+    currentPageRef.current = currentPage;
+    limitRef.current = limit;
+    searchQueryRef.current = searchQuery;
+    metalsRef.current = metals;
+    metalColorsRef.current = metalColors;
+    caratRangeRef.current = caratRange;
+    priceRangeRef.current = priceRange;
+    sortTypeRef.current = sortType;
+    maxCaratRef.current = maxCarat;
+    maxPriceRef.current = maxPrice;
   }, [
     currentPage,
     limit,
     searchQuery,
-    selectedCategories,
-    diamondTypes,
     metals,
     metalColors,
     caratRange,
@@ -203,13 +126,6 @@ const Earrings = () => {
   // Function to extract unique filter values from products
   const extractUniqueFilterValues = useCallback((products) => {
     if (!products || products.length === 0) return;
-
-    // Extract unique diamond types
-    const uniqueDiamondTypesSet = new Set();
-    products.forEach(product => {
-      if (product.diamondType) uniqueDiamondTypesSet.add(product.diamondType);
-    });
-    setUniqueDiamondTypes(Array.from(uniqueDiamondTypesSet));
 
     // Extract unique metals
     const uniqueMetalsSet = new Set();
@@ -239,20 +155,100 @@ const Earrings = () => {
     // Only set the range values if they haven't been manually changed
     if (priceRange[0] === 0 && priceRange[1] === 100000) {
       setPriceRange([0, defaultMaxPrice]);
+      priceRangeRef.current = [0, defaultMaxPrice];
     }
 
     if (caratRange[0] === 0 && caratRange[1] === 20) {
       setCaratRange([0, defaultMaxCarat]);
+      caratRangeRef.current = [0, defaultMaxCarat];
     }
+  }, [priceRange, caratRange]);
 
-    // Filter categories to only include those with associated products
-    if (categories && categories.length > 0) {
-      const usedCategoryIds = new Set(products.map(p => p.category));
-      setFilteredCategories(
-        categories.filter(category => usedCategoryIds.has(category._id))
-      );
+  // Fetch products from the API
+  const fetchProducts = useCallback(async () => {
+    // Save current scroll position before loading
+    const scrollPosition = window.scrollY;
+
+    setIsLoading(true);
+    try {
+      // Prepare query parameters
+      const params = new URLSearchParams();
+
+      // Pagination
+      params.append('page', currentPageRef.current);
+      params.append('limit', limitRef.current);
+
+      // Search query
+      if (searchQueryRef.current) {
+        params.append('search', searchQueryRef.current);
+      }
+
+      // Metals
+      if (metalsRef.current.length > 0) {
+        params.append('metal', metalsRef.current.join(','));
+      }
+
+      // Metal Colors
+      if (metalColorsRef.current.length > 0) {
+        params.append('metalColor', metalColorsRef.current.join(','));
+      }
+
+      // Carat Range
+      if (caratRangeRef.current[0] > 0) {
+        params.append('minCarat', caratRangeRef.current[0]);
+      }
+      if (caratRangeRef.current[1] < maxCaratRef.current) {
+        params.append('maxCarat', caratRangeRef.current[1]);
+      }
+
+      // Price Range
+      if (priceRangeRef.current[0] > 0) {
+        params.append('minPrice', priceRangeRef.current[0]);
+      }
+      if (priceRangeRef.current[1] < maxPriceRef.current) {
+        params.append('maxPrice', priceRangeRef.current[1]);
+      }
+
+      // Sort
+      if (sortTypeRef.current !== 'relevant') {
+        params.append('sort', sortTypeRef.current);
+      }
+
+      const response = await axios.get(`${VITE_BACKEND_URL}/product/jewelery/earrings`, { params });
+
+      console.log("Earrings API response:", response.data);
+
+      // Update state with the response data
+      setProducts(response.data.products);
+      setFilterProducts(response.data.products);
+      setTotalCount(response.data.totalProductsCount);
+      setTotalPages(response.data.totalPages);
+      setCurrentPage(response.data.currentPage);
+
+      // Extract unique filter values from the products
+      extractUniqueFilterValues(response.data.products);
+    } catch (error) {
+      console.error("Error fetching earrings products:", error);
+      // Use the earrings from context as fallback if API call fails
+      if (earrings && earrings.length > 0) {
+        setProducts(earrings);
+        setFilterProducts(earrings);
+        setTotalPages(Math.ceil(earrings.length / limit));
+        setTotalCount(earrings.length);
+        extractUniqueFilterValues(earrings);
+      }
+    } finally {
+      setIsLoading(false);
+
+      // Restore scroll position after loading completes
+      setTimeout(() => {
+        window.scrollTo({
+          top: scrollPosition,
+          behavior: 'auto' // Use 'auto' instead of 'smooth' to prevent visible scrolling
+        });
+      }, 0);
     }
-  }, [categories, priceRange, caratRange]);
+  }, [extractUniqueFilterValues, earrings, limit]);
 
   // Create debounced fetch function for range inputs
   const debouncedFetch = useCallback(
@@ -262,25 +258,91 @@ const Earrings = () => {
     [fetchProducts]
   );
 
+  // Input change handlers for range inputs
+  const handlePriceMinChange = (value) => {
+    if (isNaN(value)) return;
+    // Calculate a safe maximum that ensures we don't exceed the max value
+    const safeMin = Math.min(value, priceRange[1] - 1);
+    const newRange = [safeMin, priceRange[1]];
+    setPriceRange(newRange);
+    priceRangeRef.current = newRange;
+    debouncedFetch();
+  };
+
+  const handlePriceMaxChange = (value) => {
+    if (isNaN(value)) return;
+    // Calculate a safe minimum that ensures we're at least 1 more than the min value
+    const newRange = [priceRange[0], Math.max(value, priceRange[0] + 1)];
+    setPriceRange(newRange);
+    priceRangeRef.current = newRange;
+    debouncedFetch();
+  };
+
+  const handleCaratMinChange = (value) => {
+    if (isNaN(value)) return;
+    // Calculate a safe maximum that ensures we don't exceed the max value
+    const safeMin = Math.min(value, caratRange[1] - 0.001);
+    const newRange = [parseFloat(safeMin.toFixed(2)), caratRange[1]];
+    setCaratRange(newRange);
+    caratRangeRef.current = newRange;
+    debouncedFetch();
+  };
+
+  const handleCaratMaxChange = (value) => {
+    if (isNaN(value)) return;
+    // Calculate a safe minimum that ensures we're at least 0.001 more than the min value
+    const newRange = [
+      caratRange[0],
+      parseFloat(Math.max(value, caratRange[0] + 0.001).toFixed(2))
+    ];
+    setCaratRange(newRange);
+    caratRangeRef.current = newRange;
+    debouncedFetch();
+  };
+
   // Initial fetch on component mount
   useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
+    // If earrings are already available in context, use them initially
+    if (earrings && earrings.length > 0) {
+      setProducts(earrings);
+      setFilterProducts(earrings);
+      setTotalPages(Math.ceil(earrings.length / limit));
+      setTotalCount(earrings.length);
+      extractUniqueFilterValues(earrings);
+      setIsLoading(false);
+    }
+
+    // Only fetch from API on first mount
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      fetchProducts();
+    }
+  }, [fetchProducts, earrings, limit]);
 
   // Toggle function for diamond property filters
-  const toggleFilter = (value, currentValues, setterFunction) => {
+  const toggleFilter = (value, currentValues, setterFunction, refValue) => {
     // Save scroll position
     const scrollPosition = window.scrollY;
 
     // Update filter values
-    if (currentValues.includes(value)) {
-      setterFunction((prev) => prev.filter((item) => item !== value));
-    } else {
-      setterFunction((prev) => [...prev, value]);
+    const newValues = currentValues.includes(value)
+      ? currentValues.filter((item) => item !== value)
+      : [...currentValues, value];
+
+    // Update state
+    setterFunction(newValues);
+
+    // Update ref directly for immediate use
+    if (refValue) {
+      refValue.current = newValues;
     }
 
     // Reset to page 1 when filtering
     setCurrentPage(1);
+    currentPageRef.current = 1;
+
+    // Fetch updated results
+    setTimeout(() => fetchProducts(), 100);
   };
 
   // Apply filters immediately when they change
@@ -294,7 +356,7 @@ const Earrings = () => {
 
       return () => clearTimeout(timer);
     }
-  }, [diamondTypes, metals, metalColors, selectedCategories, sortType]);
+  }, [diamondTypes, metals, metalColors, sortType]);
 
   // Update URL with current filter state for shareable links
   useEffect(() => {
@@ -304,10 +366,6 @@ const Earrings = () => {
       params.append('q', searchQuery);
     }
 
-    if (selectedCategories.length > 0) {
-      params.append('category', selectedCategories.join(','));
-    }
-
     // Only update URL if we have filter parameters
     if (params.toString()) {
       navigate(`${location.pathname}?${params.toString()}`, { replace: true });
@@ -315,50 +373,7 @@ const Earrings = () => {
       // Clear search parameters if we don't have any
       navigate(location.pathname, { replace: true });
     }
-  }, [searchQuery, selectedCategories, navigate, location.pathname]);
-
-  // Function to reset all filters
-  const resetFilters = () => {
-    setDiamondTypes([]);
-    setMetals([]);
-    setMetalColors([]);
-    setCaratRange([0, maxCarat]);
-    setPriceRange([0, maxPrice]);
-  };
-
-  const clearFilters = () => {
-    setSelectedCategories([]);
-    setDiamondTypes([]);
-    setMetals([]);
-    setMetalColors([]);
-    setCaratRange([0, maxCarat]);
-    setPriceRange([0, maxPrice]);
-    setSearchQuery("");
-    setSortType("relevant");
-    setCurrentPage(1);
-  };
-
-  // Search and filter handlers
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
-    setIsSearching(true);
-    // Implement debounce logic here if needed
-    setTimeout(() => {
-      setIsSearching(false);
-    }, 500);
-  };
-
-  const clearSearch = () => {
-    setSearchQuery("");
-    setIsSearching(false);
-  };
-
-  // Handle search submission
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    setCurrentPage(1); // Reset to page 1 when searching
-    fetchProducts();
-  };
+  }, [searchQuery, navigate, location.pathname]);
 
   // Handle page change
   const handlePageChange = (newPage) => {
@@ -367,6 +382,7 @@ const Earrings = () => {
 
     // Update page number
     setCurrentPage(newPage);
+    currentPageRef.current = newPage;
 
     // Fetch new data
     fetchProducts().then(() => {
@@ -382,6 +398,77 @@ const Earrings = () => {
         });
       }
     });
+  };
+
+  // Handle search submission
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    setCurrentPage(1); // Reset to page 1 when searching
+    currentPageRef.current = 1;
+    fetchProducts();
+  };
+
+  // Clear all filters and reload results
+  const clearFilters = () => {
+    setMetals([]);
+    setMetalColors([]);
+    setCaratRange([0, maxCarat]);
+    setPriceRange([0, maxPrice]);
+    setSearchQuery("");
+    setSortType("relevant");
+    setCurrentPage(1);
+
+    // Update refs immediately to avoid stale data
+    metalsRef.current = [];
+    metalColorsRef.current = [];
+    caratRangeRef.current = [0, maxCarat];
+    priceRangeRef.current = [0, maxPrice];
+    searchQueryRef.current = "";
+    sortTypeRef.current = "relevant";
+    currentPageRef.current = 1;
+
+    // Use timeout to ensure state updates have propagated
+    setTimeout(() => fetchProducts(), 100);
+  };
+
+  // Function to reset all filters
+  const resetFilters = () => {
+    setMetals([]);
+    setMetalColors([]);
+    setCaratRange([0, maxCarat]);
+    setPriceRange([0, maxPrice]);
+
+    // Update refs immediately
+    metalsRef.current = [];
+    metalColorsRef.current = [];
+    caratRangeRef.current = [0, maxCarat];
+    priceRangeRef.current = [0, maxPrice];
+
+    // Fetch updated results
+    setTimeout(() => fetchProducts(), 100);
+  };
+
+  // Search handler
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+    searchQueryRef.current = e.target.value;
+    setIsSearching(true);
+    // Implement debounce logic here if needed
+    setTimeout(() => {
+      setIsSearching(false);
+    }, 500);
+  };
+
+  // Clear search function
+  const clearSearch = () => {
+    setSearchQuery("");
+    searchQueryRef.current = "";
+    setIsSearching(false);
+
+    // If search was active, reload results
+    if (searchQuery) {
+      setTimeout(() => fetchProducts(), 100);
+    }
   };
 
   // Add CSS for range sliders
@@ -584,31 +671,6 @@ const Earrings = () => {
             </h2>
 
             <div className="flex flex-col">
-              {/* Diamond Type Filter */}
-              {uniqueDiamondTypes.length > 0 && (
-                <div className="w-full mb-8">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">
-                    Diamond Type
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {uniqueDiamondTypes.map((type) => (
-                      <button
-                        key={type}
-                        onClick={() =>
-                          toggleFilter(type, diamondTypes, setDiamondTypes)
-                        }
-                        className={`px-3 py-1 text-xs rounded-full ${diamondTypes.includes(type)
-                          ? "bg-gray-900 text-white shadow-md"
-                          : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                          }`}
-                      >
-                        {type}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               {/* Metal Filter */}
               {uniqueMetals.length > 0 && (
                 <div className="w-full mb-8">
@@ -619,7 +681,9 @@ const Earrings = () => {
                     {uniqueMetals.map((metal) => (
                       <button
                         key={metal}
-                        onClick={() => toggleFilter(metal, metals, setMetals)}
+                        onClick={(e) =>
+                          toggleFilter(metal, metals, setMetals, metalsRef)
+                        }
                         className={`px-3 py-1 text-xs rounded-full ${metals.includes(metal)
                           ? "bg-gray-900 text-white shadow-md"
                           : "bg-gray-100 text-gray-800 hover:bg-gray-200"
@@ -642,8 +706,8 @@ const Earrings = () => {
                     {uniqueMetalColors.map((color) => (
                       <button
                         key={color}
-                        onClick={() =>
-                          toggleFilter(color, metalColors, setMetalColors)
+                        onClick={(e) =>
+                          toggleFilter(color, metalColors, setMetalColors, metalColorsRef)
                         }
                         className={`px-3 py-1 text-xs rounded-full ${metalColors.includes(color)
                           ? "bg-gray-900 text-white shadow-md"
@@ -656,67 +720,6 @@ const Earrings = () => {
                   </div>
                 </div>
               )}
-
-              {/* Color Filter */}
-              <div className="w-full mb-8">
-                <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center justify-between">
-                  <span>Color</span>
-                </h3>
-                {/* Regular Colors */}
-                <div className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">Regular Colors</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {colorOptions.map((color) => (
-                      <button
-                        key={color}
-                        onClick={() => toggleFilter(color, diamondTypes, setDiamondTypes)}
-                        className={`px-3 py-1 text-xs rounded-full ${diamondTypes.includes(color)
-                          ? "bg-gray-900 text-white shadow-md"
-                          : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                          }`}
-                      >
-                        {color}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                {/* Fancy Colors */}
-                <div className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">Fancy Colors</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {fancyColorOptions.map((color) => (
-                      <button
-                        key={color}
-                        onClick={() => toggleFilter(color, diamondTypes, setDiamondTypes)}
-                        className={`px-3 py-1 text-xs rounded-full ${diamondTypes.includes(color)
-                          ? "bg-gray-900 text-white shadow-md"
-                          : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                          }`}
-                      >
-                        {color}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                {/* Fancy Intensities */}
-                <div className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">Fancy Intensities</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {fancyIntensityOptions.map((intensity) => (
-                      <button
-                        key={intensity}
-                        onClick={() => toggleFilter(intensity, diamondTypes, setDiamondTypes)}
-                        className={`px-3 py-1 text-xs rounded-full ${diamondTypes.includes(intensity)
-                          ? "bg-gray-900 text-white shadow-md"
-                          : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                          }`}
-                      >
-                        {intensity}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
 
               {/* 2x2 Grid for Price/Carat */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-4">
@@ -736,13 +739,7 @@ const Earrings = () => {
                           min={0}
                           max={maxPrice}
                           value={priceRange[0]}
-                          onChange={(e) => {
-                            const value = parseInt(e.target.value);
-                            if (isNaN(value)) return;
-                            // Calculate a safe maximum that ensures we don't exceed the max value
-                            const safeMax = Math.min(value, priceRange[1] - 1);
-                            setPriceRange([safeMax, priceRange[1]]);
-                          }}
+                          onChange={(e) => handlePriceMinChange(parseInt(e.target.value))}
                           className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
                         />
                       </div>
@@ -758,15 +755,7 @@ const Earrings = () => {
                           min={0}
                           max={maxPrice}
                           value={priceRange[1]}
-                          onChange={(e) => {
-                            const value = parseInt(e.target.value);
-                            if (isNaN(value)) return;
-                            // Calculate a safe minimum that ensures we're at least 1 more than the min value
-                            setPriceRange([
-                              priceRange[0],
-                              Math.max(value, priceRange[0] + 1),
-                            ]);
-                          }}
+                          onChange={(e) => handlePriceMaxChange(parseInt(e.target.value))}
                           className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
                         />
                       </div>
@@ -787,19 +776,7 @@ const Earrings = () => {
                         max={maxCarat}
                         step="0.01"
                         value={caratRange[0]}
-                        onChange={(e) => {
-                          const value = parseFloat(e.target.value);
-                          if (isNaN(value)) return;
-                          // Calculate a safe maximum that ensures we don't exceed the max value
-                          const safeMax = Math.min(
-                            value,
-                            caratRange[1] - 0.001
-                          );
-                          setCaratRange([
-                            parseFloat(safeMax.toFixed(2)),
-                            caratRange[1],
-                          ]);
-                        }}
+                        onChange={(e) => handleCaratMinChange(parseFloat(e.target.value))}
                         className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                       />
                     </div>
@@ -811,17 +788,7 @@ const Earrings = () => {
                         max={maxCarat}
                         step="0.01"
                         value={caratRange[1]}
-                        onChange={(e) => {
-                          const value = parseFloat(e.target.value);
-                          if (isNaN(value)) return;
-                          // Calculate a safe minimum that ensures we're at least 0.001 more than the min value
-                          setCaratRange([
-                            caratRange[0],
-                            parseFloat(
-                              Math.max(value, caratRange[0] + 0.001).toFixed(2)
-                            ),
-                          ]);
-                        }}
+                        onChange={(e) => handleCaratMaxChange(parseFloat(e.target.value))}
                         className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                       />
                     </div>
@@ -831,7 +798,6 @@ const Earrings = () => {
             </div>
           </div>
 
-          {/* SECTION 2 & 3: Main Content Area with Left Sidebar and Product Grid */}
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Mobile Filter Button - Only show on mobile */}
             <div className="lg:hidden mb-4">
@@ -869,34 +835,6 @@ const Earrings = () => {
 
                     {/* Mobile Quick Filters Section */}
                     <div className="mb-5">
-                      {/* Diamond Type Filter */}
-                      {uniqueDiamondTypes.length > 0 && (
-                        <div className="mb-6">
-                          <h3 className="text-base font-medium text-gray-900 mb-3">
-                            Diamond Type
-                          </h3>
-                          <div className="flex flex-wrap gap-2">
-                            {uniqueDiamondTypes.map((type) => (
-                              <button
-                                key={type}
-                                onClick={() =>
-                                  toggleFilter(
-                                    type,
-                                    diamondTypes,
-                                    setDiamondTypes
-                                  )
-                                }
-                                className={`px-3 py-1 text-xs rounded-full ${diamondTypes.includes(type)
-                                  ? "bg-gray-900 text-white"
-                                  : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                                  }`}
-                              >
-                                {type}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
 
                       {/* Metal Filter */}
                       {uniqueMetals.length > 0 && (
@@ -908,8 +846,8 @@ const Earrings = () => {
                             {uniqueMetals.map((metal) => (
                               <button
                                 key={metal}
-                                onClick={() =>
-                                  toggleFilter(metal, metals, setMetals)
+                                onClick={(e) =>
+                                  toggleFilter(metal, metals, setMetals, metalsRef)
                                 }
                                 className={`px-3 py-1 text-xs rounded-full ${metals.includes(metal)
                                   ? "bg-gray-900 text-white"
@@ -933,12 +871,8 @@ const Earrings = () => {
                             {uniqueMetalColors.map((color) => (
                               <button
                                 key={color}
-                                onClick={() =>
-                                  toggleFilter(
-                                    color,
-                                    metalColors,
-                                    setMetalColors
-                                  )
+                                onClick={(e) =>
+                                  toggleFilter(color, metalColors, setMetalColors, metalColorsRef)
                                 }
                                 className={`px-3 py-1 text-xs rounded-full ${metalColors.includes(color)
                                   ? "bg-gray-900 text-white"
@@ -951,69 +885,6 @@ const Earrings = () => {
                           </div>
                         </div>
                       )}
-
-                      {/* Color Filter */}
-                      <div className="mb-6">
-                        <h3 className="text-base font-medium text-gray-900 mb-3">
-                          Color
-                        </h3>
-                        <div className="flex flex-wrap gap-2">
-                          {colorOptions.map((color) => (
-                            <button
-                              key={color}
-                              onClick={() => toggleFilter(color, diamondTypes, setDiamondTypes)}
-                              className={`px-3 py-1 text-xs rounded-full ${diamondTypes.includes(color)
-                                ? "bg-gray-900 text-white shadow-md"
-                                : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                                }`}
-                            >
-                              {color}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Fancy Colors */}
-                      <div className="mb-6">
-                        <h3 className="text-base font-medium text-gray-900 mb-3">
-                          Fancy Colors
-                        </h3>
-                        <div className="flex flex-wrap gap-2">
-                          {fancyColorOptions.map((color) => (
-                            <button
-                              key={color}
-                              onClick={() => toggleFilter(color, diamondTypes, setDiamondTypes)}
-                              className={`px-3 py-1 text-xs rounded-full ${diamondTypes.includes(color)
-                                ? "bg-gray-900 text-white shadow-md"
-                                : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                                }`}
-                            >
-                              {color}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Fancy Intensities */}
-                      <div className="mb-6">
-                        <h3 className="text-base font-medium text-gray-900 mb-3">
-                          Fancy Intensities
-                        </h3>
-                        <div className="flex flex-wrap gap-2">
-                          {fancyIntensityOptions.map((intensity) => (
-                            <button
-                              key={intensity}
-                              onClick={() => toggleFilter(intensity, diamondTypes, setDiamondTypes)}
-                              className={`px-3 py-1 text-xs rounded-full ${diamondTypes.includes(intensity)
-                                ? "bg-gray-900 text-white shadow-md"
-                                : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                                }`}
-                            >
-                              {intensity}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
 
                       {/* 2x2 Grid for Other Quick Filters */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1033,16 +904,7 @@ const Earrings = () => {
                                   min={0}
                                   max={maxPrice}
                                   value={priceRange[0]}
-                                  onChange={(e) => {
-                                    const value = parseInt(e.target.value);
-                                    if (isNaN(value)) return;
-                                    // Calculate a safe maximum that ensures we don't exceed the max value
-                                    const safeMax = Math.min(
-                                      value,
-                                      priceRange[1] - 1
-                                    );
-                                    setPriceRange([safeMax, priceRange[1]]);
-                                  }}
+                                  onChange={(e) => handlePriceMinChange(parseInt(e.target.value))}
                                   className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
                                 />
                               </div>
@@ -1060,15 +922,7 @@ const Earrings = () => {
                                   min={0}
                                   max={maxPrice}
                                   value={priceRange[1]}
-                                  onChange={(e) => {
-                                    const value = parseInt(e.target.value);
-                                    if (isNaN(value)) return;
-                                    // Calculate a safe minimum that ensures we're at least 1 more than the min value
-                                    setPriceRange([
-                                      priceRange[0],
-                                      Math.max(value, priceRange[0] + 1),
-                                    ]);
-                                  }}
+                                  onChange={(e) => handlePriceMaxChange(parseInt(e.target.value))}
                                   className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
                                 />
                               </div>
@@ -1089,19 +943,7 @@ const Earrings = () => {
                                 max={maxCarat}
                                 step="0.01"
                                 value={caratRange[0]}
-                                onChange={(e) => {
-                                  const value = parseFloat(e.target.value);
-                                  if (isNaN(value)) return;
-                                  // Calculate a safe maximum that ensures we don't exceed the max value
-                                  const safeMax = Math.min(
-                                    value,
-                                    caratRange[1] - 0.001
-                                  );
-                                  setCaratRange([
-                                    parseFloat(safeMax.toFixed(2)),
-                                    caratRange[1],
-                                  ]);
-                                }}
+                                onChange={(e) => handleCaratMinChange(parseFloat(e.target.value))}
                                 className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                               />
                             </div>
@@ -1115,20 +957,7 @@ const Earrings = () => {
                                 max={maxCarat}
                                 step="0.01"
                                 value={caratRange[1]}
-                                onChange={(e) => {
-                                  const value = parseFloat(e.target.value);
-                                  if (isNaN(value)) return;
-                                  // Calculate a safe minimum that ensures we're at least 0.001 more than the min value
-                                  setCaratRange([
-                                    caratRange[0],
-                                    parseFloat(
-                                      Math.max(
-                                        value,
-                                        caratRange[0] + 0.001
-                                      ).toFixed(2)
-                                    ),
-                                  ]);
-                                }}
+                                onChange={(e) => handleCaratMaxChange(parseFloat(e.target.value))}
                                 className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                               />
                             </div>
@@ -1139,7 +968,10 @@ const Earrings = () => {
 
                     {/* Clear All Filters Button */}
                     <button
-                      onClick={clearFilters}
+                      onClick={() => {
+                        clearFilters();
+                        setTimeout(() => fetchProducts(), 100);
+                      }}
                       className="w-full py-2 bg-black text-white rounded-lg text-sm font-medium"
                     >
                       Clear All Filters
@@ -1148,242 +980,203 @@ const Earrings = () => {
                 </motion.div>
               )}
             </AnimatePresence>
+          </div>
 
-            {/* SECTION 3: Products Grid - Now Full Width */}
-            <div className="w-full">
-              {/* Product Count and Active Filters */}
-              <div className="mb-6 flex flex-wrap justify-between items-center">
-                <h2 className="text-xl font-semibold text-gray-900">
-                  {isLoading
-                    ? "Loading products..."
-                    : `${filterProducts.length} products`}
-                </h2>
+          {/* SECTION 3: Products Grid - Full Width */}
+          <div className="w-full">
+            {/* Product Count and Active Filters */}
+            <div className="mb-6 flex flex-wrap justify-between items-center">
+              <h2 className="text-xl font-semibold text-gray-900">
+                {isLoading
+                  ? "Loading products..."
+                  : `${filterProducts.length} products`}
+              </h2>
 
-                {/* Active Filters */}
-                <div className="flex flex-wrap gap-2 mt-2 sm:mt-0">
-                  {selectedCategories.map((catId) => {
-                    const categoryObj = filteredCategories.find(
-                      (cat) => cat._id === catId
-                    );
-                    return (
-                      categoryObj && (
-                        <div
-                          key={`cat-${catId}`}
-                          className="flex items-center bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm"
-                        >
-                          <span className="mr-1">
-                            Category: {categoryObj.name}
-                          </span>
-                          <button
-                            onClick={() =>
-                              setSelectedCategories(
-                                selectedCategories.filter((c) => c !== catId)
-                              )
-                            }
-                            className="text-gray-500 hover:text-gray-700"
-                          >
-                            <FaTimes className="h-3 w-3" />
-                          </button>
-                        </div>
-                      )
-                    );
-                  })}
-                  {diamondTypes.length > 0 && (
-                    <div className="flex items-center bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm">
-                      <span className="mr-1">
-                        Diamond Type{diamondTypes.length > 1 ? "s" : ""}:{" "}
-                        {diamondTypes.length}
-                      </span>
-                      <button
-                        onClick={() => setDiamondTypes([])}
-                        className="text-gray-500 hover:text-gray-700"
-                      >
-                        <FaTimes className="h-3 w-3" />
-                      </button>
-                    </div>
-                  )}
-                  {metals.length > 0 && (
-                    <div className="flex items-center bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm">
-                      <span className="mr-1">
-                        Metal{metals.length > 1 ? "s" : ""}: {metals.length}
-                      </span>
-                      <button
-                        onClick={() => setMetals([])}
-                        className="text-gray-500 hover:text-gray-700"
-                      >
-                        <FaTimes className="h-3 w-3" />
-                      </button>
-                    </div>
-                  )}
-                  {metalColors.length > 0 && (
-                    <div className="flex items-center bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm">
-                      <span className="mr-1">
-                        Metal Color{metalColors.length > 1 ? "s" : ""}:{" "}
-                        {metalColors.length}
-                      </span>
-                      <button
-                        onClick={() => setMetalColors([])}
-                        className="text-gray-500 hover:text-gray-700"
-                      >
-                        <FaTimes className="h-3 w-3" />
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Sort Options - Added as dropdown in product section */}
-              <div className="mb-6">
-                <div className="relative">
-                  <button
-                    onClick={() => setShowSortOptions(!showSortOptions)}
-                    className="flex items-center space-x-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-                  >
-                    <FaSort className="h-4 w-4" />
-                    <span>
-                      Sort:{" "}
-                      {sortOptions.find((opt) => opt.value === sortType)?.label}
+              {/* Active Filters */}
+              <div className="flex flex-wrap gap-2 mt-2 sm:mt-0">
+                {metals.length > 0 && (
+                  <div className="flex items-center bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm">
+                    <span className="mr-1">
+                      Metal{metals.length > 1 ? "s" : ""}: {metals.length}
                     </span>
-                    <FaChevronDown className="h-3 w-3 ml-2" />
-                  </button>
-
-                  {showSortOptions && (
-                    <div className="absolute z-10 mt-1 w-auto bg-white border border-gray-200 rounded-lg shadow-lg">
-                      {sortOptions.map((option) => (
-                        <button
-                          key={option.value}
-                          onClick={() => {
-                            setSortType(option.value);
-                            setShowSortOptions(false);
-                          }}
-                          className={`block w-full text-left px-4 py-2 hover:bg-gray-100 ${sortType === option.value
-                            ? "bg-gray-100 font-medium"
-                            : ""
-                            }`}
-                        >
-                          {option.label}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                    <button
+                      onClick={() => setMetals([])}
+                      className="text-gray-500 hover:text-gray-700"
+                    >
+                      <FaTimes className="h-3 w-3" />
+                    </button>
+                  </div>
+                )}
+                {metalColors.length > 0 && (
+                  <div className="flex items-center bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm">
+                    <span className="mr-1">
+                      Metal Color{metalColors.length > 1 ? "s" : ""}:{" "}
+                      {metalColors.length}
+                    </span>
+                    <button
+                      onClick={() => setMetalColors([])}
+                      className="text-gray-500 hover:text-gray-700"
+                    >
+                      <FaTimes className="h-3 w-3" />
+                    </button>
+                  </div>
+                )}
               </div>
+            </div>
 
-              {/* Product Grid */}
-              {isLoading ? (
-                <div className="flex justify-center items-center h-64">
-                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
-                </div>
-              ) : filterProducts.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-64 text-center">
-                  <FaGem className="text-gray-300 text-5xl mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                    No products found
-                  </h3>
-                  <p className="text-gray-500 max-w-md mb-6">
-                    We couldn't find any products that match your criteria. Try
-                    adjusting your filters or search terms.
-                  </p>
+            {/* Sort Options - Added as dropdown in product section */}
+            <div className="mb-6">
+              <div className="relative">
+                <button
+                  onClick={() => setShowSortOptions(!showSortOptions)}
+                  className="flex items-center space-x-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                >
+                  <FaSort className="h-4 w-4" />
+                  <span>
+                    Sort:{" "}
+                    {sortOptions.find((opt) => opt.value === sortType)?.label}
+                  </span>
+                  <FaChevronDown className="h-3 w-3 ml-2" />
+                </button>
+
+                {showSortOptions && (
+                  <div className="absolute z-10 mt-1 w-auto bg-white border border-gray-200 rounded-lg shadow-lg">
+                    {sortOptions.map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => {
+                          setSortType(option.value);
+                          setShowSortOptions(false);
+                          setCurrentPage(1);
+                          setTimeout(() => fetchProducts(), 100);
+                        }}
+                        className={`block w-full text-left px-4 py-2 hover:bg-gray-100 ${sortType === option.value
+                          ? "bg-gray-100 font-medium"
+                          : ""
+                          }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Product Grid */}
+            {isLoading ? (
+              <div className="flex justify-center items-center h-64">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+              </div>
+            ) : filterProducts.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-64 text-center">
+                <FaGem className="text-gray-300 text-5xl mb-4" />
+                <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                  No products found
+                </h3>
+                <p className="text-gray-500 max-w-md mb-6">
+                  We couldn't find any products that match your criteria. Try
+                  adjusting your filters or search terms.
+                </p>
+                <button
+                  onClick={() => {
+                    clearFilters();
+                    setTimeout(() => fetchProducts(), 100);
+                  }}
+                  className="px-6 py-2 bg-gray-900 text-white rounded-lg"
+                >
+                  Clear All Filters
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 products-grid-section">
+                <AnimatePresence>
+                  {filterProducts.map((earring, index) => (
+                    <motion.div
+                      key={earring._id || index}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <GalleryItem
+                        item={earring}
+                        price={true}
+                        index={index}
+                      />
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
+            )}
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="mt-8 flex justify-center">
+                <nav className="flex items-center">
                   <button
                     onClick={() => {
-                      clearFilters();
-                      setTimeout(() => fetchProducts(), 100);
+                      if (currentPage > 1) {
+                        handlePageChange(currentPage - 1);
+                      }
                     }}
-                    className="px-6 py-2 bg-gray-900 text-white rounded-lg"
+                    disabled={currentPage === 1}
+                    className={`p-2 rounded-md ${currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'hover:bg-gray-100 text-gray-500'}`}
                   >
-                    Clear All Filters
+                    <FaChevronLeft className="h-5 w-5" />
                   </button>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 products-grid-section">
-                  <AnimatePresence>
-                    {(filterProducts.length > 0 ? filterProducts : products).map((earring, index) => (
-                      <motion.div
-                        key={earring._id}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <GalleryItem
-                          item={earring}
-                          price={true}
-                          index={index}
-                        />
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
-                </div>
-              )}
 
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="mt-8 flex justify-center">
-                  <nav className="flex items-center">
-                    <button
-                      onClick={() => {
-                        if (currentPage > 1) {
-                          handlePageChange(currentPage - 1);
-                        }
-                      }}
-                      disabled={currentPage === 1}
-                      className={`p-2 rounded-md ${currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'hover:bg-gray-100 text-gray-500'}`}
-                    >
-                      <FaChevronLeft className="h-5 w-5" />
-                    </button>
+                  {/* Generate page numbers */}
+                  {[...Array(totalPages)].map((_, index) => {
+                    const pageNum = index + 1;
 
-                    {/* Generate page numbers */}
-                    {[...Array(totalPages)].map((_, index) => {
-                      const pageNum = index + 1;
+                    // Only show a limited number of pages to avoid clutter
+                    if (
+                      pageNum === 1 ||
+                      pageNum === totalPages ||
+                      (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
+                    ) {
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => {
+                            handlePageChange(pageNum);
+                          }}
+                          className={`mx-1 px-4 py-2 rounded-md ${currentPage === pageNum
+                            ? "bg-gray-900 text-white"
+                            : "hover:bg-gray-100"
+                            }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    }
 
-                      // Only show a limited number of pages to avoid clutter
-                      if (
-                        pageNum === 1 ||
-                        pageNum === totalPages ||
-                        (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
-                      ) {
-                        return (
-                          <button
-                            key={pageNum}
-                            onClick={() => {
-                              handlePageChange(pageNum);
-                            }}
-                            className={`mx-1 px-4 py-2 rounded-md ${currentPage === pageNum
-                              ? "bg-gray-900 text-white"
-                              : "hover:bg-gray-100"
-                              }`}
-                          >
-                            {pageNum}
-                          </button>
-                        );
+                    // Add ellipsis for skipped pages
+                    if (
+                      (pageNum === currentPage - 2 && pageNum > 1) ||
+                      (pageNum === currentPage + 2 && pageNum < totalPages)
+                    ) {
+                      return <span key={`ellipsis-${pageNum}`} className="mx-1">...</span>;
+                    }
+
+                    return null;
+                  })}
+
+                  <button
+                    onClick={() => {
+                      if (currentPage < totalPages) {
+                        handlePageChange(currentPage + 1);
                       }
-
-                      // Add ellipsis for skipped pages
-                      if (
-                        (pageNum === currentPage - 2 && pageNum > 1) ||
-                        (pageNum === currentPage + 2 && pageNum < totalPages)
-                      ) {
-                        return <span key={`ellipsis-${pageNum}`} className="mx-1">...</span>;
-                      }
-
-                      return null;
-                    })}
-
-                    <button
-                      onClick={() => {
-                        if (currentPage < totalPages) {
-                          handlePageChange(currentPage + 1);
-                        }
-                      }}
-                      disabled={currentPage === totalPages}
-                      className={`p-2 rounded-md ${currentPage === totalPages ? 'text-gray-300 cursor-not-allowed' : 'hover:bg-gray-100 text-gray-500'}`}
-                    >
-                      <FaChevronRight className="h-5 w-5" />
-                    </button>
-                  </nav>
-                </div>
-              )}
-            </div>
+                    }}
+                    disabled={currentPage === totalPages}
+                    className={`p-2 rounded-md ${currentPage === totalPages ? 'text-gray-300 cursor-not-allowed' : 'hover:bg-gray-100 text-gray-500'}`}
+                  >
+                    <FaChevronRight className="h-5 w-5" />
+                  </button>
+                </nav>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -37,15 +37,28 @@ export const getImageUrl = (imageUrl, fallbackUrl = DEFAULT_FALLBACK_IMAGE) => {
 
   // If the URL already includes /uploads/, assume it's a complete path
   if (imageUrl.startsWith("/uploads/")) {
-    return `${BACKEND_URL_WITHOUT_API}${imageUrl}`;
+    // Ensure we don't have double slashes by removing trailing slash from base URL if needed
+    const baseUrl = BACKEND_URL_WITHOUT_API.endsWith("/") 
+      ? BACKEND_URL_WITHOUT_API.slice(0, -1) 
+      : BACKEND_URL_WITHOUT_API;
+    return `${baseUrl}${imageUrl}`;
   }
 
   // For uploaded files that just have the filename
   if (!imageUrl.startsWith("/")) {
-    return `${BACKEND_URL_WITHOUT_API}/uploads/product/${imageUrl}`;
+    // Ensure we have a proper path separator
+    const baseUrl = BACKEND_URL_WITHOUT_API.endsWith("/") 
+      ? BACKEND_URL_WITHOUT_API 
+      : `${BACKEND_URL_WITHOUT_API}/`;
+    return `${baseUrl}uploads/product/${imageUrl}`;
   }
 
   // Otherwise, it's a local path, return as is (likely a static asset)
+  console.log("local path: ", imageUrl);
+  console.log("BACKEND_URL_WITHOUT_API: ", BACKEND_URL_WITHOUT_API);
+  console.log("BACKEND_URL_WITHOUT_API/uploads/product/: ", `${BACKEND_URL_WITHOUT_API}/uploads/product/`);
+  
+
   return imageUrl;
 };
 

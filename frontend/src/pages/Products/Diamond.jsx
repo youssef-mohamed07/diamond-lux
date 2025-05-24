@@ -3,6 +3,7 @@ import BannerSection from "../../components/Products/BannerSection";
 import QuickFilters from "../../components/Products/Diamond/QuickFilters";
 import SearchBar from "../../components/Products/SearchBar";
 import SubBannerSection from "../../components/Products/SubBannerSection";
+import { debounce } from "../../../utils/debounce";
 import { useEffect, useState, useCallback } from "react";
 import MobileFilterPanel from "../../components/Products/Diamond/MobileFilterPanel";
 import ProductsPanel from "../../components/Products/ProductsPanel";
@@ -585,51 +586,46 @@ const Diamond = () => {
     updateFilters(updatedFilters);
   };
 
-  const handleSortChange = (newSortValue) => {
-    updateSortOption(newSortValue);
-  };
+const handleSortChange = (newSortValue) => {
+updateSortOption(newSortValue);
+};
 
-  const handleClearFilters = () => {
-    // Clear search term state
-    setSearchTerm("");
+const handleClearFilters = () => {
+clearFilters();
+// Force refresh the pagination component
+setPaginationKey((prevKey) => prevKey + 1);
+// Scroll to top of the page for better UX
+};
 
-    // Show loading state immediately
-    setIsProductsLoading(true);
-
-    // Force delay to ensure state is updated before clearing filters
-    setTimeout(() => {
-      // Call the clearFilters function from the hook
-      clearFilters();
-
-      // Force refresh the pagination component
-      setPaginationKey((prevKey) => prevKey + 1);
-
-      // Scroll to top of the page for better UX
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }, 100); // Increased timeout for better reliability
-  };
-
-  const handleSearch = (term) => {
+// Debounced search handler
+const debouncedSearch = useCallback(
+  debounce((term) => {
     setSearchTerm(term);
     setError(null);
-    const updatedFilters = { ...filters, searchTerm: term };
+  }, 300),
+  []
+);
 
-    if (!term) {
-      delete updatedFilters.searchTerm;
-    }
+const handleSearch = (term) => {
+  debouncedSearch(term);
+  const updatedFilters = { ...filters, searchTerm: term };
 
-    updateFilters(updatedFilters);
-    changePage(1);
+  if (!term) {
+    delete updatedFilters.searchTerm;
+  }
 
-    const url = new URL(window.location);
-    if (term) {
-      url.searchParams.set("search", term);
-    } else {
-      url.searchParams.delete("search");
-    }
-    url.searchParams.set("page", "1");
-    window.history.pushState({}, "", url);
-  };
+  updateFilters(updatedFilters);
+  changePage(1);
+
+  const url = new URL(window.location);
+  if (term) {
+    url.searchParams.set("search", term);
+  } else {
+    url.searchParams.delete("search");
+  }
+  url.searchParams.set("page", "1");
+  window.history.pushState({}, "", url);
+};
 
   // Handle diamond type change
   const handleDiamondTypeChange = (type) => {
@@ -818,7 +814,7 @@ const Diamond = () => {
 
   const lengthRange = [filters.minLength || 0, filters.maxLength || 30];
 
-  const widthRange = [filters.minWidth || 0, filters.maxWidth || 30];
+  const widthRange = [filters.minWidth || 0, filters.maxWidth || 30];  
 
   return (
     <div className="bg-white min-h-screen">
@@ -1080,16 +1076,23 @@ const Diamond = () => {
               )}
 
               {/* Pagination */}
+              {console.log('Pagination Debug:', { 
+                isProductsLoading, 
+                diamondsLength: diamonds?.length || 0,
+                totalPages: pagination?.totalPages || 0,
+                currentPage: pagination?.currentPage || 0,
+                totalCount: pagination?.totalCount || 0 
+              })}
               {!isProductsLoading &&
                 Array.isArray(diamonds) &&
                 diamonds.length > 0 &&
                 pagination.totalPages > 0 && (
                   <div className="mt-8">
                     <Pagination
-                      key={paginationKey}
                       currentPage={pagination.currentPage}
                       totalPages={pagination.totalPages}
                       onPageChange={handlePageChange}
+                      key={paginationKey}
                       loading={isProductsLoading}
                     />
                   </div>

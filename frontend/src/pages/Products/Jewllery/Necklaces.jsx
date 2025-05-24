@@ -10,7 +10,6 @@ import { ShopContext } from "../../../context/ShopContext.jsx";
 import Title from "../../../components/Title";
 import GalleryItem from "../../../components/Home/GalleryItem";
 import { assets } from "../../../assets/assets";
-import { useCategories } from "../../../../hooks/useCategories.js";
 import NewsletterBox from "../../../components/NewsletterBox";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -28,33 +27,20 @@ import {
 import { Link } from "react-router-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { debounce } from "lodash";
+import { debounce } from "../../../../utils/debounce";
 
 const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const backendURL_WITHOUT_API = VITE_BACKEND_URL.replace("/api", "");
-
-const colorOptions = ["D", "E", "F", "G", "H", "I", "J", "K", "L", "M"];
-const fancyColorOptions = [
-  "Yellow", "Orange", "Pink", "Blue", "Green", "Purple", "Brown", "Gray", "Black"
-];
-const fancyIntensityOptions = [
-  "Fancy Light", "Fancy Very Light", "Fancy", "Fancy Intense", "Fancy Deep", "Fancy Vivid", "Fancy Dark"
-];
 
 const Necklaces = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const query = searchParams.get("q") || "";
-  const categoryParam = searchParams.get("category") || "";
 
   // Data store - Get necklaces from ShopContext
   const { necklaces } = useContext(ShopContext);
 
-  // Core filtering states
-  const [selectedCategories, setSelectedCategories] = useState(
-    categoryParam ? [categoryParam] : []
-  );
   const [searchQuery, setSearchQuery] = useState(query || "");
   const [products, setProducts] = useState([]);
   const [filterProducts, setFilterProducts] = useState([]);
@@ -87,13 +73,8 @@ const Necklaces = () => {
   const [maxPrice, setMaxPrice] = useState(100000);
 
   // Unique values for filter options
-  const [uniqueDiamondTypes, setUniqueDiamondTypes] = useState([]);
   const [uniqueMetals, setUniqueMetals] = useState([]);
   const [uniqueMetalColors, setUniqueMetalColors] = useState([]);
-
-  const categories = useCategories();
-  // Filter categories to only include those with associated products
-  const [filteredCategories, setFilteredCategories] = useState([]);
 
   // Define sort options
   const sortOptions = [
@@ -109,8 +90,6 @@ const Necklaces = () => {
   const currentPageRef = useRef(currentPage);
   const limitRef = useRef(limit);
   const searchQueryRef = useRef(searchQuery);
-  const selectedCategoriesRef = useRef(selectedCategories);
-  const diamondTypesRef = useRef(diamondTypes);
   const metalsRef = useRef(metals);
   const metalColorsRef = useRef(metalColors);
   const caratRangeRef = useRef(caratRange);
@@ -124,8 +103,6 @@ const Necklaces = () => {
     currentPageRef.current = currentPage;
     limitRef.current = limit;
     searchQueryRef.current = searchQuery;
-    selectedCategoriesRef.current = selectedCategories;
-    diamondTypesRef.current = diamondTypes;
     metalsRef.current = metals;
     metalColorsRef.current = metalColors;
     caratRangeRef.current = caratRange;
@@ -137,8 +114,6 @@ const Necklaces = () => {
     currentPage,
     limit,
     searchQuery,
-    selectedCategories,
-    diamondTypes,
     metals,
     metalColors,
     caratRange,
@@ -151,13 +126,6 @@ const Necklaces = () => {
   // Function to extract unique filter values from products
   const extractUniqueFilterValues = useCallback((products) => {
     if (!products || products.length === 0) return;
-
-    // Extract unique diamond types
-    const uniqueDiamondTypesSet = new Set();
-    products.forEach(product => {
-      if (product.diamondType) uniqueDiamondTypesSet.add(product.diamondType);
-    });
-    setUniqueDiamondTypes(Array.from(uniqueDiamondTypesSet));
 
     // Extract unique metals
     const uniqueMetalsSet = new Set();
@@ -194,15 +162,7 @@ const Necklaces = () => {
       setCaratRange([0, defaultMaxCarat]);
       caratRangeRef.current = [0, defaultMaxCarat];
     }
-
-    // Filter categories to only include those with associated products
-    if (categories && categories.length > 0) {
-      const usedCategoryIds = new Set(products.map(p => p.category));
-      setFilteredCategories(
-        categories.filter(category => usedCategoryIds.has(category._id))
-      );
-    }
-  }, [categories, priceRange, caratRange]);
+  }, [priceRange, caratRange]);
 
   // Fetch products from the API
   const fetchProducts = useCallback(async () => {
@@ -221,16 +181,6 @@ const Necklaces = () => {
       // Search query
       if (searchQueryRef.current) {
         params.append('search', searchQueryRef.current);
-      }
-
-      // Category
-      if (selectedCategoriesRef.current.length > 0) {
-        params.append('category', selectedCategoriesRef.current.join(','));
-      }
-
-      // Diamond Types
-      if (diamondTypesRef.current.length > 0) {
-        params.append('diamondType', diamondTypesRef.current.join(','));
       }
 
       // Metals
@@ -406,7 +356,7 @@ const Necklaces = () => {
 
       return () => clearTimeout(timer);
     }
-  }, [diamondTypes, metals, metalColors, selectedCategories, sortType]);
+  }, [diamondTypes, metals, metalColors, sortType]);
 
   // Update URL with current filter state for shareable links
   useEffect(() => {
@@ -416,10 +366,6 @@ const Necklaces = () => {
       params.append('q', searchQuery);
     }
 
-    if (selectedCategories.length > 0) {
-      params.append('category', selectedCategories.join(','));
-    }
-
     // Only update URL if we have filter parameters
     if (params.toString()) {
       navigate(`${location.pathname}?${params.toString()}`, { replace: true });
@@ -427,7 +373,7 @@ const Necklaces = () => {
       // Clear search parameters if we don't have any
       navigate(location.pathname, { replace: true });
     }
-  }, [searchQuery, selectedCategories, navigate, location.pathname]);
+  }, [searchQuery, navigate, location.pathname]);
 
   // Handle page change
   const handlePageChange = (newPage) => {
@@ -464,8 +410,6 @@ const Necklaces = () => {
 
   // Clear all filters and reload results
   const clearFilters = () => {
-    setSelectedCategories([]);
-    setDiamondTypes([]);
     setMetals([]);
     setMetalColors([]);
     setCaratRange([0, maxCarat]);
@@ -475,8 +419,6 @@ const Necklaces = () => {
     setCurrentPage(1);
 
     // Update refs immediately to avoid stale data
-    selectedCategoriesRef.current = [];
-    diamondTypesRef.current = [];
     metalsRef.current = [];
     metalColorsRef.current = [];
     caratRangeRef.current = [0, maxCarat];
@@ -491,14 +433,12 @@ const Necklaces = () => {
 
   // Function to reset all filters
   const resetFilters = () => {
-    setDiamondTypes([]);
     setMetals([]);
     setMetalColors([]);
     setCaratRange([0, maxCarat]);
     setPriceRange([0, maxPrice]);
 
     // Update refs immediately
-    diamondTypesRef.current = [];
     metalsRef.current = [];
     metalColorsRef.current = [];
     caratRangeRef.current = [0, maxCarat];
@@ -731,92 +671,6 @@ const Necklaces = () => {
             </h2>
 
             <div className="flex flex-col">
-              {/* Color Filter */}
-              <div className="w-full mb-8">
-                <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center justify-between">
-                  <span>Color</span>
-                </h3>
-                {/* Regular Colors */}
-                <div className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">Regular Colors</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {colorOptions.map((color) => (
-                      <button
-                        key={color}
-                        onClick={() => toggleFilter(color, diamondTypes, setDiamondTypes, diamondTypesRef)}
-                        className={`px-3 py-1 text-xs rounded-full ${diamondTypes.includes(color)
-                          ? "bg-gray-900 text-white shadow-md"
-                          : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                          }`}
-                      >
-                        {color}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                {/* Fancy Colors */}
-                <div className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">Fancy Colors</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {fancyColorOptions.map((color) => (
-                      <button
-                        key={color}
-                        onClick={() => toggleFilter(color, diamondTypes, setDiamondTypes, diamondTypesRef)}
-                        className={`px-3 py-1 text-xs rounded-full ${diamondTypes.includes(color)
-                          ? "bg-gray-900 text-white shadow-md"
-                          : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                          }`}
-                      >
-                        {color}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                {/* Fancy Intensities */}
-                <div className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">Fancy Intensities</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {fancyIntensityOptions.map((intensity) => (
-                      <button
-                        key={intensity}
-                        onClick={() => toggleFilter(intensity, diamondTypes, setDiamondTypes, diamondTypesRef)}
-                        className={`px-3 py-1 text-xs rounded-full ${diamondTypes.includes(intensity)
-                          ? "bg-gray-900 text-white shadow-md"
-                          : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                          }`}
-                      >
-                        {intensity}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Diamond Type Filter */}
-              {uniqueDiamondTypes.length > 0 && (
-                <div className="w-full mb-8">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">
-                    Diamond Type
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {uniqueDiamondTypes.map((type) => (
-                      <button
-                        key={type}
-                        onClick={(e) =>
-                          toggleFilter(type, diamondTypes, setDiamondTypes, diamondTypesRef)
-                        }
-                        className={`px-3 py-1 text-xs rounded-full ${diamondTypes.includes(type)
-                          ? "bg-gray-900 text-white shadow-md"
-                          : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                          }`}
-                      >
-                        {type}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               {/* Metal Filter */}
               {uniqueMetals.length > 0 && (
                 <div className="w-full mb-8">
@@ -981,51 +835,6 @@ const Necklaces = () => {
 
                     {/* Mobile Quick Filters Section */}
                     <div className="mb-5">
-                      {/* Color Filter */}
-                      <div className="mb-6">
-                        <h3 className="text-base font-medium text-gray-900 mb-3">
-                          Color
-                        </h3>
-                        <div className="flex flex-wrap gap-2">
-                          {colorOptions.map((color) => (
-                            <button
-                              key={color}
-                              onClick={(e) => toggleFilter(color, diamondTypes, setDiamondTypes, diamondTypesRef)}
-                              className={`px-3 py-1 text-xs rounded-full ${diamondTypes.includes(color)
-                                ? "bg-gray-900 text-white"
-                                : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                                }`}
-                            >
-                              {color}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Diamond Type Filter */}
-                      {uniqueDiamondTypes.length > 0 && (
-                        <div className="mb-6">
-                          <h3 className="text-base font-medium text-gray-900 mb-3">
-                            Diamond Type
-                          </h3>
-                          <div className="flex flex-wrap gap-2">
-                            {uniqueDiamondTypes.map((type) => (
-                              <button
-                                key={type}
-                                onClick={(e) =>
-                                  toggleFilter(type, diamondTypes, setDiamondTypes, diamondTypesRef)
-                                }
-                                className={`px-3 py-1 text-xs rounded-full ${diamondTypes.includes(type)
-                                  ? "bg-gray-900 text-white"
-                                  : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                                  }`}
-                              >
-                                {type}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
 
                       {/* Metal Filter */}
                       {uniqueMetals.length > 0 && (
@@ -1185,47 +994,6 @@ const Necklaces = () => {
 
               {/* Active Filters */}
               <div className="flex flex-wrap gap-2 mt-2 sm:mt-0">
-                {selectedCategories.map((catId) => {
-                  const categoryObj = filteredCategories.find(
-                    (cat) => cat._id === catId
-                  );
-                  return (
-                    categoryObj && (
-                      <div
-                        key={`cat-${catId}`}
-                        className="flex items-center bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm"
-                      >
-                        <span className="mr-1">
-                          Category: {categoryObj.name}
-                        </span>
-                        <button
-                          onClick={() =>
-                            setSelectedCategories(
-                              selectedCategories.filter((c) => c !== catId)
-                            )
-                          }
-                          className="text-gray-500 hover:text-gray-700"
-                        >
-                          <FaTimes className="h-3 w-3" />
-                        </button>
-                      </div>
-                    )
-                  );
-                })}
-                {diamondTypes.length > 0 && (
-                  <div className="flex items-center bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm">
-                    <span className="mr-1">
-                      Diamond Type{diamondTypes.length > 1 ? "s" : ""}:{" "}
-                      {diamondTypes.length}
-                    </span>
-                    <button
-                      onClick={() => setDiamondTypes([])}
-                      className="text-gray-500 hover:text-gray-700"
-                    >
-                      <FaTimes className="h-3 w-3" />
-                    </button>
-                  </div>
-                )}
                 {metals.length > 0 && (
                   <div className="flex items-center bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm">
                     <span className="mr-1">
@@ -1300,7 +1068,7 @@ const Necklaces = () => {
               <div className="flex justify-center items-center h-64">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
               </div>
-            ) : filterProducts.length === 0 && necklaces?.length === 0 ? (
+            ) : filterProducts.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-64 text-center">
                 <FaGem className="text-gray-300 text-5xl mb-4" />
                 <h3 className="text-xl font-semibold text-gray-700 mb-2">
@@ -1323,7 +1091,7 @@ const Necklaces = () => {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 products-grid-section">
                 <AnimatePresence>
-                  {(filterProducts.length > 0 ? filterProducts : necklaces).map((necklace, index) => (
+                  {filterProducts.map((necklace, index) => (
                     <motion.div
                       key={necklace._id || index}
                       initial={{ opacity: 0 }}

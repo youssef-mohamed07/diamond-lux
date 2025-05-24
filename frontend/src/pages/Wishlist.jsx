@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { ShopContext } from "../context/ShopContext";
 import { FaArrowLeft, FaTrash, FaPlus, FaMinus } from "react-icons/fa";
 import NewsletterBox from "../components/NewsletterBox";
@@ -14,7 +14,6 @@ const Wishlist = () => {
   const {
     products,
     guestWishlist,
-    addItemToWishlist,
     removeItemFromWishlist,
     updateWishlistQuantity,
     currency,
@@ -71,6 +70,7 @@ const Wishlist = () => {
               ?.quantity || 1,
         }));
       setWishlistItems(items);
+      console.log("Updated wishlist items from context:", items);
     }
   }, [products, guestWishlist]);
 
@@ -90,17 +90,19 @@ const Wishlist = () => {
     }
   };
 
+  // Debounce function to limit rapid calls
+  const debounce = (func, delay) => {
+    let timeoutId;
+    return (...args) => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => func(...args), delay);
+    };
+  };
+
   // Update wishlist item quantity
   const updateWishlistItem = (productId, quantity) => {
     try {
-      // Update UI optimistically
-      setWishlistItems((prevItems) =>
-        prevItems.map((item) =>
-          item._id === productId ? { ...item, quantity } : item
-        )
-      );
-
-      // Update in context/storage
+      // Only update in context/storage - local state will update via useEffect
       updateWishlistQuantity(productId, quantity);
     } catch (error) {
       console.error("Error updating wishlist item:", error);
@@ -136,12 +138,16 @@ const Wishlist = () => {
   const updateQuantity = (productId, newQuantity) => {
     try {
       // Ensure quantity is a valid number and at least 1
-      const quantity = Math.max(1, parseInt(newQuantity) || 1);
+      const quantity = Math.max(1, parseInt(newQuantity, 10) || 1);
       updateWishlistItem(productId, quantity);
     } catch (error) {
+      console.error("Error updating quantity:", error);
       toast.error("Failed to update quantity");
     }
   };
+  
+  // Debounced version of updateQuantity
+  const debouncedUpdateQuantity = debounce(updateQuantity, 300);
 
   const handleSendWishlist = async (formData) => {
     try {
@@ -275,7 +281,7 @@ const Wishlist = () => {
                                 type="number"
                                 value={product.quantity}
                                 onChange={(e) =>
-                                  updateQuantity(product._id, e.target.value)
+                                  debouncedUpdateQuantity(product._id, e.target.value)
                                 }
                                 className="mx-2 w-12 text-center border border-gray-300 rounded-md"
                                 min="1"
@@ -356,7 +362,7 @@ const Wishlist = () => {
                             type="number"
                             value={product.quantity}
                             onChange={(e) =>
-                              updateQuantity(product._id, e.target.value)
+                              debouncedUpdateQuantity(product._id, e.target.value)
                             }
                             className="w-12 text-center border-x border-gray-300"
                             min="1"
@@ -408,7 +414,7 @@ const Wishlist = () => {
                     <div className="pt-4">
                       <button
                         onClick={() => setShowWishlistForm(true)}
-                        className="w-full bg-black text-white px-6 py-3 rounded-md hover:bg-gray-800 transition-colors"
+                        className="w-full bg-black text-white px-6 py-3  hover:bg-gray-800 transition-colors"
                       >
                         Send Wishlist
                       </button>

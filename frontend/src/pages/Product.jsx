@@ -10,26 +10,22 @@ import { getImageUrl } from "../../utils/imageHelper";
 import {
   FaHeart,
   FaRegHeart,
-  FaArrowLeft,
   FaGem,
   FaRuler,
   FaCertificate,
-  FaSearchPlus,
   FaMagic,
-  FaTags,
-  FaFlask,
   FaEye,
   FaStar,
   FaCrown,
   FaRulerHorizontal,
   FaExclamationTriangle,
-  FaVideo,
 } from "react-icons/fa";
 import { TbView360Number } from "react-icons/tb";
-
 import ScrollToTop from "../components/ScrollToTop";
-import { getDiamondProductById } from "../../api/Products/Diamond/diamondApi.js";
 import axios from "axios";
+
+const { VITE_BACKEND_URL } = import.meta.env;
+const backendURLWithoutApi = VITE_BACKEND_URL.replace("/api", "");
 
 const Product = () => {
   const { productId } = useParams();
@@ -57,74 +53,31 @@ const Product = () => {
       setError(null);
 
       try {
-        // First check if the product exists in the main products array
-        let foundProduct =
-          products && products.length > 0
-            ? products.find((p) => p._id === productId)
-            : null;
-
-        // If not found in main products, check diamond products
-        if (!foundProduct && diamondProducts && diamondProducts.length > 0) {
-          foundProduct = diamondProducts.find((p) => p._id === productId);
-        }
-
-        // If still not found, try to fetch it directly from the API
-        if (!foundProduct) {
-          console.log("Product not found in context, fetching from API...");
-          try {
-            // Try fetching as a diamond product first
-            const data = await getDiamondProductById(productId);
-            if (data && data.product) {
-              foundProduct = data.product;
-            } else if (data) {
-              foundProduct = data;
-            }
-          } catch (apiError) {
-            console.error("Error fetching diamond product from API:", apiError);
-            // If diamond product fetch fails, try fetching as a jewelry product
-            try {
-              const response = await axios.get(
-                `${VITE_BACKEND_URL}/product/jewelery/${productId}`
-              );
-              if (response.data && response.data.product) {
-                foundProduct = response.data.product;
-              }
-            } catch (jewelryError) {
-              console.error(
-                "Error fetching jewelry product from API:",
-                jewelryError
-              );
-              // If both attempts fail, try the general product endpoint
-              try {
-                const response = await axios.get(
-                  `${VITE_BACKEND_URL}/product/${productId}`
-                );
-                if (response.data && response.data.product) {
-                  foundProduct = response.data.product;
-                }
-              } catch (generalError) {
-                console.error(
-                  "Error fetching product from general endpoint:",
-                  generalError
-                );
-              }
-            }
-          }
-        }
-
-        if (foundProduct) {
-          setProduct(foundProduct);
+        // Check if product exists in context first
+        const contextProduct = products?.find(p => p._id === productId) || diamondProducts?.find(p => p._id === productId);
+        
+        if (contextProduct) {
+          setProduct(contextProduct);
           setLoading(false);
+          return;
+        }
+
+        // If not in context, fetch from API
+        const response = await axios.get(`${VITE_BACKEND_URL}/product/${productId}`);
+        if (response.data && response.data.product) {
+          setProduct(response.data.product);
         } else {
-          setError("Product not found");
-          setLoading(false);
-          toast.error("Product not found");
+          setError('Product not found');
+          toast.error('Product not found');
         }
+        console.log("product: ", response.data.product);
+        
       } catch (err) {
-        console.error("Error loading product:", err);
-        setError("Failed to load product");
+        console.error('Error loading product:', err);
+        setError('Failed to load product');
+        toast.error('Failed to load product details');
+      } finally {
         setLoading(false);
-        toast.error("Failed to load product details");
       }
     };
 
@@ -132,13 +85,8 @@ const Product = () => {
       fetchProduct();
     }
 
-    // Reset scroll position
     window.scrollTo(0, 0);
   }, [productId, products, diamondProducts]);
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [productId]);
 
   const handleImageChange = (newImage) => {
     setIsImageTransitioning(true);
@@ -665,18 +613,7 @@ const Product = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 my-0">
           {/* Breadcrumb Navigation */}
           <div className="flex items-center mb-8 text-sm">
-            <Link to="/" className="text-gray-600 hover:text-gray-900">
-              Home
-            </Link>
-            <span className="mx-2 text-gray-400">/</span>
-            <Link
-              to="/collections"
-              className="text-gray-600 hover:text-gray-900"
-            >
-              Collections
-            </Link>
-            <span className="mx-2 text-gray-400">/</span>
-            <span className="text-gray-900">{product.title}</span>
+            
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">

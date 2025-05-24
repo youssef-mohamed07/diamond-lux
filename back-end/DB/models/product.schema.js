@@ -83,17 +83,20 @@ schema.post("init", function (doc) {
   // Handle imageCover
   if (doc.imageCover) {
     if (!isExternalUrl(doc.imageCover)) {
-      doc.imageCover = `${process.env.BACKEND_URL || "http://localhost:3000"
-        }/uploads/product/${doc.imageCover}`;
+      // Ensure no double slashes by removing trailing slash from base URL if needed
+      const baseUrl = (process.env.BACKEND_URL).replace(/\/$/, "");
+      // http://localhost:3000/uploads/product/
+      doc.imageCover = `${baseUrl}/uploads/product/${doc.imageCover}`;
     }
   }
 
   // Handle images array
   if (doc.images) {
+    // Ensure no double slashes by removing trailing slash from base URL if needed
+    const baseUrl = (process.env.BACKEND_URL).replace(/\/$/, "");
     doc.images = doc.images.map((img) => {
       if (!isExternalUrl(img)) {
-        return `${process.env.BACKEND_URL || "http://localhost:3000"
-          }/uploads/product/${img}`;
+        return `${baseUrl}/uploads/product/${img}`;
       }
       return img;
     });
