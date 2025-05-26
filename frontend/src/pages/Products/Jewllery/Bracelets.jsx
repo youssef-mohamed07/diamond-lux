@@ -280,8 +280,8 @@ const Bracelets = () => {
 
   const handleCaratMinChange = (value) => {
     if (isNaN(value)) return;
-    // Calculate a safe maximum that ensures we don't exceed the max value
-    const safeMin = Math.min(value, caratRange[1] - 0.001);
+    // Set minimum carat to 0.1 if not specified
+    const safeMin = Math.max(0.1, Math.min(value, caratRange[1] - 0.001));
     const newRange = [parseFloat(safeMin.toFixed(2)), caratRange[1]];
     setCaratRange(newRange);
     caratRangeRef.current = newRange;
@@ -290,10 +290,11 @@ const Bracelets = () => {
 
   const handleCaratMaxChange = (value) => {
     if (isNaN(value)) return;
-    // Calculate a safe minimum that ensures we're at least 0.001 more than the min value
+    // Set maximum carat to 10 if not specified
+    const safeMax = Math.min(10, Math.max(value, caratRange[0] + 0.001));
     const newRange = [
       caratRange[0],
-      parseFloat(Math.max(value, caratRange[0] + 0.001).toFixed(2))
+      parseFloat(safeMax.toFixed(2))
     ];
     setCaratRange(newRange);
     caratRangeRef.current = newRange;
