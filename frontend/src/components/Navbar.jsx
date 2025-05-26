@@ -479,6 +479,36 @@ const Navbar = () => {
                               Necklaces
                             </Link>
                           </motion.div>
+                          <motion.div
+                            custom={4}
+                            variants={menuItemVariants}
+                            initial="hidden"
+                            animate="visible"
+                            exit="exit"
+                          >
+                            <Link
+                              to="/products/jewellery/wedding-bands"
+                              className="block py-2 px-4 rounded-lg hover:bg-white/10 transition-all duration-300"
+                              onClick={() => setVisible(false)}
+                            >
+                              Wedding Bands
+                            </Link>
+                          </motion.div>
+                          <motion.div
+                            custom={5}
+                            variants={menuItemVariants}
+                            initial="hidden"
+                            animate="visible"
+                            exit="exit"
+                          >
+                            <Link
+                              to="/products/jewellery/engagement-rings"
+                              className="block py-2 px-4 rounded-lg hover:bg-white/10 transition-all duration-300"
+                              onClick={() => setVisible(false)}
+                            >
+                              Engagement Rings
+                            </Link>
+                          </motion.div>
                         </>
                       ) : (
                         <>

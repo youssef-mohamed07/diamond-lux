@@ -61,7 +61,7 @@ const Diamond = () => {
     "Fancy Vivid",
     "Fancy Dark",
   ];
-  const cutOptions = ["EX", "VG", "G", "F", "P", "ID"]; // EX=Excellent, VG=Very Good, G=Good, F=Fair, P=Poor
+  const cutOptions = ["EX", "VG", "G", "ID", "F", "P"]; // EX=Excellent, VG=Very Good, G=Good, ID=Ideal, F=Fair, P=Poor
   const clarityOptions = [
     "FL",
     "IF",
@@ -314,14 +314,15 @@ const Diamond = () => {
   const handleCaratChange = ({ min, max }) => {
     const updatedFilters = { ...filters };
 
-    // Only update if the values are different from default
-    if (min !== 0) {
+    // Set minimum carat to 0.1 if not specified
+    if (min >= 0.1) {
       updatedFilters.minCarat = min;
     } else {
       delete updatedFilters.minCarat;
     }
 
-    if (max !== 10) {
+    // Set maximum carat to 10 if not specified
+    if (max <= 10) {
       updatedFilters.maxCarat = max;
     } else {
       delete updatedFilters.maxCarat;
@@ -779,7 +780,7 @@ const handleSearch = (term) => {
 
   const caratRange = [
     filters.minCarat !== undefined ? Number(filters.minCarat) : 0.1,
-    filters.maxCarat !== undefined ? Number(filters.maxCarat) : 1,
+    filters.maxCarat !== undefined ? Number(filters.maxCarat) : 10,
   ];
 
   const selectedPolishes = Array.isArray(filters.pol)
