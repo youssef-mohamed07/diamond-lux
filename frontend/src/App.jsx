@@ -22,6 +22,7 @@ import Bracelets from "./pages/Products/Jewllery/Bracelets";
 import Earrings from "./pages/Products/Jewllery/Earrings";
 import Necklaces from "./pages/Products/Jewllery/Necklaces";
 import EngagementRings from "./pages/Products/Jewllery/EngagementRings";
+import EngagementRingsEdit from "./pages/Products/Jewllery/EngagementRings-edit";
 import WeddingBands from "./pages/Products/Jewllery/WeddingBands";
 
 function App() {
@@ -45,6 +46,7 @@ function App() {
           path="/products/jewellery/engagement-rings"
           element={<EngagementRings />}
         />
+        <Route path="/products/jewellery/engagement-rings-edit" element={<EngagementRingsEdit />} />
         <Route
           path="/products/jewellery/wedding-bands"
           element={<WeddingBands />}

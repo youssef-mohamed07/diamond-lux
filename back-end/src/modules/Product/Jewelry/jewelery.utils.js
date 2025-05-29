@@ -1,11 +1,16 @@
 // src/modules/Product/Diamond/diamond.utils.js
 export const buildJeweleryFilterQuery = (queryParams) => {
-  // Start with the base filter for diamond products
+  // Track search conditions separately to combine them properly later
+  let searchConditions = [];
+  let metalConditions = [];
+  let metalColorConditions = [];
+  
+  // Start with the base filter for jewelry products
   const filterQuery = { productType: "jewelry" };
 
   // Search query - search in title and description
   if (queryParams.search) {
-    filterQuery.$or = [
+    searchConditions = [
       { title: { $regex: queryParams.search, $options: 'i' } },
       { description: { $regex: queryParams.search, $options: 'i' } },
       { reportNo: { $regex: queryParams.search, $options: 'i' } },
@@ -44,18 +49,34 @@ export const buildJeweleryFilterQuery = (queryParams) => {
     filterQuery.diamondType = { $in: diamondTypes };
   }
 
-  // Metal
+  // Metal - with case insensitive option
   if (queryParams.metal) {
     const metals = queryParams.metal.split(",").map((m) => m.trim());
-    filterQuery.metal = { $in: metals };
+    // Check if case insensitive matching is requested
+    if (queryParams.metalCaseInsensitive === 'true') {
+      // Add case-insensitive regex conditions to our metal conditions array
+      metals.forEach(metal => {
+        metalConditions.push({ metal: { $regex: new RegExp(metal, 'i') } });
+      });
+    } else {
+      filterQuery.metal = { $in: metals };
+    }
   }
 
-  // Metal Color
+  // Metal Color - with case insensitive option
   if (queryParams.metalColor) {
     const metalColors = queryParams.metalColor
       .split(",")
       .map((mc) => mc.trim());
-    filterQuery.metalColor = { $in: metalColors };
+    // Check if case insensitive matching is requested
+    if (queryParams.metalColorCaseInsensitive === 'true') {
+      // Add case-insensitive regex conditions to our metalColor conditions array
+      metalColors.forEach(color => {
+        metalColorConditions.push({ metalColor: { $regex: new RegExp(color, 'i') } });
+      });
+    } else {
+      filterQuery.metalColor = { $in: metalColors };
+    }
   }
 
   // Carat range
@@ -71,5 +92,29 @@ export const buildJeweleryFilterQuery = (queryParams) => {
     filterQuery.isPopular = queryParams.isPopular.toLowerCase() === "true";
   }
 
+  // Combine all the conditions properly
+  const conditions = [];
+  
+  // Add search conditions if any
+  if (searchConditions.length > 0) {
+    conditions.push({ $or: searchConditions });
+  }
+  
+  // Add metal conditions if any
+  if (metalConditions.length > 0) {
+    conditions.push({ $or: metalConditions });
+  }
+  
+  // Add metal color conditions if any
+  if (metalColorConditions.length > 0) {
+    conditions.push({ $or: metalColorConditions });
+  }
+  
+  // If we have any conditions, add them as $and to the filter query
+  if (conditions.length > 0) {
+    filterQuery.$and = conditions;
+  }
+
+  console.log('Filter query:', JSON.stringify(filterQuery, null, 2));
   return filterQuery;
 };

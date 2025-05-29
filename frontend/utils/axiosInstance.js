@@ -1,7 +1,12 @@
 import axios from "axios";
 
+let backendURL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+// Remove last / from backendURL if it exists
+backendURL = backendURL.replace(/\/$/, "");
+console.log("backendURL", backendURL);
+
 const axiosInstance = axios.create({
-  baseURL: `${import.meta.env.VITE_BACKEND_URL || "http://localhost:3000"}`,
+  baseURL: `${backendURL || "http://localhost:3000"}`,
   timeout: 15000, // 15 second timeout (increased from 10)
   headers: {
     "Content-Type": "application/json",

@@ -4,12 +4,9 @@ import React, {
   useState,
   useCallback,
   useRef,
-  useMemo,
 } from "react";
 import { ShopContext } from "../../../context/ShopContext.jsx";
-import Title from "../../../components/Title";
 import GalleryItem from "../../../components/Home/GalleryItem";
-import { assets } from "../../../assets/assets";
 import NewsletterBox from "../../../components/NewsletterBox";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -18,19 +15,15 @@ import {
   FaChevronDown,
   FaTimes,
   FaSearch,
-  FaSpinner,
   FaGem,
-  FaCut,
   FaChevronRight,
   FaChevronLeft,
 } from "react-icons/fa";
-import { Link } from "react-router-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { debounce } from "../../../../utils/debounce";
 
 const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-const backendURL_WITHOUT_API = VITE_BACKEND_URL.replace("/api", "");
 
 const WeddingBands = () => {
   const navigate = useNavigate();

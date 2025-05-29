@@ -61,7 +61,7 @@ const Diamond = () => {
     "Fancy Vivid",
     "Fancy Dark",
   ];
-  const cutOptions = ["EX", "VG", "G", "ID", "F", "P"]; // EX=Excellent, VG=Very Good, G=Good, ID=Ideal, F=Fair, P=Poor
+  const cutOptions = ["ID", "EX", "VG", "G", "F", "P"]; // ID=Ideal, EX=Excellent, VG=Very Good, G=Good, F=Fair, P=Poor
   const clarityOptions = [
     "FL",
     "IF",
@@ -587,46 +587,46 @@ const Diamond = () => {
     updateFilters(updatedFilters);
   };
 
-const handleSortChange = (newSortValue) => {
-updateSortOption(newSortValue);
-};
+  const handleSortChange = (newSortValue) => {
+    updateSortOption(newSortValue);
+  };
 
-const handleClearFilters = () => {
-clearFilters();
-// Force refresh the pagination component
-setPaginationKey((prevKey) => prevKey + 1);
-// Scroll to top of the page for better UX
-};
+  const handleClearFilters = () => {
+    clearFilters();
+    // Force refresh the pagination component
+    setPaginationKey((prevKey) => prevKey + 1);
+    // Scroll to top of the page for better UX
+  };
 
-// Debounced search handler
-const debouncedSearch = useCallback(
-  debounce((term) => {
-    setSearchTerm(term);
-    setError(null);
-  }, 300),
-  []
-);
+  // Debounced search handler
+  const debouncedSearch = useCallback(
+    debounce((term) => {
+      setSearchTerm(term);
+      setError(null);
+    }, 300),
+    []
+  );
 
-const handleSearch = (term) => {
-  debouncedSearch(term);
-  const updatedFilters = { ...filters, searchTerm: term };
+  const handleSearch = (term) => {
+    debouncedSearch(term);
+    const updatedFilters = { ...filters, searchTerm: term };
 
-  if (!term) {
-    delete updatedFilters.searchTerm;
-  }
+    if (!term) {
+      delete updatedFilters.searchTerm;
+    }
 
-  updateFilters(updatedFilters);
-  changePage(1);
+    updateFilters(updatedFilters);
+    changePage(1);
 
-  const url = new URL(window.location);
-  if (term) {
-    url.searchParams.set("search", term);
-  } else {
-    url.searchParams.delete("search");
-  }
-  url.searchParams.set("page", "1");
-  window.history.pushState({}, "", url);
-};
+    const url = new URL(window.location);
+    if (term) {
+      url.searchParams.set("search", term);
+    } else {
+      url.searchParams.delete("search");
+    }
+    url.searchParams.set("page", "1");
+    window.history.pushState({}, "", url);
+  };
 
   // Handle diamond type change
   const handleDiamondTypeChange = (type) => {
@@ -779,8 +779,8 @@ const handleSearch = (term) => {
   ];
 
   const caratRange = [
-    filters.minCarat !== undefined ? Number(filters.minCarat) : 0.1,
-    filters.maxCarat !== undefined ? Number(filters.maxCarat) : 10,
+    filters.minCarat !== undefined ? Number(filters.minCarat) : 0,
+    filters.maxCarat !== undefined ? Number(filters.maxCarat) : 1,
   ];
 
   const selectedPolishes = Array.isArray(filters.pol)
@@ -815,7 +815,7 @@ const handleSearch = (term) => {
 
   const lengthRange = [filters.minLength || 0, filters.maxLength || 30];
 
-  const widthRange = [filters.minWidth || 0, filters.maxWidth || 30];  
+  const widthRange = [filters.minWidth || 0, filters.maxWidth || 30];
 
   return (
     <div className="bg-white min-h-screen">
@@ -888,6 +888,7 @@ const handleSearch = (term) => {
             onClarityChange={handleClarityChange}
             onClearFilters={handleClearFilters}
             isLoading={shapesLoading}
+            type="diamond"
           />
 
           {/* SECTION 2 & 3: Main Content Area with Left Sidebar and Product Grid */}
@@ -955,6 +956,7 @@ const handleSearch = (term) => {
               widthRange={widthRange}
               onWidthChange={handleWidthChange}
               onClearFilters={handleClearFilters}
+              type="diamond"
             />
 
             {/* Advanced Filters */}
@@ -1077,12 +1079,12 @@ const handleSearch = (term) => {
               )}
 
               {/* Pagination */}
-              {console.log('Pagination Debug:', { 
-                isProductsLoading, 
+              {console.log("Pagination Debug:", {
+                isProductsLoading,
                 diamondsLength: diamonds?.length || 0,
                 totalPages: pagination?.totalPages || 0,
                 currentPage: pagination?.currentPage || 0,
-                totalCount: pagination?.totalCount || 0 
+                totalCount: pagination?.totalCount || 0,
               })}
               {!isProductsLoading &&
                 Array.isArray(diamonds) &&
