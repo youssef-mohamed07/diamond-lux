@@ -168,7 +168,9 @@ export const ShopContextProvider = (props) => {
       // Apply category filter
       if (globalSelectedCategories.length > 0) {
         filtered = filtered.filter((product) =>
-          globalSelectedCategories.includes(product.category)
+          globalSelectedCategories.some(category => 
+            product.category?.toLowerCase() === category.toLowerCase()
+          )
         );
       }
 
@@ -176,16 +178,21 @@ export const ShopContextProvider = (props) => {
       if (globalDiamondTypes.length > 0) {
         filtered = filtered.filter(
           (product) =>
-            (product.shape && globalDiamondTypes.includes(product.shape)) ||
-            (product.diamondType &&
-              globalDiamondTypes.includes(product.diamondType))
+            (product.shape && globalDiamondTypes.some(type => 
+              product.shape.toLowerCase() === type.toLowerCase()
+            )) ||
+            (product.diamondType && globalDiamondTypes.some(type => 
+              product.diamondType.toLowerCase() === type.toLowerCase()
+            ))
         );
       }
 
       // Apply metal filter
       if (globalMetals.length > 0) {
         filtered = filtered.filter(
-          (product) => product.metal && globalMetals.includes(product.metal)
+          (product) => product.metal && globalMetals.some(metal => 
+            product.metal.toLowerCase() === metal.toLowerCase()
+          )
         );
       }
 
@@ -193,9 +200,12 @@ export const ShopContextProvider = (props) => {
       if (globalMetalColors.length > 0) {
         filtered = filtered.filter(
           (product) =>
-            (product.col && globalMetalColors.includes(product.col)) ||
-            (product.metalColor &&
-              globalMetalColors.includes(product.metalColor))
+            (product.col && globalMetalColors.some(color => 
+              product.col.toLowerCase() === color.toLowerCase()
+            )) ||
+            (product.metalColor && globalMetalColors.some(color => 
+              product.metalColor.toLowerCase() === color.toLowerCase()
+            ))
         );
       }
 

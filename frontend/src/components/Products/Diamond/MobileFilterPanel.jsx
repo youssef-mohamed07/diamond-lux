@@ -7,6 +7,7 @@ import {
   FaChevronDown,
 } from "react-icons/fa";
 import { getImageUrl } from "../../../../utils/imageHelper";
+import { isValueSelected, toggleFilterValue } from "../../../utils/filterUtils";
 
 const MobileFilterPanel = ({
   isMobileFilterOpen,
@@ -107,6 +108,15 @@ const MobileFilterPanel = ({
       // Add to selection
       onMetalColorChange([...selectedMetalColors, metalColor]);
     }
+  };
+
+  // Update the filter button click handlers
+  const handleMetalClick = (metal) => {
+    toggleFilterValue(metal, selectedMetals, onMetalChange);
+  };
+
+  const handleMetalColorClick = (color) => {
+    toggleFilterValue(color, selectedMetalColors, onMetalColorChange);
   };
 
   return (
@@ -751,19 +761,13 @@ const MobileFilterPanel = ({
                   </h3>
                   <div className="flex flex-wrap gap-2">
                     {metals.map((metal) => {
-                      // Check if this metal is selected (case insensitive)
-                      const isSelected = selectedMetals.some(
-                        (selected) =>
-                          selected.toLowerCase() === metal.toLowerCase()
-                      );
-
                       return (
                         <button
                           key={metal}
-                          onClick={() => handleMetalToggle(metal)}
+                          onClick={() => handleMetalClick(metal)}
                           className={`px-3 py-1 text-xs rounded-full ${
-                            isSelected
-                              ? "bg-gray-900 text-white shadow-md"
+                            isValueSelected(metal, selectedMetals)
+                              ? "bg-gray-900 text-white"
                               : "bg-gray-100 text-gray-800 hover:bg-gray-200"
                           }`}
                         >
@@ -783,19 +787,13 @@ const MobileFilterPanel = ({
                   </h3>
                   <div className="flex flex-wrap gap-2">
                     {metalColors.map((color) => {
-                      // Check if this metal color is selected (case insensitive)
-                      const isSelected = selectedMetalColors.some(
-                        (selected) =>
-                          selected.toLowerCase() === color.toLowerCase()
-                      );
-
                       return (
                         <button
                           key={color}
-                          onClick={() => handleMetalColorToggle(color)}
+                          onClick={() => handleMetalColorClick(color)}
                           className={`px-3 py-1 text-xs rounded-full ${
-                            isSelected
-                              ? "bg-gray-900 text-white shadow-md"
+                            isValueSelected(color, selectedMetalColors)
+                              ? "bg-gray-900 text-white"
                               : "bg-gray-100 text-gray-800 hover:bg-gray-200"
                           }`}
                         >

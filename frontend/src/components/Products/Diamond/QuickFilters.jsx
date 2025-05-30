@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { getImageUrl } from "../../../../utils/imageHelper";
 import { debounce } from "../../../../utils/debounce";
+import { isValueSelected, toggleFilterValue } from "../../../utils/filterUtils";
 
 const QuickFilters = ({
   type = "diamond" | "jewelry",
@@ -181,36 +182,12 @@ const QuickFilters = ({
 
   // Toggle metal selection - case insensitive
   const handleMetalToggle = (metal) => {
-    // Check if the metal is already selected (case insensitive)
-    const isSelected = selectedMetals.some(
-      (selected) => selected.toLowerCase() === metal.toLowerCase()
-    );
-
-    if (isSelected) {
-      // If already selected, remove it (deselect) by sending just the single item
-      // This will toggle it off in the Diamond page handler
-      onMetalChange([metal]);
-    } else {
-      // Add to selection
-      onMetalChange([...selectedMetals, metal]);
-    }
+    toggleFilterValue(metal, selectedMetals, onMetalChange);
   };
 
   // Toggle metal color selection - case insensitive
   const handleMetalColorToggle = (metalColor) => {
-    // Check if the metalColor is already selected (case insensitive)
-    const isSelected = selectedMetalColors.some(
-      (selected) => selected.toLowerCase() === metalColor.toLowerCase()
-    );
-
-    if (isSelected) {
-      // If already selected, remove it (deselect) by sending just the single item
-      // This will toggle it off in the Diamond page handler
-      onMetalColorChange([metalColor]);
-    } else {
-      // Add to selection
-      onMetalColorChange([...selectedMetalColors, metalColor]);
-    }
+    toggleFilterValue(metalColor, selectedMetalColors, onMetalColorChange);
   };
 
   return (
@@ -634,23 +611,15 @@ const QuickFilters = ({
                   </h3>
                   <div className="flex flex-wrap gap-2">
                     {metals.map((metal) => {
-                      // Check if this metal is selected (case insensitive)
-                      const isSelected = selectedMetals.some(
-                        (selected) =>
-                          selected.toLowerCase() === metal.toLowerCase()
-                      );
-
                       return (
                         <button
                           key={metal}
                           onClick={() => handleMetalToggle(metal)}
                           className={`px-3 py-1 text-xs rounded-full ${
-                            isSelected
+                            isValueSelected(metal, selectedMetals)
                               ? "bg-gray-900 text-white shadow-md"
                               : "bg-gray-100 text-gray-800 hover:bg-gray-200"
                           }`}
-                          // Add data attribute to aid in debugging
-                          data-selected={isSelected}
                         >
                           {metal}
                         </button>
@@ -668,23 +637,15 @@ const QuickFilters = ({
                   </h3>
                   <div className="flex flex-wrap gap-2">
                     {metalColors.map((color) => {
-                      // Check if this metal color is selected (case insensitive)
-                      const isSelected = selectedMetalColors.some(
-                        (selected) =>
-                          selected.toLowerCase() === color.toLowerCase()
-                      );
-
                       return (
                         <button
                           key={color}
                           onClick={() => handleMetalColorToggle(color)}
                           className={`px-3 py-1 text-xs rounded-full ${
-                            isSelected
+                            isValueSelected(color, selectedMetalColors)
                               ? "bg-gray-900 text-white shadow-md"
                               : "bg-gray-100 text-gray-800 hover:bg-gray-200"
                           }`}
-                          // Add data attribute to aid in debugging
-                          data-selected={isSelected}
                         >
                           {color}
                         </button>

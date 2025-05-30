@@ -52,15 +52,11 @@ export const buildJeweleryFilterQuery = (queryParams) => {
   // Metal - with case insensitive option
   if (queryParams.metal) {
     const metals = queryParams.metal.split(",").map((m) => m.trim());
-    // Check if case insensitive matching is requested
-    if (queryParams.metalCaseInsensitive === 'true') {
-      // Add case-insensitive regex conditions to our metal conditions array
-      metals.forEach(metal => {
-        metalConditions.push({ metal: { $regex: new RegExp(metal, 'i') } });
-      });
-    } else {
-      filterQuery.metal = { $in: metals };
-    }
+    // Always use case-insensitive matching for metals
+    metalConditions = metals.map(metal => ({
+      metal: { $regex: new RegExp(`^${metal}$`, 'i') }
+    }));
+    filterQuery.$or = metalConditions;
   }
 
   // Metal Color - with case insensitive option
@@ -68,15 +64,11 @@ export const buildJeweleryFilterQuery = (queryParams) => {
     const metalColors = queryParams.metalColor
       .split(",")
       .map((mc) => mc.trim());
-    // Check if case insensitive matching is requested
-    if (queryParams.metalColorCaseInsensitive === 'true') {
-      // Add case-insensitive regex conditions to our metalColor conditions array
-      metalColors.forEach(color => {
-        metalColorConditions.push({ metalColor: { $regex: new RegExp(color, 'i') } });
-      });
-    } else {
-      filterQuery.metalColor = { $in: metalColors };
-    }
+    // Always use case-insensitive matching for metal colors
+    metalColorConditions = metalColors.map(color => ({
+      metalColor: { $regex: new RegExp(`^${color}$`, 'i') }
+    }));
+    filterQuery.$or = metalColorConditions;
   }
 
   // Carat range
