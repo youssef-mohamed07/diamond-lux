@@ -86,7 +86,6 @@ export const ShopContextProvider = (props) => {
   useEffect(() => {
     const loadAllProducts = async () => {
       try {
-        console.log("Fetching products from:", `${backendUrl}/product`);
         const response = await axios.get(`${backendUrl}/product`);
         if (response.data && response.data.Products) {
           setFilteredProducts((prev) => ({

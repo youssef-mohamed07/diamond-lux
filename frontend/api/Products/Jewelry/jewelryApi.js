@@ -23,12 +23,12 @@ const buildQueryStringWithFilters = (baseUrl, page, limit, filters, sort) => {
 
   // Map frontend filter names to backend field names
   const fieldMapping = {
-    metal: 'metal',
-    metalColor: 'metalColor',
-    minPrice: 'minPrice',
-    maxPrice: 'maxPrice',
-    minCarat: 'minCarat',
-    maxCarat: 'maxCarat',
+    metal: "metal",
+    metalColor: "metalColor",
+    minPrice: "minPrice",
+    maxPrice: "maxPrice",
+    minCarat: "minCarat",
+    maxCarat: "maxCarat",
   };
 
   // Add all other filters to the query string with proper field mapping
@@ -37,10 +37,12 @@ const buildQueryStringWithFilters = (baseUrl, page, limit, filters, sort) => {
       const backendField = fieldMapping[key] || key;
       if (Array.isArray(value)) {
         // For metal and metalColor, pass an additional parameter to indicate case insensitive matching
-        if (key === 'metal' || key === 'metalColor') {
-          queryString += `&${backendField}=${value.join(",")}&${backendField}CaseInsensitive=true`; 
+        if (key === "metal" || key === "metalColor") {
+          queryString += `&${backendField}=${value.join(
+            ","
+          )}&${backendField}CaseInsensitive=true`;
         } else {
-          queryString += `&${backendField}=${value.join(",")}`; 
+          queryString += `&${backendField}=${value.join(",")}`;
         }
       } else {
         queryString += `&${backendField}=${value}`;
@@ -125,12 +127,12 @@ export const getAllJewelryProducts = async (
 
     // Map frontend filter names to backend field names
     const fieldMapping = {
-      metal: 'metal',
-      metalColor: 'metalColor',
-      minPrice: 'minPrice',
-      maxPrice: 'maxPrice',
-      minCarat: 'minCarat',
-      maxCarat: 'maxCarat',
+      metal: "metal",
+      metalColor: "metalColor",
+      minPrice: "minPrice",
+      maxPrice: "maxPrice",
+      minCarat: "minCarat",
+      maxCarat: "maxCarat",
     };
 
     // Add all other filters to the query string with proper field mapping
@@ -145,9 +147,7 @@ export const getAllJewelryProducts = async (
       }
     });
 
-    console.log("Making API request to:", queryString);
     const response = await axiosInstance.get(queryString);
-    console.log("API Response:", response.data);
 
     if (!response.data) {
       throw new Error("No data received from the server");
@@ -186,7 +186,12 @@ export const getAllJewelryProducts = async (
       totalPages = data.totalPages || 1;
       totalCount = data.totalProductsCount || 0;
       productsPerPage = data.productsPerPage || limit;
-      console.log('Found pagination data at root level:', { currentPage, totalPages, totalCount, productsPerPage });
+      console.log("Found pagination data at root level:", {
+        currentPage,
+        totalPages,
+        totalCount,
+        productsPerPage,
+      });
     }
 
     const result = {
@@ -200,7 +205,6 @@ export const getAllJewelryProducts = async (
       },
     };
 
-    console.log("Processed result:", result);
     return result;
   } catch (error) {
     console.error("Error in getAllDiamondProducts:", error);
@@ -213,15 +217,25 @@ export const getAllJewelryProducts = async (
 };
 
 // Generic function to fetch jewelry by category
-const getJewelryByCategory = async (category, page = 1, limit = 12, filters = {}, sort = "price:asc") => {
+const getJewelryByCategory = async (
+  category,
+  page = 1,
+  limit = 12,
+  filters = {},
+  sort = "price:asc"
+) => {
   try {
     // Build the query string with page, limit, and filters
     const baseUrl = `/product/jewelery/${category}`;
-    const queryString = buildQueryStringWithFilters(baseUrl, page, limit, filters, sort);
+    const queryString = buildQueryStringWithFilters(
+      baseUrl,
+      page,
+      limit,
+      filters,
+      sort
+    );
 
-    console.log(`Making API request to: ${queryString}`);
     const response = await axiosInstance.get(queryString);
-    console.log(`API Response for ${category}:`, response.data);
 
     if (!response.data) {
       throw new Error("No data received from the server");
@@ -229,7 +243,10 @@ const getJewelryByCategory = async (category, page = 1, limit = 12, filters = {}
 
     return processJewelryResponse(response.data, page, limit);
   } catch (error) {
-    console.error(`Error in get${category.charAt(0).toUpperCase() + category.slice(1)}:`, error);
+    console.error(
+      `Error in get${category.charAt(0).toUpperCase() + category.slice(1)}:`,
+      error
+    );
     if (error.response) {
       console.error("Error response data:", error.response.data);
       console.error("Error response status:", error.response.status);
@@ -238,24 +255,49 @@ const getJewelryByCategory = async (category, page = 1, limit = 12, filters = {}
   }
 };
 
-export const getEngagementRings = async (page = 1, limit = 12, filters = {}, sort = "price:asc") => {
-    return getJewelryByCategory('engagement_rings', page, limit, filters, sort);
-  };
-
-export const getWeddingBands = async (page = 1, limit = 12, filters = {}, sort = "price:asc") => {
-  return getJewelryByCategory('wedding_bands', page, limit, filters, sort);
+export const getEngagementRings = async (
+  page = 1,
+  limit = 12,
+  filters = {},
+  sort = "price:asc"
+) => {
+  return getJewelryByCategory("engagement_rings", page, limit, filters, sort);
 };
 
-export const getEarrings = async (page = 1, limit = 12, filters = {}, sort = "price:asc") => {
-  return getJewelryByCategory('earrings', page, limit, filters, sort);
+export const getWeddingBands = async (
+  page = 1,
+  limit = 12,
+  filters = {},
+  sort = "price:asc"
+) => {
+  return getJewelryByCategory("wedding_bands", page, limit, filters, sort);
 };
 
-export const getNecklaces = async (page = 1, limit = 12, filters = {}, sort = "price:asc") => {
-  return getJewelryByCategory('necklaces', page, limit, filters, sort);
+export const getEarrings = async (
+  page = 1,
+  limit = 12,
+  filters = {},
+  sort = "price:asc"
+) => {
+  return getJewelryByCategory("earrings", page, limit, filters, sort);
 };
 
-export const getBracelets = async (page = 1, limit = 12, filters = {}, sort = "price:asc") => {
-  return getJewelryByCategory('bracelets', page, limit, filters, sort);
+export const getNecklaces = async (
+  page = 1,
+  limit = 12,
+  filters = {},
+  sort = "price:asc"
+) => {
+  return getJewelryByCategory("necklaces", page, limit, filters, sort);
+};
+
+export const getBracelets = async (
+  page = 1,
+  limit = 12,
+  filters = {},
+  sort = "price:asc"
+) => {
+  return getJewelryByCategory("bracelets", page, limit, filters, sort);
 };
 
 // Get jewelry product by ID
@@ -280,14 +322,29 @@ export const getJewelryProductById = async (id) => {
 
     // Ensure all fields are present
     const requiredFields = [
-      '_id', 'title', 'price', 'description', 'images', 'imageCover',
-      'metal', 'metalColor', 'gemstone', 'carats', 'style', 'setting',
-      'collection', 'length', 'width', 'productType', 'stockId',
-      'isReturnable', 'discount'
+      "_id",
+      "title",
+      "price",
+      "description",
+      "images",
+      "imageCover",
+      "metal",
+      "metalColor",
+      "gemstone",
+      "carats",
+      "style",
+      "setting",
+      "collection",
+      "length",
+      "width",
+      "productType",
+      "stockId",
+      "isReturnable",
+      "discount",
     ];
 
     // Add any missing fields with null values
-    requiredFields.forEach(field => {
+    requiredFields.forEach((field) => {
       if (!(field in productData)) {
         productData[field] = null;
       }
@@ -295,7 +352,7 @@ export const getJewelryProductById = async (id) => {
 
     return {
       success: true,
-      product: productData
+      product: productData,
     };
   } catch (error) {
     console.error(`Error fetching diamond product with ID ${id}:`, error);

@@ -16,6 +16,12 @@ const BannerSection = ({ productsType }) => {
     case "bracelet":
       itemTypeText = "Bracelet";
       break;
+    case "engagement_rings":
+      itemTypeText = "Engagement Ring";
+      break;
+    case "wedding_rings":
+      itemTypeText = "Wedding Ring";
+      break;
   }
 
   return (

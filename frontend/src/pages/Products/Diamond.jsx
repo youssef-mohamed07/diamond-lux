@@ -1079,13 +1079,6 @@ const Diamond = () => {
               )}
 
               {/* Pagination */}
-              {console.log("Pagination Debug:", {
-                isProductsLoading,
-                diamondsLength: diamonds?.length || 0,
-                totalPages: pagination?.totalPages || 0,
-                currentPage: pagination?.currentPage || 0,
-                totalCount: pagination?.totalCount || 0,
-              })}
               {!isProductsLoading &&
                 Array.isArray(diamonds) &&
                 diamonds.length > 0 &&

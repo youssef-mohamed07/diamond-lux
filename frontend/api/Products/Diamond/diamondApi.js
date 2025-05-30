@@ -39,43 +39,43 @@ export const getAllDiamondProducts = async (
 
     // Map frontend filter names to backend field names
     const fieldMapping = {
-      color: 'col',
-      clarity: 'clar',
-      polish: 'pol',
-      symmetry: 'symm',
-      fluorescence: 'flo',
-      fluorescenceColor: 'floCol',
-      minPrice: 'minPrice',
-      maxPrice: 'maxPrice',
-      minCarat: 'minCarat',
-      maxCarat: 'maxCarat',
-      shape: 'shape',
-      cut: 'cut',
-      lab: 'lab',
-      girdle: 'girdle',
-      culet: 'culet',
-      eyeClean: 'eyeClean',
-      brown: 'brown',
-      green: 'green',
-      milky: 'milky',
-      minLength: 'minLength',
-      maxLength: 'maxLength',
-      minWidth: 'minWidth',
-      maxWidth: 'maxWidth',
-      minDepth: 'minDepth',
-      maxDepth: 'maxDepth',
-      minTable: 'minTable',
-      maxTable: 'maxTable',
-      minLwRatio: 'minLwRatio',
-      maxLwRatio: 'maxLwRatio',
-      certificateNumber: 'certificate_number',
-      mineOfOrigin: 'mineOfOrigin',
-      canadaMarkEligible: 'canadaMarkEligible',
-      isReturnable: 'isReturnable',
-      minPricePerCarat: 'minPricePerCarat',
-      maxPricePerCarat: 'maxPricePerCarat',
-      minDiscount: 'minDiscount',
-      maxDiscount: 'maxDiscount'
+      color: "col",
+      clarity: "clar",
+      polish: "pol",
+      symmetry: "symm",
+      fluorescence: "flo",
+      fluorescenceColor: "floCol",
+      minPrice: "minPrice",
+      maxPrice: "maxPrice",
+      minCarat: "minCarat",
+      maxCarat: "maxCarat",
+      shape: "shape",
+      cut: "cut",
+      lab: "lab",
+      girdle: "girdle",
+      culet: "culet",
+      eyeClean: "eyeClean",
+      brown: "brown",
+      green: "green",
+      milky: "milky",
+      minLength: "minLength",
+      maxLength: "maxLength",
+      minWidth: "minWidth",
+      maxWidth: "maxWidth",
+      minDepth: "minDepth",
+      maxDepth: "maxDepth",
+      minTable: "minTable",
+      maxTable: "maxTable",
+      minLwRatio: "minLwRatio",
+      maxLwRatio: "maxLwRatio",
+      certificateNumber: "certificate_number",
+      mineOfOrigin: "mineOfOrigin",
+      canadaMarkEligible: "canadaMarkEligible",
+      isReturnable: "isReturnable",
+      minPricePerCarat: "minPricePerCarat",
+      maxPricePerCarat: "maxPricePerCarat",
+      minDiscount: "minDiscount",
+      maxDiscount: "maxDiscount",
     };
 
     // Add all other filters to the query string with proper field mapping
@@ -90,9 +90,7 @@ export const getAllDiamondProducts = async (
       }
     });
 
-    console.log("Making API request to:", queryString);
     const response = await axiosInstance.get(queryString);
-    console.log("API Response:", response.data);
 
     if (!response.data) {
       throw new Error("No data received from the server");
@@ -131,7 +129,12 @@ export const getAllDiamondProducts = async (
       totalPages = data.totalPages || 1;
       totalCount = data.totalProductsCount || 0;
       productsPerPage = data.productsPerPage || limit;
-      console.log('Found pagination data at root level:', { currentPage, totalPages, totalCount, productsPerPage });
+      console.log("Found pagination data at root level:", {
+        currentPage,
+        totalPages,
+        totalCount,
+        productsPerPage,
+      });
     }
 
     const result = {
@@ -178,17 +181,46 @@ export const getDiamondProductById = async (id) => {
 
     // Ensure all fields are present
     const requiredFields = [
-      '_id', 'title', 'price', 'description', 'images', 'imageCover',
-      'shape', 'carats', 'col', 'clar', 'cut', 'pol', 'symm',
-      'flo', 'floCol', 'culet', 'lab', 'girdle', 'eyeClean',
-      'brown', 'green', 'milky', 'length', 'width', 'height',
-      'depth', 'table', 'productType', 'certificate_url', 'stockId',
-      'reportNo', 'mineOfOrigin', 'canadaMarkEligible', 'isReturnable',
-      'pricePerCarat', 'discount'
+      "_id",
+      "title",
+      "price",
+      "description",
+      "images",
+      "imageCover",
+      "shape",
+      "carats",
+      "col",
+      "clar",
+      "cut",
+      "pol",
+      "symm",
+      "flo",
+      "floCol",
+      "culet",
+      "lab",
+      "girdle",
+      "eyeClean",
+      "brown",
+      "green",
+      "milky",
+      "length",
+      "width",
+      "height",
+      "depth",
+      "table",
+      "productType",
+      "certificate_url",
+      "stockId",
+      "reportNo",
+      "mineOfOrigin",
+      "canadaMarkEligible",
+      "isReturnable",
+      "pricePerCarat",
+      "discount",
     ];
 
     // Add any missing fields with null values
-    requiredFields.forEach(field => {
+    requiredFields.forEach((field) => {
       if (!(field in productData)) {
         productData[field] = null;
       }
@@ -196,7 +228,7 @@ export const getDiamondProductById = async (id) => {
 
     return {
       success: true,
-      product: productData
+      product: productData,
     };
   } catch (error) {
     console.error(`Error fetching diamond product with ID ${id}:`, error);

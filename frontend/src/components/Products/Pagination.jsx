@@ -8,8 +8,8 @@ const Pagination = ({ currentPage, totalPages, onPageChange, loading }) => {
   // Update windowWidth when window is resized
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   // Determine how many page buttons to show based on screen size
@@ -60,7 +60,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange, loading }) => {
 
   const renderPageNumbers = () => {
     const maxVisibleButtons = getMaxVisibleButtons();
-    
+
     // If we have fewer pages than the max visible buttons, show them all
     if (validTotalPages <= maxVisibleButtons) {
       return Array.from({ length: validTotalPages }, (_, i) => i + 1).map(
@@ -223,15 +223,11 @@ const Pagination = ({ currentPage, totalPages, onPageChange, loading }) => {
     return pages;
   };
 
-  // Added additional debugging
-  console.log('Pagination component values:', { validCurrentPage, validTotalPages, loading });
-  
-  // Don't render pagination if there's only one page and total count would fit on one page
-  // Commenting out this check temporarily to troubleshoot
-  // if (validTotalPages <= 1) return null;
-
   return (
-    <nav aria-label="Pagination" className="flex flex-col items-center justify-center mt-8 space-y-4">
+    <nav
+      aria-label="Pagination"
+      className="flex flex-col items-center justify-center mt-8 space-y-4"
+    >
       {/* Page buttons */}
       <div className="flex items-center justify-center space-x-2">
         {/* Previous page button */}
@@ -239,7 +235,11 @@ const Pagination = ({ currentPage, totalPages, onPageChange, loading }) => {
           onClick={() => onPageChange(validCurrentPage - 1)}
           disabled={loading || validCurrentPage === 1}
           className={`w-10 h-10 flex items-center justify-center rounded-md transition-all duration-200
-            ${validCurrentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100 focus:ring-2 focus:ring-offset-2 focus:ring-gray-400'}
+            ${
+              validCurrentPage === 1
+                ? "opacity-50 cursor-not-allowed"
+                : "hover:bg-gray-100 focus:ring-2 focus:ring-offset-2 focus:ring-gray-400"
+            }
           `}
           aria-label="Previous page"
         >
@@ -253,7 +253,11 @@ const Pagination = ({ currentPage, totalPages, onPageChange, loading }) => {
           onClick={() => onPageChange(validCurrentPage + 1)}
           disabled={loading || validCurrentPage === validTotalPages}
           className={`w-10 h-10 flex items-center justify-center rounded-md transition-all duration-200
-            ${validCurrentPage === validTotalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100 focus:ring-2 focus:ring-offset-2 focus:ring-gray-400'}
+            ${
+              validCurrentPage === validTotalPages
+                ? "opacity-50 cursor-not-allowed"
+                : "hover:bg-gray-100 focus:ring-2 focus:ring-offset-2 focus:ring-gray-400"
+            }
           `}
           aria-label="Next page"
         >
@@ -273,16 +277,21 @@ const Pagination = ({ currentPage, totalPages, onPageChange, loading }) => {
               type="text"
               value={pageInputValue}
               onChange={handleInputChange}
-              className={`w-32 h-10 px-4 py-2 border rounded-l-md  text-sm  ${inputError
-                ? "border-red-500 focus:ring-red-500"
-                : "border-gray-300 focus:ring-black"
-              } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`w-32 h-10 px-4 py-2 border rounded-l-md  text-sm  ${
+                inputError
+                  ? "border-red-500 focus:ring-red-500"
+                  : "border-gray-300 focus:ring-black"
+              } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
               disabled={loading}
             />
             <button
               type="submit"
               className={`absolute right-0 top-0 h-10 px-4 bg-black text-white rounded-r-md
-                ${loading || pageInputValue === "" ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-800'}
+                ${
+                  loading || pageInputValue === ""
+                    ? "opacity-50 cursor-not-allowed"
+                    : "hover:bg-gray-800"
+                }
                 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black`}
               disabled={loading || pageInputValue === ""}
               aria-label="Go to specified page"

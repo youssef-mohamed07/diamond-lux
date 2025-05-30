@@ -113,49 +113,52 @@ const WeddingBands = () => {
     priceRange,
     sortType,
     maxCarat,
-    maxPrice
+    maxPrice,
   ]);
 
   // Function to extract unique filter values from products
-  const extractUniqueFilterValues = useCallback((products) => {
-    if (!products || products.length === 0) return;
+  const extractUniqueFilterValues = useCallback(
+    (products) => {
+      if (!products || products.length === 0) return;
 
-    // Extract unique metals
-    const uniqueMetalsSet = new Set();
-    products.forEach(product => {
-      if (product.metal) uniqueMetalsSet.add(product.metal);
-    });
-    setUniqueMetals(Array.from(uniqueMetalsSet));
+      // Extract unique metals
+      const uniqueMetalsSet = new Set();
+      products.forEach((product) => {
+        if (product.metal) uniqueMetalsSet.add(product.metal);
+      });
+      setUniqueMetals(Array.from(uniqueMetalsSet));
 
-    // Extract unique metal colors
-    const uniqueMetalColorsSet = new Set();
-    products.forEach(product => {
-      if (product.metalColor) uniqueMetalColorsSet.add(product.metalColor);
-    });
-    setUniqueMetalColors(Array.from(uniqueMetalColorsSet));
+      // Extract unique metal colors
+      const uniqueMetalColorsSet = new Set();
+      products.forEach((product) => {
+        if (product.metalColor) uniqueMetalColorsSet.add(product.metalColor);
+      });
+      setUniqueMetalColors(Array.from(uniqueMetalColorsSet));
 
-    // Find max price and carat for ranges
-    const maxProductPrice = Math.max(...products.map(p => p.price || 0));
-    const maxProductCarat = Math.max(...products.map(p => p.carats || 0));
+      // Find max price and carat for ranges
+      const maxProductPrice = Math.max(...products.map((p) => p.price || 0));
+      const maxProductCarat = Math.max(...products.map((p) => p.carats || 0));
 
-    // Ensure reasonable default values
-    const defaultMaxPrice = maxProductPrice > 0 ? maxProductPrice : 100000;
-    const defaultMaxCarat = maxProductCarat > 0 ? maxProductCarat : 20;
+      // Ensure reasonable default values
+      const defaultMaxPrice = maxProductPrice > 0 ? maxProductPrice : 100000;
+      const defaultMaxCarat = maxProductCarat > 0 ? maxProductCarat : 20;
 
-    setMaxPrice(defaultMaxPrice);
-    setMaxCarat(defaultMaxCarat);
+      setMaxPrice(defaultMaxPrice);
+      setMaxCarat(defaultMaxCarat);
 
-    // Only set the range values if they haven't been manually changed
-    if (priceRange[0] === 0 && priceRange[1] === 100000) {
-      setPriceRange([0, defaultMaxPrice]);
-      priceRangeRef.current = [0, defaultMaxPrice];
-    }
+      // Only set the range values if they haven't been manually changed
+      if (priceRange[0] === 0 && priceRange[1] === 100000) {
+        setPriceRange([0, defaultMaxPrice]);
+        priceRangeRef.current = [0, defaultMaxPrice];
+      }
 
-    if (caratRange[0] === 0 && caratRange[1] === 20) {
-      setCaratRange([0, defaultMaxCarat]);
-      caratRangeRef.current = [0, defaultMaxCarat];
-    }
-  }, [priceRange, caratRange]);
+      if (caratRange[0] === 0 && caratRange[1] === 20) {
+        setCaratRange([0, defaultMaxCarat]);
+        caratRangeRef.current = [0, defaultMaxCarat];
+      }
+    },
+    [priceRange, caratRange]
+  );
 
   // Fetch products from the API
   const fetchProducts = useCallback(async () => {
@@ -168,48 +171,49 @@ const WeddingBands = () => {
       const params = new URLSearchParams();
 
       // Pagination
-      params.append('page', currentPageRef.current);
-      params.append('limit', limitRef.current);
+      params.append("page", currentPageRef.current);
+      params.append("limit", limitRef.current);
 
       // Search query
       if (searchQueryRef.current) {
-        params.append('search', searchQueryRef.current);
+        params.append("search", searchQueryRef.current);
       }
 
       // Metals
       if (metalsRef.current.length > 0) {
-        params.append('metal', metalsRef.current.join(','));
+        params.append("metal", metalsRef.current.join(","));
       }
 
       // Metal Colors
       if (metalColorsRef.current.length > 0) {
-        params.append('metalColor', metalColorsRef.current.join(','));
+        params.append("metalColor", metalColorsRef.current.join(","));
       }
 
       // Carat Range
       if (caratRangeRef.current[0] > 0) {
-        params.append('minCarat', caratRangeRef.current[0]);
+        params.append("minCarat", caratRangeRef.current[0]);
       }
       if (caratRangeRef.current[1] < maxCaratRef.current) {
-        params.append('maxCarat', caratRangeRef.current[1]);
+        params.append("maxCarat", caratRangeRef.current[1]);
       }
 
       // Price Range
       if (priceRangeRef.current[0] > 0) {
-        params.append('minPrice', priceRangeRef.current[0]);
+        params.append("minPrice", priceRangeRef.current[0]);
       }
       if (priceRangeRef.current[1] < maxPriceRef.current) {
-        params.append('maxPrice', priceRangeRef.current[1]);
+        params.append("maxPrice", priceRangeRef.current[1]);
       }
 
       // Sort
-      if (sortTypeRef.current !== 'relevant') {
-        params.append('sort', sortTypeRef.current);
+      if (sortTypeRef.current !== "relevant") {
+        params.append("sort", sortTypeRef.current);
       }
 
-      const response = await axios.get(`${VITE_BACKEND_URL}/product/jewelery/wedding_bands`, { params });
-
-      console.log("Wedding Bands API response:", response.data);
+      const response = await axios.get(
+        `${VITE_BACKEND_URL}/product/jewelery/wedding_bands`,
+        { params }
+      );
 
       // Update state with the response data
       setProducts(response.data.products);
@@ -237,7 +241,7 @@ const WeddingBands = () => {
       setTimeout(() => {
         window.scrollTo({
           top: scrollPosition,
-          behavior: 'auto' // Use 'auto' instead of 'smooth' to prevent visible scrolling
+          behavior: "auto", // Use 'auto' instead of 'smooth' to prevent visible scrolling
         });
       }, 0);
     }
@@ -285,10 +289,7 @@ const WeddingBands = () => {
     if (isNaN(value)) return;
     // Set maximum carat to 10 if not specified
     const safeMax = Math.min(10, Math.max(value, caratRange[0] + 0.001));
-    const newRange = [
-      caratRange[0],
-      parseFloat(safeMax.toFixed(2))
-    ];
+    const newRange = [caratRange[0], parseFloat(safeMax.toFixed(2))];
     setCaratRange(newRange);
     caratRangeRef.current = newRange;
     debouncedFetch();
@@ -357,7 +358,7 @@ const WeddingBands = () => {
     const params = new URLSearchParams();
 
     if (searchQuery) {
-      params.append('q', searchQuery);
+      params.append("q", searchQuery);
     }
 
     // Only update URL if we have filter parameters
@@ -381,14 +382,14 @@ const WeddingBands = () => {
     // Fetch new data
     fetchProducts().then(() => {
       // After fetching, scroll to products section instead of top
-      const productsSection = document.querySelector('.products-grid-section');
+      const productsSection = document.querySelector(".products-grid-section");
       if (productsSection) {
-        productsSection.scrollIntoView({ behavior: 'smooth' });
+        productsSection.scrollIntoView({ behavior: "smooth" });
       } else {
         // If products section not found, maintain current position
         window.scrollTo({
           top: scrollPosition,
-          behavior: 'auto'
+          behavior: "auto",
         });
       }
     });
@@ -625,7 +626,10 @@ const WeddingBands = () => {
 
         {/* Search Bar */}
         <div className="w-full mb-8">
-          <form onSubmit={handleSearchSubmit} className="relative flex items-center mb-4">
+          <form
+            onSubmit={handleSearchSubmit}
+            className="relative flex items-center mb-4"
+          >
             <div className="relative flex-grow">
               <input
                 type="text"
@@ -678,10 +682,11 @@ const WeddingBands = () => {
                         onClick={(e) =>
                           toggleFilter(metal, metals, setMetals, metalsRef)
                         }
-                        className={`px-3 py-1 text-xs rounded-full ${metals.includes(metal)
-                          ? "bg-gray-900 text-white shadow-md"
-                          : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                          }`}
+                        className={`px-3 py-1 text-xs rounded-full ${
+                          metals.includes(metal)
+                            ? "bg-gray-900 text-white shadow-md"
+                            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                        }`}
                       >
                         {metal}
                       </button>
@@ -701,12 +706,18 @@ const WeddingBands = () => {
                       <button
                         key={color}
                         onClick={(e) =>
-                          toggleFilter(color, metalColors, setMetalColors, metalColorsRef)
+                          toggleFilter(
+                            color,
+                            metalColors,
+                            setMetalColors,
+                            metalColorsRef
+                          )
                         }
-                        className={`px-3 py-1 text-xs rounded-full ${metalColors.includes(color)
-                          ? "bg-gray-900 text-white shadow-md"
-                          : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                          }`}
+                        className={`px-3 py-1 text-xs rounded-full ${
+                          metalColors.includes(color)
+                            ? "bg-gray-900 text-white shadow-md"
+                            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                        }`}
                       >
                         {color}
                       </button>
@@ -733,7 +744,9 @@ const WeddingBands = () => {
                           min={0}
                           max={maxPrice}
                           value={priceRange[0]}
-                          onChange={(e) => handlePriceMinChange(parseInt(e.target.value))}
+                          onChange={(e) =>
+                            handlePriceMinChange(parseInt(e.target.value))
+                          }
                           className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
                         />
                       </div>
@@ -749,7 +762,9 @@ const WeddingBands = () => {
                           min={0}
                           max={maxPrice}
                           value={priceRange[1]}
-                          onChange={(e) => handlePriceMaxChange(parseInt(e.target.value))}
+                          onChange={(e) =>
+                            handlePriceMaxChange(parseInt(e.target.value))
+                          }
                           className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
                         />
                       </div>
@@ -770,7 +785,9 @@ const WeddingBands = () => {
                         max={maxCarat}
                         step="0.01"
                         value={caratRange[0]}
-                        onChange={(e) => handleCaratMinChange(parseFloat(e.target.value))}
+                        onChange={(e) =>
+                          handleCaratMinChange(parseFloat(e.target.value))
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                       />
                     </div>
@@ -782,7 +799,9 @@ const WeddingBands = () => {
                         max={maxCarat}
                         step="0.01"
                         value={caratRange[1]}
-                        onChange={(e) => handleCaratMaxChange(parseFloat(e.target.value))}
+                        onChange={(e) =>
+                          handleCaratMaxChange(parseFloat(e.target.value))
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                       />
                     </div>
@@ -829,7 +848,6 @@ const WeddingBands = () => {
 
                     {/* Mobile Quick Filters Section */}
                     <div className="mb-5">
-
                       {/* Metal Filter */}
                       {uniqueMetals.length > 0 && (
                         <div className="mb-6">
@@ -841,12 +859,18 @@ const WeddingBands = () => {
                               <button
                                 key={metal}
                                 onClick={(e) =>
-                                  toggleFilter(metal, metals, setMetals, metalsRef)
+                                  toggleFilter(
+                                    metal,
+                                    metals,
+                                    setMetals,
+                                    metalsRef
+                                  )
                                 }
-                                className={`px-3 py-1 text-xs rounded-full ${metals.includes(metal)
-                                  ? "bg-gray-900 text-white"
-                                  : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                                  }`}
+                                className={`px-3 py-1 text-xs rounded-full ${
+                                  metals.includes(metal)
+                                    ? "bg-gray-900 text-white"
+                                    : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                                }`}
                               >
                                 {metal}
                               </button>
@@ -866,12 +890,18 @@ const WeddingBands = () => {
                               <button
                                 key={color}
                                 onClick={(e) =>
-                                  toggleFilter(color, metalColors, setMetalColors, metalColorsRef)
+                                  toggleFilter(
+                                    color,
+                                    metalColors,
+                                    setMetalColors,
+                                    metalColorsRef
+                                  )
                                 }
-                                className={`px-3 py-1 text-xs rounded-full ${metalColors.includes(color)
-                                  ? "bg-gray-900 text-white"
-                                  : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                                  }`}
+                                className={`px-3 py-1 text-xs rounded-full ${
+                                  metalColors.includes(color)
+                                    ? "bg-gray-900 text-white"
+                                    : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                                }`}
                               >
                                 {color}
                               </button>
@@ -898,7 +928,11 @@ const WeddingBands = () => {
                                   min={0}
                                   max={maxPrice}
                                   value={priceRange[0]}
-                                  onChange={(e) => handlePriceMinChange(parseInt(e.target.value))}
+                                  onChange={(e) =>
+                                    handlePriceMinChange(
+                                      parseInt(e.target.value)
+                                    )
+                                  }
                                   className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
                                 />
                               </div>
@@ -916,7 +950,11 @@ const WeddingBands = () => {
                                   min={0}
                                   max={maxPrice}
                                   value={priceRange[1]}
-                                  onChange={(e) => handlePriceMaxChange(parseInt(e.target.value))}
+                                  onChange={(e) =>
+                                    handlePriceMaxChange(
+                                      parseInt(e.target.value)
+                                    )
+                                  }
                                   className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded text-sm"
                                 />
                               </div>
@@ -937,7 +975,11 @@ const WeddingBands = () => {
                                 max={maxCarat}
                                 step="0.01"
                                 value={caratRange[0]}
-                                onChange={(e) => handleCaratMinChange(parseFloat(e.target.value))}
+                                onChange={(e) =>
+                                  handleCaratMinChange(
+                                    parseFloat(e.target.value)
+                                  )
+                                }
                                 className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                               />
                             </div>
@@ -951,7 +993,11 @@ const WeddingBands = () => {
                                 max={maxCarat}
                                 step="0.01"
                                 value={caratRange[1]}
-                                onChange={(e) => handleCaratMaxChange(parseFloat(e.target.value))}
+                                onChange={(e) =>
+                                  handleCaratMaxChange(
+                                    parseFloat(e.target.value)
+                                  )
+                                }
                                 className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                               />
                             </div>
@@ -1044,10 +1090,11 @@ const WeddingBands = () => {
                           setCurrentPage(1);
                           setTimeout(() => fetchProducts(), 100);
                         }}
-                        className={`block w-full text-left px-4 py-2 hover:bg-gray-100 ${sortType === option.value
-                          ? "bg-gray-100 font-medium"
-                          : ""
-                          }`}
+                        className={`block w-full text-left px-4 py-2 hover:bg-gray-100 ${
+                          sortType === option.value
+                            ? "bg-gray-100 font-medium"
+                            : ""
+                        }`}
                       >
                         {option.label}
                       </button>
@@ -1115,7 +1162,11 @@ const WeddingBands = () => {
                       }
                     }}
                     disabled={currentPage === 1}
-                    className={`p-2 rounded-md ${currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'hover:bg-gray-100 text-gray-500'}`}
+                    className={`p-2 rounded-md ${
+                      currentPage === 1
+                        ? "text-gray-300 cursor-not-allowed"
+                        : "hover:bg-gray-100 text-gray-500"
+                    }`}
                   >
                     <FaChevronLeft className="h-5 w-5" />
                   </button>
@@ -1136,10 +1187,11 @@ const WeddingBands = () => {
                           onClick={() => {
                             handlePageChange(pageNum);
                           }}
-                          className={`mx-1 px-4 py-2 rounded-md ${currentPage === pageNum
-                            ? "bg-gray-900 text-white"
-                            : "hover:bg-gray-100"
-                            }`}
+                          className={`mx-1 px-4 py-2 rounded-md ${
+                            currentPage === pageNum
+                              ? "bg-gray-900 text-white"
+                              : "hover:bg-gray-100"
+                          }`}
                         >
                           {pageNum}
                         </button>
@@ -1151,7 +1203,11 @@ const WeddingBands = () => {
                       (pageNum === currentPage - 2 && pageNum > 1) ||
                       (pageNum === currentPage + 2 && pageNum < totalPages)
                     ) {
-                      return <span key={`ellipsis-${pageNum}`} className="mx-1">...</span>;
+                      return (
+                        <span key={`ellipsis-${pageNum}`} className="mx-1">
+                          ...
+                        </span>
+                      );
                     }
 
                     return null;
@@ -1164,7 +1220,11 @@ const WeddingBands = () => {
                       }
                     }}
                     disabled={currentPage === totalPages}
-                    className={`p-2 rounded-md ${currentPage === totalPages ? 'text-gray-300 cursor-not-allowed' : 'hover:bg-gray-100 text-gray-500'}`}
+                    className={`p-2 rounded-md ${
+                      currentPage === totalPages
+                        ? "text-gray-300 cursor-not-allowed"
+                        : "hover:bg-gray-100 text-gray-500"
+                    }`}
                   >
                     <FaChevronRight className="h-5 w-5" />
                   </button>

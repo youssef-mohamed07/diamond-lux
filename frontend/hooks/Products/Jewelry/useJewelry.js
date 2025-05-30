@@ -8,7 +8,7 @@ import {
   getEarrings,
   getNecklaces,
   getBracelets,
-  getJewelryProductById
+  getJewelryProductById,
 } from "../../../api/Products/Jewelry/jewelryApi.js";
 
 // Debounce utility function for improved performance
@@ -28,7 +28,7 @@ const useDebounce = (value, delay = 500) => {
   return debouncedValue;
 };
 
-export const useJewelry = (category = 'all') => {
+export const useJewelry = (category = "all") => {
   const [jewelry, setJewelry] = useState([]);
   const [pagination, setPagination] = useState({
     currentPage: 1,
@@ -43,7 +43,7 @@ export const useJewelry = (category = 'all') => {
 
   // Add filters state
   const [filters, setFilters] = useState({});
-  
+
   // Debounced filters for improved performance
   const debouncedFilters = useDebounce(filters, 400);
 
@@ -64,7 +64,7 @@ export const useJewelry = (category = 'all') => {
   useEffect(() => {
     sortRef.current = sortOption;
   }, [sortOption]);
-  
+
   useEffect(() => {
     categoryRef.current = category;
   }, [category]);
@@ -90,32 +90,56 @@ export const useJewelry = (category = 'all') => {
 
       try {
         let data;
-        
+
         // Call the appropriate API function based on the category
-        switch(categoryRef.current) {
-          case 'engagement_rings':
-            console.log("Fetching engagement rings");
-            data = await getEngagementRings(validPage, validLimit, currentFilters, currentSort);
+        switch (categoryRef.current) {
+          case "engagement_rings":
+            data = await getEngagementRings(
+              validPage,
+              validLimit,
+              currentFilters,
+              currentSort
+            );
             break;
-          case 'wedding_bands':
-            console.log("Fetching wedding bands");
-            data = await getWeddingBands(validPage, validLimit, currentFilters, currentSort);
+          case "wedding_bands":
+            data = await getWeddingBands(
+              validPage,
+              validLimit,
+              currentFilters,
+              currentSort
+            );
             break;
-          case 'earrings':
-            console.log("Fetching earrings");
-            data = await getEarrings(validPage, validLimit, currentFilters, currentSort);
+          case "earrings":
+            data = await getEarrings(
+              validPage,
+              validLimit,
+              currentFilters,
+              currentSort
+            );
             break;
-          case 'necklaces':
-            console.log("Fetching necklaces");
-            data = await getNecklaces(validPage, validLimit, currentFilters, currentSort);
+          case "necklaces":
+            data = await getNecklaces(
+              validPage,
+              validLimit,
+              currentFilters,
+              currentSort
+            );
             break;
-          case 'bracelets':
-            console.log("Fetching bracelets");
-            data = await getBracelets(validPage, validLimit, currentFilters, currentSort);
+          case "bracelets":
+            data = await getBracelets(
+              validPage,
+              validLimit,
+              currentFilters,
+              currentSort
+            );
             break;
           default:
-            console.log("Fetching all jewelry products");
-            data = await getAllJewelryProducts(validPage, validLimit, currentFilters, currentSort);
+            data = await getAllJewelryProducts(
+              validPage,
+              validLimit,
+              currentFilters,
+              currentSort
+            );
             break;
         }
 
@@ -142,8 +166,14 @@ export const useJewelry = (category = 'all') => {
       } catch (err) {
         // Only update error state if this is still the latest request
         if (requestId === lastRequestIdRef.current) {
-          console.error(`[useJewelry] Error in request ${requestId} for category ${categoryRef.current}:`, err);
-          setError(err.message || `Failed to fetch ${categoryRef.current.replace('_', ' ')}`);
+          console.error(
+            `[useJewelry] Error in request ${requestId} for category ${categoryRef.current}:`,
+            err
+          );
+          setError(
+            err.message ||
+              `Failed to fetch ${categoryRef.current.replace("_", " ")}`
+          );
           setLoading(false);
         }
         return null;
@@ -152,74 +182,71 @@ export const useJewelry = (category = 'all') => {
     []
   ); // Dependencies removed to avoid dependency cycle
 
-  const updateFilters = useCallback(
-    (newFilters) => {
-      setFilters((prevFilters) => {
-        const updatedFilters = { ...prevFilters };
+  const updateFilters = useCallback((newFilters) => {
+    setFilters((prevFilters) => {
+      const updatedFilters = { ...prevFilters };
 
-        // Handle all filters including shape
-        Object.entries(newFilters).forEach(([key, value]) => {
-          // Handle empty values - delete those filters
-          if (
-            value === undefined ||
-            value === null ||
-            (Array.isArray(value) && value.length === 0) ||
-            (typeof value === "object" &&
-              !Array.isArray(value) &&
-              Object.keys(value).length === 0)
-          ) {
-            delete updatedFilters[key];
-          }
-          // Handle array filter types (categories, attributes)
-          else if (Array.isArray(value)) {
-            // Case insensitive toggle handling for metal and metalColor filters
-            if (key === 'metal' || key === 'metalColor') {
-              // If we're toggling a metal or metalColor
-              if (value.length === 1) {
-                const itemToToggle = value[0];
-                const currentValues = updatedFilters[key] || [];
-                
-                // Check if the item exists in a case-insensitive manner
-                const existingIndex = currentValues.findIndex(
-                  item => item.toLowerCase() === itemToToggle.toLowerCase()
-                );
-                
-                if (existingIndex >= 0) {
-                  // If found, remove it (toggle off)
-                  const newValues = [...currentValues];
-                  newValues.splice(existingIndex, 1);
-                  
-                  if (newValues.length === 0) {
-                    delete updatedFilters[key]; // Remove the key entirely if empty
-                  } else {
-                    updatedFilters[key] = newValues;
-                  }
+      // Handle all filters including shape
+      Object.entries(newFilters).forEach(([key, value]) => {
+        // Handle empty values - delete those filters
+        if (
+          value === undefined ||
+          value === null ||
+          (Array.isArray(value) && value.length === 0) ||
+          (typeof value === "object" &&
+            !Array.isArray(value) &&
+            Object.keys(value).length === 0)
+        ) {
+          delete updatedFilters[key];
+        }
+        // Handle array filter types (categories, attributes)
+        else if (Array.isArray(value)) {
+          // Case insensitive toggle handling for metal and metalColor filters
+          if (key === "metal" || key === "metalColor") {
+            // If we're toggling a metal or metalColor
+            if (value.length === 1) {
+              const itemToToggle = value[0];
+              const currentValues = updatedFilters[key] || [];
+
+              // Check if the item exists in a case-insensitive manner
+              const existingIndex = currentValues.findIndex(
+                (item) => item.toLowerCase() === itemToToggle.toLowerCase()
+              );
+
+              if (existingIndex >= 0) {
+                // If found, remove it (toggle off)
+                const newValues = [...currentValues];
+                newValues.splice(existingIndex, 1);
+
+                if (newValues.length === 0) {
+                  delete updatedFilters[key]; // Remove the key entirely if empty
                 } else {
-                  // If not found, add it (toggle on)
-                  updatedFilters[key] = [...currentValues, itemToToggle];
+                  updatedFilters[key] = newValues;
                 }
               } else {
-                // For direct replacement (not toggling), simply use the new values
-                updatedFilters[key] = value;
+                // If not found, add it (toggle on)
+                updatedFilters[key] = [...currentValues, itemToToggle];
               }
             } else {
-              // For other array types, simply replace the current value with the new array
+              // For direct replacement (not toggling), simply use the new values
               updatedFilters[key] = value;
             }
-          }
-          // Handle all other filter types
-          else {
+          } else {
+            // For other array types, simply replace the current value with the new array
             updatedFilters[key] = value;
           }
-        });
-
-        return updatedFilters;
+        }
+        // Handle all other filter types
+        else {
+          updatedFilters[key] = value;
+        }
       });
-      
-      // The actual data fetching will be triggered by the debouncedFilters effect
-    },
-    []
-  );
+
+      return updatedFilters;
+    });
+
+    // The actual data fetching will be triggered by the debouncedFilters effect
+  }, []);
 
   const updateSortOption = useCallback(
     (newSortOption) => {
@@ -365,7 +392,10 @@ export const useJewelry = (category = 'all') => {
   // Effect for debounced filters
   useEffect(() => {
     // Skip the initial render
-    if (Object.keys(debouncedFilters).length > 0 || Object.keys(filters).length > 0) {
+    if (
+      Object.keys(debouncedFilters).length > 0 ||
+      Object.keys(filters).length > 0
+    ) {
       fetchJewelryByCategory(1, pagination.limit, debouncedFilters);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

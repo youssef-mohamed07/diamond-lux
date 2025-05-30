@@ -7,7 +7,6 @@ import { debounce } from "../../../../utils/debounce";
 import { useEffect, useState, useCallback } from "react";
 import MobileFilterPanel from "../../../components/Products/Diamond/MobileFilterPanel";
 import ProductsPanel from "../../../components/Products/ProductsPanel";
-import AdvancedFilters from "../../../components/Products/Diamond/AdvancedFilters";
 import { useJewelry } from "../../../../hooks/Products/Jewelry/useJewelry";
 import Pagination from "../../../components/Products/Pagination";
 import SortDropdown from "../../../components/Products/SortDropdown";
@@ -36,24 +35,24 @@ const Diamond = () => {
     clearFilters,
     searchJewelry,
   } = useJewelry("engagement_rings");
-  
+
   // Synchronize the local state with the filter state
   useEffect(() => {
     // Update selectedMetals from filters
     if (filters.metal) {
       const currentMetals = Array.isArray(filters.metal)
         ? filters.metal
-        : filters.metal.split(',');
+        : filters.metal.split(",");
       setSelectedMetals(currentMetals);
     } else {
       setSelectedMetals([]);
     }
-    
+
     // Update selectedMetalColors from filters
     if (filters.metalColor) {
       const currentColors = Array.isArray(filters.metalColor)
         ? filters.metalColor
-        : filters.metalColor.split(',');
+        : filters.metalColor.split(",");
       setSelectedMetalColors(currentColors);
     } else {
       setSelectedMetalColors([]);
@@ -523,13 +522,7 @@ const Diamond = () => {
               )}
 
               {/* Pagination */}
-              {console.log("Pagination Debug:", {
-                isProductsLoading,
-                jewelryLength: jewelry?.length || 0,
-                totalPages: pagination?.totalPages || 0,
-                currentPage: pagination?.currentPage || 0,
-                totalCount: pagination?.totalCount || 0,
-              })}
+
               {!isProductsLoading &&
                 Array.isArray(jewelry) &&
                 jewelry.length > 0 &&
