@@ -224,23 +224,14 @@ const CategoryShapes = () => {
         </div>
 
         <div className="flex justify-center gap-4 mt-4">
-          {categories.length > 5 && (
-            <button
-              onClick={() => setShowAllShapes(!showAllShapes)}
-              className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
-              aria-expanded={showAllShapes}
-              aria-label={
-                showAllShapes ? "Show fewer categories" : "Show more categories"
-              }
-            >
-              {showAllShapes ? "Show less" : "Show more"}
-              <FaChevronDown
-                className={`ml-1 transition-transform ${
-                  showAllShapes ? "rotate-180" : ""
-                }`}
-              />
-            </button>
-          )}
+          <a
+            href="https://store.diamondcartel.in/products/diamond?category=emerald&page=1&type=lab"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center text-sm bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 transition-colors mt-4"
+          >
+            Show More <FaArrowRight className="ml-2" />
+          </a>
         </div>
       </div>
     </div>

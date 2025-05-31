@@ -3,6 +3,8 @@ import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { getImageUrl } from "../../../../utils/imageHelper";
 import { debounce } from "../../../../utils/debounce";
 import { isValueSelected, toggleFilterValue } from "../../../utils/filterUtils";
+import Slider from "rc-slider";
+import "rc-slider/assets/index.css";
 
 const QuickFilters = ({
   type = "diamond" | "jewelry",
@@ -14,7 +16,7 @@ const QuickFilters = ({
   onColorChange,
   priceRange = [0, 99999999],
   onPriceChange,
-  caratRange = [0, 1],
+  caratRange = [0.01, 60],
   onCaratChange,
   cuts = [],
   selectedCuts = [],
@@ -107,25 +109,114 @@ const QuickFilters = ({
   // Debounced carat change handler
   const debouncedCaratChange = useCallback(
     debounce((min, max) => {
-      // Only validate when actually making the API call
-      const finalMin = min === "" ? 0 : Math.max(0, Number(min) || 0);
-      // Limit max carat to 1 as per requirement
-      const finalMax =
-        max === "" ? 1 : Math.min(1, Math.max(0, Number(max) || 1));
+      // Handle empty inputs - use null to indicate no filter should be applied
+      // Allow min to be 0 or empty
+      let finalMin;
+      if (min === "") {
+        finalMin = null; // Use null to indicate no minimum filter
+      } else {
+        const numMin = Number(min);
+        // Allow zero or any positive number up to 10
+        finalMin = isNaN(numMin) ? null : Math.min(10, Math.max(0, numMin));
+      }
+
+      // Allow max to be empty but not below min if min is set
+      let finalMax;
+      if (max === "") {
+        finalMax = null; // Use null to indicate no maximum filter
+      } else {
+        const numMax = Number(max);
+        // Max can't be less than min (if min is set)
+        const minValue = finalMin !== null ? finalMin : 0;
+        finalMax = isNaN(numMax)
+          ? null
+          : Math.min(10, Math.max(minValue, numMax));
+      }
 
       onCaratChange({ min: finalMin, max: finalMax });
-    }, 500),
+    }, 200),
     [onCaratChange]
   );
 
   // Handle carat change
   const handleCaratChange = (min, max) => {
     // Update local state immediately for UI feedback
-    setMinCarat(min === "" ? "" : Number(min));
-    setMaxCarat(max === "" ? "" : Number(max));
+    setMinCarat(min);
+    setMaxCarat(max);
 
     // Call the debounced function for API updates
     debouncedCaratChange(min, max);
+  };
+
+  // Handle slider change (values come as array [min, max])
+  const handleCaratSliderChange = (values) => {
+    const [sliderMin, sliderMax] = values;
+
+    // Convert from slider values to actual carat values using the logarithmic scale
+    const min = sliderToCaratValue(sliderMin);
+    const max = sliderToCaratValue(sliderMax);
+
+    console.log(
+      "Slider changed to:",
+      sliderMin,
+      sliderMax,
+      "-> Carats:",
+      min,
+      max
+    );
+
+    // Update local state immediately for UI feedback
+    setMinCarat(min);
+    setMaxCarat(max);
+
+    // Call the debounced function for API updates
+    debouncedCaratChange(min, max);
+  };
+
+  // Convert from linear slider value to logarithmic carat value
+  const sliderToCaratValue = (sliderValue) => {
+    // Linear mapping from 0.01-5 to 0.01-10
+    // This ensures the slider max value directly corresponds to 10 carats
+    const result = sliderValue * 2;
+    // Ensure we never exceed 10
+    return Math.min(10, result);
+  };
+
+  // Convert from carat value to linear slider value
+  const caratToSliderValue = (caratValue) => {
+    // Linear mapping from 0.01-10 to 0.01-5
+    // Ensure we don't exceed our bounds
+    const validCarat = Math.min(10, Math.max(0.01, caratValue));
+    // Divide by 2 to get slider value
+    return validCarat / 2;
+  };
+
+  // Format the displayed values for the slider
+  const formatCaratValue = (value) => {
+    // Convert to string with 2 decimal places
+    return Number(value).toFixed(2);
+  };
+
+  // Handle min carat input directly
+  const handleMinCaratInput = (e) => {
+    const value = e.target.value;
+    // Allow empty string or valid decimal numbers
+    if (value === "" || /^\d*\.?\d*$/.test(value)) {
+      setMinCarat(value);
+      // Only trigger the debounce if the user has stopped typing
+      debouncedCaratChange(value, maxCarat);
+    }
+  };
+
+  // Handle max carat input directly
+  const handleMaxCaratInput = (e) => {
+    const value = e.target.value;
+    // Allow empty string or valid decimal numbers
+    if (value === "" || /^\d*\.?\d*$/.test(value)) {
+      setMaxCarat(value);
+      // Only trigger the debounce if the user has stopped typing
+      debouncedCaratChange(minCarat, value);
+    }
   };
 
   // Toggle category selection
@@ -518,34 +609,76 @@ const QuickFilters = ({
             <h3 className="text-lg font-medium text-gray-900 mb-4">
               Carat Range
             </h3>
-            <div className="flex items-center space-x-4">
-              <div className="flex-1">
-                <input
-                  type="number"
-                  step="any"
-                  min="0"
-                  max="1"
-                  value={minCarat === "" ? "" : minCarat}
-                  onChange={(e) => handleCaratChange(e.target.value, maxCarat)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                  placeholder="Min"
-                  inputMode="decimal"
-                />
+            {/* Display Current Range */}
+            <div className="mb-4 flex justify-between">
+              <div className="text-center">
+                <span className="block text-sm font-medium text-gray-700">
+                  Min
+                </span>
+                <span className="text-lg font-semibold">
+                  {formatCaratValue(minCarat || 0.01)}
+                </span>
+                <span className="text-xs text-gray-500 ml-1">ct</span>
               </div>
-              <div className="text-gray-400">to</div>
-              <div className="flex-1">
-                <input
-                  type="number"
-                  step="any"
-                  min="0"
-                  max="1"
-                  value={maxCarat === "" ? "" : maxCarat}
-                  onChange={(e) => handleCaratChange(minCarat, e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                  placeholder="Max"
-                  inputMode="decimal"
-                />
+              <div className="text-center">
+                <span className="block text-sm font-medium text-gray-700">
+                  Max
+                </span>
+                <span className="text-lg font-semibold">
+                  {formatCaratValue(maxCarat || 10)}
+                </span>
+                <span className="text-xs text-gray-500 ml-1">ct</span>
               </div>
+            </div>
+
+            {/* Range Slider */}
+            <div className="px-1">
+              <Slider
+                range
+                min={0.01}
+                max={
+                  5
+                } /* We use a smaller max for the slider but convert to full range */
+                step={0.01}
+                defaultValue={[0.01, 5]}
+                value={[
+                  // Convert from actual carat values to slider values
+                  caratToSliderValue(parseFloat(minCarat) || 0.01),
+                  caratToSliderValue(parseFloat(maxCarat) || 10),
+                ]}
+                allowCross={false}
+                pushable={0.01}
+                onChange={handleCaratSliderChange}
+                railStyle={{ backgroundColor: "#e5e7eb", height: 10 }}
+                trackStyle={[{ backgroundColor: "#111827", height: 10 }]}
+                handleStyle={[
+                  {
+                    backgroundColor: "white",
+                    border: "2px solid #111827",
+                    height: 22,
+                    width: 22,
+                    marginTop: -6,
+                    boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                  },
+                  {
+                    backgroundColor: "white",
+                    border: "2px solid #111827",
+                    height: 22,
+                    width: 22,
+                    marginTop: -6,
+                    boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                  },
+                ]}
+              />
+            </div>
+
+            {/* Carat Range Markers */}
+            <div className="mt-2 flex justify-between text-xs text-gray-500 px-1">
+              <span>0.01</span>
+              <span>0.5</span>
+              <span>1</span>
+              <span>5</span>
+              <span>10</span>
             </div>
           </div>
 
