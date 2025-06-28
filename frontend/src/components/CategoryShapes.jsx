@@ -225,7 +225,7 @@ const CategoryShapes = () => {
 
         <div className="flex justify-center gap-4 mt-4">
           <a
-            href="https://store.diamondcartel.in/products/diamond?category=emerald&page=1&type=lab"
+            href="/products/diamond?category=emerald&page=1&type=lab"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center text-sm bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 transition-colors mt-4"

@@ -210,7 +210,7 @@ const About = () => {
                 </div>
               </div>
               <a
-                href="/products"
+                href="/products/diamond"
                 className="inline-flex transition-all duration-300 items-center justify-center px-6 py-3 border border-white  shadow-sm text-base font-medium text-white hover:bg-white hover:text-gray-900 transition-colors"
               >
                 Explore Our Collection
@@ -316,7 +316,7 @@ const About = () => {
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <a
-                href="/products"
+                href="/products/diamond"
                 className="inline-flex items-center justify-center px-6 py-3 border border-transparent  shadow-sm text-base font-medium text-gray-900 bg-white hover:bg-gray-100 transition-all duration-300"
               >
                 Explore Collection
