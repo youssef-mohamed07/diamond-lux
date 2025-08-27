@@ -17,9 +17,11 @@ const PopularProducts = () => {
         <Title text1={"POPULAR"} text2={"PRODUCTS"} />
       </div>
 
-      <div className=" mx-auto grid grid-cols-2 align-center sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 gap-y-6">
+      <div className="mx-auto flex flex-wrap justify-center gap-4 gap-y-6">
         {popularProducts.map((item, index) => (
-          <GalleryItem index={index} item={popularProducts[index]} />
+          <div className="w-[calc(50%-0.5rem)] sm:w-[calc(33.333%-0.667rem)] md:w-[calc(25%-0.75rem)] lg:w-[calc(20%-0.8rem)] flex">
+            <GalleryItem index={index} item={popularProducts[index]} />
+          </div>
         ))}
       </div>
     </div>

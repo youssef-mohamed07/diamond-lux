@@ -145,27 +145,29 @@ const Wishlist = () => {
       toast.error("Failed to update quantity");
     }
   };
-  
+
   // Debounced version of updateQuantity
   const debouncedUpdateQuantity = debounce(updateQuantity, 300);
 
   const handleSendWishlist = async (formData) => {
     try {
       // Format wishlist items for email
-      const itemsDetails = wishlistItems
-        .map(
-          (item) =>
-            `${item.imageCover}||${item.name}||${item.quantity}||${currency}${(
-              item.price * item.quantity
-            ).toFixed(2)}`
-        )
-        .join("@@");
+      const itemsDetails = wishlistItems.map((item) => ({
+        id: item._id,
+        image: item.imageCover,
+        name: item.title,
+        quantity: item.quantity,
+        price: item.price,
+        total: item.price * item.quantity,
+      }));
 
       const wishlistData = {
         ...formData,
         itemsDetails,
         totalValue: `${currency}${subtotal.toFixed(2)}`,
       };
+
+      console.log("wishlistData:: ", wishlistData);
 
       await sendWishlistEmail(wishlistData);
       toast.success("Wishlist sent successfully!");
@@ -281,7 +283,10 @@ const Wishlist = () => {
                                 type="number"
                                 value={product.quantity}
                                 onChange={(e) =>
-                                  debouncedUpdateQuantity(product._id, e.target.value)
+                                  debouncedUpdateQuantity(
+                                    product._id,
+                                    e.target.value
+                                  )
                                 }
                                 className="mx-2 w-12 text-center border border-gray-300 rounded-md"
                                 min="1"
@@ -362,7 +367,10 @@ const Wishlist = () => {
                             type="number"
                             value={product.quantity}
                             onChange={(e) =>
-                              debouncedUpdateQuantity(product._id, e.target.value)
+                              debouncedUpdateQuantity(
+                                product._id,
+                                e.target.value
+                              )
                             }
                             className="w-12 text-center border-x border-gray-300"
                             min="1"

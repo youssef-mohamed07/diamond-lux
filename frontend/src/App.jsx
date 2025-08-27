@@ -15,6 +15,7 @@ import Quote from "./pages/Quote";
 
 // Components
 import Navbar from "./components/Navbar";
+import SalesAdBar from "./components/SalesAdBar";
 import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
 import Diamond from "./pages/Products/Diamond";
@@ -29,7 +30,8 @@ function App() {
   return (
     <>
       <ScrollToTop />
-      <Navbar />
+        <Navbar />
+        {/* <SalesAdBar /> */}
       <ToastContainer position="bottom-right" autoClose={3000} />
       <Routes>
         <Route path="/" element={<Home />} />
@@ -38,7 +40,6 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/wishlist" element={<Wishlist />} />
-        <Route path="/request-quote" element={<Quote />} />
         <Route path="/products/jewellery/bracelets" element={<Bracelets />} />
         <Route path="/products/jewellery/earrings" element={<Earrings />} />
         <Route path="/products/jewellery/necklaces" element={<Necklaces />} />
@@ -46,7 +47,10 @@ function App() {
           path="/products/jewellery/engagement-rings"
           element={<EngagementRings />}
         />
-        <Route path="/products/jewellery/engagement-rings-edit" element={<EngagementRingsEdit />} />
+        <Route
+          path="/products/jewellery/engagement-rings-edit"
+          element={<EngagementRingsEdit />}
+        />
         <Route
           path="/products/jewellery/wedding-bands"
           element={<WeddingBands />}

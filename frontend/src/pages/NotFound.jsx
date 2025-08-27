@@ -17,12 +17,6 @@ const NotFound = () => {
           <div className="mx-auto w-24 h-24 mb-6 text-gray-300">
             <FaGem className="w-full h-full" />
           </div>
-          <h1 className="text-4xl font-extrabold text-gray-900 mb-4">
-            Page Not Found
-          </h1>
-          <p className="text-xl text-gray-600 mb-8">
-            We couldn't find the page you're looking for.
-          </p>
 
           <div className="bg-gray-50 rounded-lg p-8 mb-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">
@@ -34,7 +28,7 @@ const NotFound = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
               <Link
-                to="/products"
+                to="/products/diamond"
                 className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white p-3 rounded-full mr-4">

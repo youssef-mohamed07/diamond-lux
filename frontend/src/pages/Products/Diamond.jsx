@@ -291,46 +291,43 @@ const Diamond = () => {
   };
 
   const handlePriceChange = ({ min, max }) => {
-    const updatedFilters = { ...filters };
+    // Debounced update to avoid excessive API calls
+    const debouncedUpdate = debounce(() => {
+      const updatedFilters = {
+        ...filters,
+        minPrice: min,
+        maxPrice: max,
+      };
 
-    // Only update if the values are different from default
-    if (min !== 0) {
-      updatedFilters.minPrice = min;
-    } else {
-      delete updatedFilters.minPrice;
-    }
+      // Remove keys if they are at their default values to keep URL clean
+      if (min === 0 || min === null) delete updatedFilters.minPrice;
+      if (max === 99999999 || max === null) delete updatedFilters.maxPrice;
 
-    if (max !== 9999999) {
-      updatedFilters.maxPrice = max;
-    } else {
-      delete updatedFilters.maxPrice;
-    }
+      updateFilters(updatedFilters);
+    }, 500);
 
-    // Force a page reset when price changes
-    changePage(1);
-    updateFilters(updatedFilters);
+    debouncedUpdate();
   };
 
   const handleCaratChange = ({ min, max }) => {
-    const updatedFilters = { ...filters };
+    const debouncedUpdate = debounce(() => {
+      const updatedFilters = { ...filters };
 
-    // Set minimum carat to 0.1 if not specified
-    if (min >= 0.1) {
-      updatedFilters.minCarat = min;
-    } else {
-      delete updatedFilters.minCarat;
-    }
+      if (min !== null && min !== undefined && min !== 0.2) {
+        updatedFilters.minCarat = min;
+      } else {
+        delete updatedFilters.minCarat;
+      }
 
-    // Set maximum carat to 10 if not specified
-    if (max <= 10) {
-      updatedFilters.maxCarat = max;
-    } else {
-      delete updatedFilters.maxCarat;
-    }
+      if (max !== null && max !== undefined && max !== 50) {
+        updatedFilters.maxCarat = max;
+      } else {
+        delete updatedFilters.maxCarat;
+      }
 
-    // Force a page reset when carat changes
-    changePage(1);
-    updateFilters(updatedFilters);
+      updateFilters(updatedFilters);
+    }, 500);
+    debouncedUpdate();
   };
 
   const handlePolishChange = (selectedPolishes) => {
@@ -779,8 +776,8 @@ const Diamond = () => {
   ];
 
   const caratRange = [
-    filters.minCarat !== undefined ? Number(filters.minCarat) : 0,
-    filters.maxCarat !== undefined ? Number(filters.maxCarat) : 1,
+    filters.minCarat !== undefined ? Number(filters.minCarat) : 0.2,
+    filters.maxCarat !== undefined ? Number(filters.maxCarat) : 50,
   ];
 
   const selectedPolishes = Array.isArray(filters.pol)
@@ -878,7 +875,10 @@ const Diamond = () => {
             onColorChange={handleColorChange}
             priceRange={priceRange}
             onPriceChange={handlePriceChange}
-            caratRange={caratRange}
+            caratRange={[
+              filters.minCarat !== undefined ? Number(filters.minCarat) : 0.2,
+              filters.maxCarat !== undefined ? Number(filters.maxCarat) : 50,
+            ]}
             onCaratChange={handleCaratChange}
             cuts={cutOptions}
             selectedCuts={selectedCuts}
@@ -923,9 +923,17 @@ const Diamond = () => {
               ]}
               selectedColors={selectedColors}
               onColorChange={handleColorChange}
-              priceRange={priceRange}
+              priceRange={[
+                filters.minPrice !== undefined ? Number(filters.minPrice) : 0,
+                filters.maxPrice !== undefined
+                  ? Number(filters.maxPrice)
+                  : 99999999,
+              ]}
               onPriceChange={handlePriceChange}
-              caratRange={caratRange}
+              caratRange={[
+                filters.minCarat !== undefined ? Number(filters.minCarat) : 0.2,
+                filters.maxCarat !== undefined ? Number(filters.maxCarat) : 50,
+              ]}
               onCaratChange={handleCaratChange}
               cuts={cutOptions}
               selectedCuts={selectedCuts}

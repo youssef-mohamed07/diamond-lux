@@ -20,20 +20,18 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 py-16">
           {/* Brand Section */}
           <div className="space-y-6">
+            <img
+              src="/white logo.png"
+              className="h-12 w-auto"
+              alt="Company Logo"
+            />
             {uiElement && (
-              <>
-                <img
-                  src={uiElement.logoImage}
-                  className="h-12 w-auto"
-                  alt="Company Logo"
-                />
-                <p
-                  className="text-gray-300 text-sm leading-relaxed"
-                  dangerouslySetInnerHTML={{
-                    __html: uiElement.footer?.description || "",
-                  }}
-                />
-              </>
+              <p
+                className="text-gray-300 text-sm leading-relaxed"
+                dangerouslySetInnerHTML={{
+                  __html: uiElement.footer?.description || "",
+                }}
+              />
             )}
             <div className="flex space-x-4">
               <a

@@ -17,13 +17,11 @@ const Logo = ({ scrolled = false }) => {
     <Link to="/" className="flex items-center">
       <div className="flex items-center justify-center mr-2">
         {/* Logo Image */}
-        {uiElement && (
-          <img
-            src={uiElement.logoImage}
-            className={`h-12 w-auto `}
-            alt="Company Logo"
-          />
-        )}
+        <img
+          src={isHomePage && !scrolled ? "/white logo.png" : (uiElement?.logoImage || "/white logo.png")}
+          className={`${isHomePage && !scrolled ? 'h-12' : 'h-12'} w-auto `}
+          alt="Company Logo"
+        />
       </div>
 
       <span className={`text-xl tracking-tight ${textColor}`}>

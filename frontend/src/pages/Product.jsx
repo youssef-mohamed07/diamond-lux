@@ -41,28 +41,12 @@ const Product = () => {
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeImage, setActiveImage] = useState(null);
+  const [activeImage, setActiveImage] = useState(0);
   const [isImageTransitioning, setIsImageTransitioning] = useState(false);
   const [activeTab, setActiveTab] = useState("details");
   const [error, setError] = useState(null);
   const [wishlistLoading, setWishlistLoading] = useState(false);
 
-  // Set active image on product load
-  useEffect(() => {
-    if (product) {
-      if (product.imageCover) {
-        setActiveImage(product.imageCover);
-      } else if (product.images && product.images.length > 0) {
-        setActiveImage(product.images[0]);
-      } else if (product.video) {
-        setActiveImage("360");
-      } else {
-        setActiveImage(null);
-      }
-    }
-  }, [product]);
-
-  // Fetch product details
   useEffect(() => {
     const fetchProduct = async () => {
       setLoading(true);
@@ -107,7 +91,6 @@ const Product = () => {
     window.scrollTo(0, 0);
   }, [productId, products, diamondProducts]);
 
-  // Handle image change
   const handleImageChange = (newImage) => {
     setIsImageTransitioning(true);
     setTimeout(() => {
@@ -116,7 +99,6 @@ const Product = () => {
     }, 200);
   };
 
-  // Handle toggle wishlist
   const handleToggleWishlist = async () => {
     setWishlistLoading(true);
     try {
@@ -125,6 +107,7 @@ const Product = () => {
         toast.success("Removed from wishlist");
       } else {
         await addItemToWishlist(productId, 1);
+        toast.success("Added to wishlist");
       }
     } catch (error) {
       toast.error("Something went wrong!");
@@ -133,12 +116,10 @@ const Product = () => {
     }
   };
 
-  // Check if product is in wishlist
   const isInWishlist = (productId) => {
     return wishlist?.includes(productId) || false;
   };
 
-  // Get responsive loupe360 URL
   const getResponsiveLoupe360Url = (url) => {
     // Check if it's a loupe360 URL
     if (!url || !url.includes("loupe360.com")) return url;
@@ -167,7 +148,6 @@ const Product = () => {
     }
   };
 
-  // Render loading state
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -176,7 +156,6 @@ const Product = () => {
     );
   }
 
-  // Render error state
   if (error || !product) {
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-gray-50 px-4">
@@ -207,7 +186,6 @@ const Product = () => {
     );
   }
 
-  // Check if product is in wishlist
   const isFavorite = isInWishlist(productId);
 
   // Check if description is valid and meaningful
@@ -607,6 +585,17 @@ const Product = () => {
                 </span>
               </div>
             )}
+
+            {product.carats && (
+              <div className="flex flex-col">
+                <span className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                  Carat
+                </span>
+                <span className="text-sm font-medium text-gray-900 capitalize">
+                  {product.carats}
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </>
@@ -645,9 +634,11 @@ const Product = () => {
               <div className="mb-4 aspect-w-1 aspect-h-1 bg-gray-100 rounded-lg overflow-hidden">
                 {activeImage === "360" ? (
                   <div className="relative w-full pb-[100%] overflow-hidden bg-white">
-                    {product.video ? (
+                    {product.images &&
+                    product.images[0] &&
+                    product.images[0].includes("loupe360.com") ? (
                       <iframe
-                        src={getResponsiveLoupe360Url(product.video)}
+                        src={getResponsiveLoupe360Url(product.images[0])}
                         className="absolute top-0 left-0 w-full h-full"
                         width="100%"
                         height="100%"
@@ -660,7 +651,7 @@ const Product = () => {
                           overflow: "hidden",
                           maxWidth: "100%",
                           maxHeight: "100%",
-                          transform: "scale(1.01)",
+                          transform: "scale(1.01)", // Slight scale to avoid any border issues
                         }}
                       />
                     ) : (
@@ -671,7 +662,7 @@ const Product = () => {
                   </div>
                 ) : (
                   <motion.img
-                    src={getImageUrl(activeImage)}
+                    src={product.imageCover}
                     alt={product.title}
                     className="w-full h-full object-center object-cover"
                     initial={{ opacity: 0 }}
@@ -681,11 +672,13 @@ const Product = () => {
                 )}
               </div>
 
-              {/* Image Selector */}
-              <div className="grid grid-cols-5 gap-2">
-                {/* 360-degree view option */}
-                {product.video && (
-                  <>
+              {product.images && product.images.length > 0 && (
+                <div className="grid grid-cols-5 gap-2">
+                  {/* Add 360-degree view option first */}
+                  {(product.loupe360 ||
+                    (product.images &&
+                      product.images[0] &&
+                      product.images[0].includes("loupe360.com"))) && (
                     <button
                       onClick={() => handleImageChange("360")}
                       className={`aspect-w-1 aspect-h-1 rounded-md overflow-hidden ${
@@ -698,47 +691,35 @@ const Product = () => {
                         <TbView360Number className="text-gray-500 text-xl" />
                       </div>
                     </button>
-                  </>
-                )}
+                  )}
 
-                {/* Product images */}
-                {product.productType === "jewelry" && product.imageCover && (
+                  {/* Add first image as second option */}
                   <button
-                    onClick={() => handleImageChange(product.imageCover)}
+                    onClick={() =>
+                      handleImageChange(
+                        product.imageCover
+                          ? product.imageCover
+                          : product.images[0]
+                      )
+                    }
                     className={`aspect-w-1 aspect-h-1 rounded-md overflow-hidden ${
-                      activeImage === product.imageCover
+                      activeImage === 0
                         ? "ring-2 ring-gray-900"
                         : "ring-1 ring-gray-200"
                     }`}
                   >
                     <img
-                      src={getImageUrl(product.imageCover)}
-                      alt={product.title}
+                      src={getImageUrl(
+                        product.imageCover
+                          ? product.imageCover
+                          : product.images[0]
+                      )}
+                      alt="Main view"
                       className="w-full h-full object-cover"
                     />
                   </button>
-                )}
-                {product.images &&
-                  product.images.map((image, index) => (
-                    <>
-                      <button
-                        key={index}
-                        onClick={() => handleImageChange(image)}
-                        className={`aspect-w-1 aspect-h-1 rounded-md overflow-hidden ${
-                          activeImage === image
-                            ? "ring-2 ring-gray-900"
-                            : "ring-1 ring-gray-200"
-                        }`}
-                      >
-                        <img
-                          src={getImageUrl(image)}
-                          alt={`Thumbnail ${index + 1}`}
-                          className="w-full h-full object-cover"
-                        />
-                      </button>
-                    </>
-                  ))}
-              </div>
+                </div>
+              )}
             </div>
 
             {/* Right side - Product Info */}
@@ -746,6 +727,7 @@ const Product = () => {
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
                 {product.title}
               </h1>
+
               <div className="flex items-center mb-6">
                 <p className="text-2xl font-semibold text-gray-900">
                   {currency}
@@ -758,6 +740,7 @@ const Product = () => {
                   </p>
                 )}
               </div>
+
               {/* Product Specifications */}
               <div className="bg-gray-50 rounded-lg overflow-hidden mb-6 shadow-sm border border-gray-100">
                 <div className="px-6 py-4 bg-gradient-to-r from-gray-100 to-white border-b border-gray-200">
@@ -770,6 +753,7 @@ const Product = () => {
                   <div className="p-6 border-b border-gray-100">
                     <p className="text-md leading-relaxed text-gray-700">
                       <div
+                        className="prose" // optional Tailwind typography plugin class
                         dangerouslySetInnerHTML={{
                           __html: product.description,
                         }}
@@ -1033,61 +1017,7 @@ const Product = () => {
                 )}
 
                 {/* Jewelry Properties */}
-                {product.productType === "jewelry" && (
-                  <div className="p-6 border-b border-gray-100">
-                    <div className="flex items-center mb-4">
-                      <FaGem className="text-yellow-500 mr-3 text-xl" />
-                      <h3 className="text-md font-semibold text-gray-800">
-                        Jewelry Properties
-                      </h3>
-                    </div>
-
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
-                      <div>
-                        <span className="text-xs uppercase tracking-wider text-gray-500 block mb-1">
-                          Jewelry Type
-                        </span>
-                        <span className="text-sm font-medium text-gray-900 capitalize">
-                          {product.jewelryType || "-"}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-xs uppercase tracking-wider text-gray-500 block mb-1">
-                          Metal
-                        </span>
-                        <span className="text-sm font-medium text-gray-900 capitalize">
-                          {product.metal || "-"}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-xs uppercase tracking-wider text-gray-500 block mb-1">
-                          Metal Color
-                        </span>
-                        <span className="text-sm font-medium text-gray-900 capitalize">
-                          {product.metalColor || "-"}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-xs uppercase tracking-wider text-gray-500 block mb-1">
-                          Diamond Type
-                        </span>
-                        <span className="text-sm font-medium text-gray-900 capitalize">
-                          {product.diamondType
-                            ? product.diamondType.replace("_", " ")
-                            : "-"}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-xs uppercase tracking-wider text-gray-500 block mb-1">
-                          Carats
-                        </span>
-                        <span className="text-sm font-medium text-gray-900">
-                          {product.carats || "-"}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                {product.productType === "jewelry" && renderJewelryProperties()}
 
                 {/* Details & Care */}
                 <div className="p-6">
@@ -1136,6 +1066,7 @@ const Product = () => {
                   </div>
                 </div>
               </div>
+
               {/* Wishlist Button */}
               <div className="flex justify-end mb-8">
                 <button

@@ -3,7 +3,6 @@ import {
   motion,
   useScroll,
   useTransform,
-  AnimatePresence,
 } from "framer-motion";
 import axios from "axios";
 import { Link } from "react-router-dom";
@@ -120,31 +119,30 @@ const Hero = () => {
     >
       {/* Background Images with Crossfade */}
       <div className="absolute inset-0 z-0">
-        <AnimatePresence mode="wait">
-          {heroImages.length > 0 ? (
-            heroImages.map(
-              (image, index) =>
-                index === currentImage && (
-                  <motion.div
-                    key={image}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 1.5 }}
-                    className="absolute inset-0"
-                  >
-                    <img
-                      src={image}
-                      alt="Luxury Diamond"
-                      className="w-full h-full object-cover object-center"
-                    />
-                  </motion.div>
-                )
-            )
-          ) : (
-            <div className="absolute inset-0 bg-gradient-to-r from-gray-900 to-gray-800"></div>
-          )}
-        </AnimatePresence>
+        {heroImages.length > 0 ? (
+          heroImages.map((image, index) => (
+            <motion.div
+              key={image}
+              initial={{ opacity: 0 }}
+              animate={{ 
+                opacity: index === currentImage ? 1 : 0 
+              }}
+              transition={{ 
+                duration: 2,
+                ease: "easeInOut"
+              }}
+              className="absolute inset-0"
+            >
+              <img
+                src={image}
+                alt="Luxury Diamond"
+                className="w-full h-full object-cover object-center"
+              />
+            </motion.div>
+          ))
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-r from-gray-900 to-gray-800"></div>
+        )}
 
         {/* Overlay with gradient */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40 z-10"></div>
@@ -193,14 +191,14 @@ const Hero = () => {
         style={{ opacity, scale, y }}
         className="absolute inset-0 z-30 flex items-center justify-center"
       >
-        <div className="container mx-auto px-4 sm:px-6 flex flex-col lg:flex-row items-center">
-          {/* Left Content */}
-          <div className="w-full lg:w-1/2 text-white space-y-6 sm:space-y-8">
+        <div className="container mx-auto px-4 sm:px-6 flex items-center justify-center">
+          {/* Centered Content */}
+          <div className="w-full max-w-4xl text-white space-y-6 sm:space-y-8 text-center">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="flex items-center gap-3"
+              className="flex items-center gap-3 justify-center"
             >
               <div className="h-[1px] w-8 sm:w-12 bg-white/70"></div>
               <span className="uppercase tracking-[0.15em] sm:tracking-[0.2em] text-xs sm:text-sm font-light">
@@ -212,7 +210,7 @@ const Hero = () => {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight text-center"
             >
               {heroTitle.split(" ").map((word, i) => (
                 <span key={i} className="inline-block">
@@ -225,7 +223,7 @@ const Hero = () => {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.6 }}
-              className="text-base sm:text-lg md:text-xl text-gray-300 max-w-xl leading-relaxed"
+              className="text-base sm:text-lg md:text-xl text-gray-300 max-w-xl leading-relaxed mx-auto text-center"
             >
               {heroSubtitle}
             </motion.p>
@@ -234,7 +232,7 @@ const Hero = () => {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.8 }}
-              className="flex flex-col sm:flex-row gap-4 sm:gap-6 pt-2 sm:pt-4"
+              className="flex flex-col sm:flex-row gap-4 sm:gap-6 pt-2 sm:pt-4 justify-center"
             >
               <Link
                 to="/products/diamond"
@@ -247,99 +245,6 @@ const Hero = () => {
               </Link>
             </motion.div>
           </div>
-
-          {/* Right Content - 3D Diamond */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, delay: 0.5 }}
-            className="hidden lg:block w-1/2 relative"
-          >
-            <div className="relative w-[500px] h-[500px] mx-auto">
-              {/* Diamond glow effect */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-white/20 blur-3xl"></div>
-
-              {/* Diamond container */}
-              <motion.div
-                animate={{
-                  rotateY: [0, 360],
-                  rotateZ: [0, 15, 0, -15, 0],
-                }}
-                transition={{
-                  rotateY: { duration: 20, repeat: Infinity, ease: "linear" },
-                  rotateZ: {
-                    duration: 15,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  },
-                }}
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 flex items-center justify-center"
-                style={{ perspective: "1000px" }}
-              >
-                {/* Diamond facets */}
-                <div className="relative w-64 h-64">
-                  <motion.div
-                    animate={{
-                      rotateX: [0, 360],
-                      rotateZ: [0, -360],
-                    }}
-                    transition={{
-                      duration: 25,
-                      repeat: Infinity,
-                      ease: "linear",
-                    }}
-                    className="absolute inset-0 flex items-center justify-center"
-                  >
-                    <FaDiamond className="text-white/90 text-[200px]" />
-                  </motion.div>
-
-                  {/* Light reflections */}
-                  {[...Array(5)].map((_, i) => (
-                    <motion.div
-                      key={i}
-                      className="absolute inset-0 flex items-center justify-center"
-                      animate={{
-                        opacity: [0, 0.8, 0],
-                        scale: [0.8, 1.2, 0.8],
-                        rotate: [0, 180, 360],
-                      }}
-                      transition={{
-                        duration: 4,
-                        delay: i * 0.8,
-                        repeat: Infinity,
-                        ease: "easeInOut",
-                      }}
-                    >
-                      <div className="w-20 h-20 bg-white/30 blur-md"></div>
-                    </motion.div>
-                  ))}
-                </div>
-              </motion.div>
-
-              {/* Light rays */}
-              {[...Array(8)].map((_, i) => (
-                <motion.div
-                  key={i}
-                  className="absolute top-1/2 left-1/2 h-1 bg-white/20"
-                  style={{
-                    transformOrigin: "0 50%",
-                    rotate: `${i * 45}deg`,
-                    width: "150px",
-                  }}
-                  animate={{
-                    opacity: [0.1, 0.5, 0.1],
-                    width: ["150px", "200px", "150px"],
-                  }}
-                  transition={{
-                    duration: 3,
-                    delay: i * 0.2,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                />
-              ))}
-            </div>
-          </motion.div>
         </div>
       </motion.div>
 
@@ -348,7 +253,7 @@ const Hero = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.5, duration: 1 }}
-        className="absolute bottom-6 sm:bottom-10 left-1/2 transform -translate-x-1/2 z-40 flex flex-col items-center hidden xs:flex"
+        className="absolute bottom-6 sm:bottom-10 left-1/2 transform -translate-x-1/2 z-40 flex-col items-center xs:flex hidden"
       >
         <span className="text-white/80 text-sm mb-2 tracking-widest uppercase">
           Scroll

@@ -1,6 +1,6 @@
 import axios from "axios";
 
-let backendURL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+let backendURL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
 // Remove last / from backendURL if it exists
 backendURL = backendURL.replace(/\/$/, "");
 console.log("backendURL", backendURL);

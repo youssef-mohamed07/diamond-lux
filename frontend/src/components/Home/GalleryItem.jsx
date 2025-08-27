@@ -29,7 +29,7 @@ const GalleryItem = ({ item, index, price = false, productType }) => {
             "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
           transition: { duration: 0.3 },
         }}
-        className="group relative bg-white overflow-hidden"
+        className="group relative bg-white overflow-hidden h-full flex flex-col w-full border border-gray-200 rounded-lg"
       >
         <div className="relative overflow-hidden aspect-square">
           <img
@@ -95,7 +95,7 @@ const GalleryItem = ({ item, index, price = false, productType }) => {
         </div>
 
         {/* Item details for non-hover state */}
-        <div className="p-6 group-hover:bg-gray-50 transition-colors duration-300">
+        <div className="p-6 group-hover:bg-gray-50 transition-colors duration-300 flex-1 flex flex-col justify-center">
           <h3 className="text-lg font-medium text-gray-900 group-hover:text-gray-600 transition-colors duration-300">
             {item.title}
           </h3>

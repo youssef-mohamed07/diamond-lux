@@ -356,6 +356,16 @@ const Navbar = () => {
             >
               <WishlistButton isHomePage={isHomePage} scrolled={scrolled} />
             </Link>
+            <Link
+              to="/Cart"
+              className={`${
+                isHomePage && !scrolled
+                  ? "text-white hover:text-gray-200"
+                  : "text-gray-700 hover:text-gray-900"
+              } transition-colors duration-200`}
+            >
+              <FaCartShopping isHomePage={isHomePage} scrolled={scrolled} />
+            </Link>
           </div>
 
           {/* Mobile menu button */}
